@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { AppLayout } from "@/components/layout/app-layout";
 
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
@@ -17,7 +18,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    // suppressHydrationWarning jest potrzebne dla next-themes
     <html lang="pl" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider
@@ -27,7 +27,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            {children}
+            {/* Tutaj dodajemy nasz nowy układ! */}
+            <AppLayout>
+              {children}
+            </AppLayout>
           </AuthProvider>
         </ThemeProvider>
       </body>

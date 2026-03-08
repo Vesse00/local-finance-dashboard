@@ -15,13 +15,35 @@ model User {
   username String    @unique
   password String    // Zahashowane hasło bcrypt
   currency String    @default("PLN") // Miejsce na przyszłą obsługę walut
-  expenses Expense[]
+  savings  Float     @default(0.0)
+  
+  // Relacje
+  expenses   Expense[]
+  incomes    Income[]   // Relacja do dynamicznych wpływów (wypłat)
+  categories Category[] // Relacja do kategorii (każdy ma swoje)
+}
+
+// Tabela na wpływy (wypłaty, premie, zwroty), dodawane co miesiąc
+model Income {
+  id          String   @id @default(uuid())
+  amount      Float
+  source      String?  // np. "Wypłata z etatu", "Przelew od babci"
+  date        DateTime @default(now())
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
 }
 
 model Category {
   id       String    @id @default(uuid())
   name     String
   icon     String?   // Nazwa ikony (np. z Lucide), do edycji pod "zębatką"
+  
+  userId   String
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   expenses Expense[]
 }
 
@@ -31,11 +53,13 @@ model Expense {
   description String?
   date        DateTime
   isRecurring Boolean  @default(false) // Czy to płatność cykliczna
-  type        String   @default("EXPENSE") // Możliwe opcje na przyszłość: EXPENSE, INVESTMENT, SAVING
+  type        String   @default("EXPENSE") // Opcje: EXPENSE, INVESTMENT, SAVING
   
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   categoryId  String?  // Opcjonalne (np. transfer na oszczędności może nie mieć kategorii)
   category    Category? @relation(fields: [categoryId], references: [id])
+  
+  createdAt   DateTime @default(now())
 }
