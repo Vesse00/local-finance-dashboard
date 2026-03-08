@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id       String    @id @default(uuid())
+  username String    @unique
+  password String    // Zahashowane hasło bcrypt
+  currency String    @default("PLN") // Miejsce na przyszłą obsługę walut
+  expenses Expense[]
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String
+  icon     String?   // Nazwa ikony (np. z Lucide), do edycji pod "zębatką"
+  expenses Expense[]
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  amount      Float
+  description String?
+  date        DateTime
+  isRecurring Boolean  @default(false) // Czy to płatność cykliczna
+  type        String   @default("EXPENSE") // Możliwe opcje na przyszłość: EXPENSE, INVESTMENT, SAVING
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  
+  categoryId  String?  // Opcjonalne (np. transfer na oszczędności może nie mieć kategorii)
+  category    Category? @relation(fields: [categoryId], references: [id])
+}
