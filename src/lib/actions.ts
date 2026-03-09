@@ -217,34 +217,98 @@ export async function deleteIncome(formData: FormData) {
 // --- ZLECENIA STAŁE I RATY ---
 
 export async function addRecurringPayment(formData: FormData) {
-  const userId = await getUserId();
+  const userId = await getUserId(); 
+  
   const name = formData.get("name") as string;
   const defaultAmount = parseFloat(formData.get("defaultAmount") as string);
   const dayOfMonth = parseInt(formData.get("dayOfMonth") as string);
-  const categoryId = formData.get("categoryId") as string;
-  
-  const totalAmountStr = formData.get("totalAmount") as string;
-  const totalAmount = totalAmountStr ? parseFloat(totalAmountStr) : null;
-  const remainingAmount = totalAmount; 
-
-  // NOWOŚĆ: Pobieranie i formatowanie daty końcowej
+  const rawCategoryId = formData.get("categoryId") as string;
   const endDateStr = formData.get("endDate") as string;
+  const totalAmountStr = formData.get("totalAmount") as string;
+
+  const totalAmount = totalAmountStr ? parseFloat(totalAmountStr) : null;
   const endDate = endDateStr ? new Date(endDateStr) : null;
 
-  await prisma.recurringPayment.create({
+  let categoryId = rawCategoryId !== "null" ? rawCategoryId : null;
+
+  // 1. INTELIGENTNE ZARZĄDZANIE KATEGORIĄ (jeśli użytkownik nie wybrał własnej)
+  if (!categoryId) {
+    const categoryName = totalAmount !== null ? "Raty" : "Subskrypcje";
+    const categoryIcon = totalAmount !== null ? "🏦" : "🔄";
+
+    let category = await prisma.category.findFirst({
+      where: { userId, name: categoryName }
+    });
+
+    if (!category) {
+      category = await prisma.category.create({
+        data: { name: categoryName, icon: categoryIcon, userId }
+      });
+    }
+    categoryId = category.id;
+  }
+
+  // 2. TWORZYMY GŁÓWNE ZLECENIE
+  const newRecurring = await prisma.recurringPayment.create({
     data: {
       name,
       defaultAmount,
       dayOfMonth,
+      categoryId,
+      endDate,
       totalAmount,
-      remainingAmount,
-      endDate, // <--- ZAPIS DO BAZY
-      categoryId: categoryId !== "null" ? categoryId : null,
-      userId,
+      remainingAmount: totalAmount,
+      userId
     }
   });
 
+  // 3. GENEROWANIE 12 MIESIĘCY W PRZÓD Z TWOIM RECURRINGID
+  const today = new Date();
+  const MONTHS_TO_GENERATE = 12; 
+  
+  const expensesToCreate = [];
+  let accumulated = 0; 
+
+  for (let i = 0; i < MONTHS_TO_GENERATE; i++) {
+    const expenseDate = new Date(today.getFullYear(), today.getMonth() + i, dayOfMonth);
+    
+    // Sprawdzanie daty końcowej zlecenia
+    if (endDate && expenseDate > endDate) break;
+
+    let amountForThisMonth = defaultAmount;
+
+    // Logika spłaty długu/rat
+    if (totalAmount !== null) {
+      if (accumulated + defaultAmount > totalAmount) {
+        amountForThisMonth = totalAmount - accumulated;
+      }
+      accumulated += amountForThisMonth;
+    }
+
+    if (amountForThisMonth > 0) {
+      expensesToCreate.push({
+        amount: amountForThisMonth,
+        description: name,
+        date: expenseDate,
+        type: "EXPENSE",
+        categoryId: categoryId, 
+        userId: userId,
+        recurringId: newRecurring.id // <--- Używamy Twojej istniejącej nazwy pola
+      });
+    }
+
+    if (totalAmount !== null && accumulated >= totalAmount) break;
+  }
+
+  if (expensesToCreate.length > 0) {
+    await prisma.expense.createMany({
+      data: expensesToCreate
+    });
+  }
+
+  revalidatePath("/calendar");
   revalidatePath("/calendar/recurring");
+  revalidatePath("/");
 }
 
 export async function deleteRecurringPayment(formData: FormData) {
@@ -320,6 +384,29 @@ export async function adjustMainBalance(formData: FormData) {
       }
     });
   }
+
+  revalidatePath("/");
+}
+
+export async function saveMonthSummary(monthName: string) {
+  const userId = await getUserId();
+  const stats = await getDashboardStats();
+
+  await prisma.monthSummary.upsert({
+    where: {
+      userId_monthYear: { userId, monthYear: monthName }
+    },
+    update: {
+      leftToSpend: stats.kwotaWolna,
+      savingsTotal: stats.oszczednosci
+    },
+    create: {
+      userId,
+      monthYear: monthName,
+      leftToSpend: stats.kwotaWolna,
+      savingsTotal: stats.oszczednosci
+    }
+  });
 
   revalidatePath("/");
 }

@@ -70,10 +70,40 @@ export function RecurringForm({ categories, defaultDate = 1, onSuccess }: Recurr
       </div>
 
       {isCredit && (
-        <div className="animate-in slide-in-from-top-2">
-          <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Kwota CAŁKOWITA do spłaty (PLN)</label>
-          <input name="totalAmount" type="number" step="0.01" placeholder="np. 50000" className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-zinc-900 dark:text-white" required={isCredit} />
-        </div>
+        <div className="space-y-4 animate-in slide-in-from-top-2">
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">
+          Kwota CAŁKOWITA
+        </label>
+        <input 
+          name="totalAmount" 
+          type="number" 
+          step="0.01" 
+          placeholder="np. 50000" 
+          className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-zinc-900 dark:text-white" 
+          required={isCredit} 
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">
+          POZOSTAŁO do spłaty
+        </label>
+        <input 
+          name="remainingAmount" 
+          type="number" 
+          step="0.01" 
+          placeholder="np. 15000" 
+          className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-zinc-900 dark:text-white" 
+          required={isCredit} 
+        />
+      </div>
+    </div>
+    <p className="text-[10px] text-zinc-500 italic">
+      Jeśli kredyt jest nowy, wpisz w obu polach tę samą kwotę.
+    </p>
+  </div>
+        
       )}
 
       <button type="submit" disabled={isPending} className="w-full mt-4 rounded-xl bg-indigo-500 py-3 text-white font-semibold shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-600 disabled:opacity-50">

@@ -1,0 +1,63 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { ArrowRightLeft, X } from "lucide-react";
+import { TransferForm } from "@/components/calendar/transfer-form";
+
+export function TransferUI() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Upewniamy się, że komponent renderuje portal dopiero po stronie klienta (w przeglądarce)
+  useEffect(() => setMounted(true), []);
+
+  // Blokowanie scrollowania strony gdy modal jest otwarty
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => { document.body.style.overflow = "auto"; };
+  }, [isModalOpen]);
+
+  // Zawartość naszego modala
+  const modalContent = isModalOpen ? (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setIsModalOpen(false)}>
+      <div className="relative w-full max-w-md rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+        <button onClick={() => setIsModalOpen(false)} className="absolute right-4 top-4 rounded-full p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300 transition-colors">
+          <X className="h-5 w-5" />
+        </button>
+        
+        <h3 className="text-xl font-bold mb-1 flex items-center gap-2 text-zinc-900 dark:text-white">
+          <ArrowRightLeft className="w-5 h-5 text-blue-500" /> Transfer środków
+        </h3>
+        <p className="text-sm text-zinc-500 mb-6">Szybkie przesunięcie pieniędzy między kontami</p>
+
+        {/* Wstrzykujemy czysty formularz z domyślnym Oszczędności -> Portfel */}
+        <TransferForm 
+          onSuccess={() => setIsModalOpen(false)} 
+          defaultFrom="SAVINGS" 
+          defaultTo="MAIN" 
+        />
+
+      </div>
+    </div>
+  ) : null;
+
+  return (
+    <>
+      <button 
+        onClick={() => setIsModalOpen(true)}
+        className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+      >
+        <ArrowRightLeft className="w-5 h-5" />
+        Transfer środków
+      </button>
+
+      {/* Renderujemy modal prosto w tagu <body> za pomocą Portalu */}
+      {mounted && createPortal(modalContent, document.body)}
+    </>
+  );
+}

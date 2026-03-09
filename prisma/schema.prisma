@@ -22,6 +22,7 @@ model User {
   expenses   Expense[]
   incomes    Income[]   // Relacja do dynamicznych wpływów (wypłat)
   categories Category[] // Relacja do kategorii (każdy ma swoje)
+  monthSummaries MonthSummary[] // Relacja do miesięcznych podsumowań
 }
 
 // Tabela na wpływy
@@ -63,6 +64,8 @@ model Expense {
   // Relacja do zlecenia stałego (jeśli to rata)
   recurringId         String?
   recurring           RecurringPayment? @relation(fields: [recurringId], references: [id], onDelete: Cascade)
+  
+  
   
   createdAt           DateTime @default(now())
 }
@@ -106,3 +109,16 @@ model Category {
   recurrings RecurringPayment[] // Relacja wsteczna
 }
 
+model MonthSummary {
+  id              String   @id @default(uuid())
+  monthYear       String   // np. "02-2026"
+  savingsTotal    Float    // Całkowite oszczędności na koniec miesiąca
+  leftToSpend     Float    // Ile zostało "Kwoty wolnej" (nadwyżka/niedobór)
+  
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime @default(now())
+
+  @@unique([userId, monthYear]) // Zapewnia, że nie zdublujemy podsumowania dla tego samego miesiąca
+}
