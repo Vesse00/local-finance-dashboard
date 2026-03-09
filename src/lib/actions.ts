@@ -118,3 +118,21 @@ export async function getDashboardStats() {
     oszczednosci: user?.savings || 0,
   };
 }
+export async function getCalendarData() {
+  const userId = await getUserId();
+  
+  // Pobieramy wszystkie wydatki i inwestycje z podpiętą kategorią
+  const expenses = await prisma.expense.findMany({
+    where: { userId },
+    include: { category: true },
+    orderBy: { date: 'asc' }
+  });
+  
+  // Pobieramy wszystkie wpływy
+  const incomes = await prisma.income.findMany({
+    where: { userId },
+    orderBy: { date: 'asc' }
+  });
+  
+  return { expenses, incomes };
+}
