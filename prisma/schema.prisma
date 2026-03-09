@@ -18,48 +18,91 @@ model User {
   savings  Float     @default(0.0)
   
   // Relacje
+  recurringPayments RecurringPayment[]
   expenses   Expense[]
   incomes    Income[]   // Relacja do dynamicznych wpływów (wypłat)
   categories Category[] // Relacja do kategorii (każdy ma swoje)
 }
 
-// Tabela na wpływy (wypłaty, premie, zwroty), dodawane co miesiąc
+// Tabela na wpływy
 model Income {
-  id          String   @id @default(uuid())
-  amount      Float
-  source      String?  // np. "Wypłata z etatu", "Przelew od babci"
-  date        DateTime @default(now())
+  id                  String   @id @default(uuid())
+  amount              Float
+  currency            String   @default("PLN") // NOWE: Waluta
+  source              String?  
+  description         String?  
+  bankTransactionType String?  
+  date                DateTime @default(now())
   
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  createdAt   DateTime @default(now())
+  createdAt           DateTime @default(now())
 }
 
-model Category {
-  id       String    @id @default(uuid())
-  name     String
-  icon     String?   // Nazwa ikony (np. z Lucide), do edycji pod "zębatką"
-  
-  userId   String
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  expenses Expense[]
-}
-
+// Tabela na wydatki i transfery
 model Expense {
-  id          String   @id @default(uuid())
-  amount      Float
-  description String?
-  date        DateTime
-  isRecurring Boolean  @default(false) // Czy to płatność cykliczna
-  type        String   @default("EXPENSE") // Opcje: EXPENSE, INVESTMENT, SAVING
+  id                  String   @id @default(uuid())
+  amount              Float
+  currency            String   @default("PLN") // NOWE: Waluta
+  description         String?  
+  recipient           String?  
+  bankTransactionType String?  
+  date                DateTime
+  isRecurring         Boolean  @default(false)
+  type                String   @default("EXPENSE") 
   
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status              String   @default("COMPLETED") // NOWE: "COMPLETED" (Zapłacone) lub "PENDING" (Oczekujące/Czerwone)
   
-  categoryId  String?  // Opcjonalne (np. transfer na oszczędności może nie mieć kategorii)
-  category    Category? @relation(fields: [categoryId], references: [id])
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  createdAt   DateTime @default(now())
+  categoryId          String?
+  category            Category? @relation(fields: [categoryId], references: [id])
+
+  // Relacja do zlecenia stałego (jeśli to rata)
+  recurringId         String?
+  recurring           RecurringPayment? @relation(fields: [recurringId], references: [id], onDelete: Cascade)
+  
+  createdAt           DateTime @default(now())
 }
+
+// NOWOŚĆ: Zlecenia stałe, subskrypcje i raty kredytowe
+model RecurringPayment {
+  id              String   @id @default(uuid())
+  name            String   // np. "Rata za samochód", "Internet"
+  defaultAmount   Float    // Domyślna kwota do zapłaty
+  currency        String   @default("PLN")
+  dayOfMonth      Int      // Dzień płatności (1-31)
+  
+  // Pola dla kredytów/rat (opcjonalne)
+  totalAmount     Float?   // Kwota całkowita do spłaty (np. 100 000)
+  remainingAmount Float?   // Ile jeszcze zostało (zmienia się przy nadpłatach)
+
+  endDate         DateTime? // Kiedy kończy się subskrypcja lub kredyt (null = bezterminowo)
+  
+  isActive        Boolean  @default(true) // Czy zlecenie jest nadal aktywne?
+  
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  categoryId      String?
+  category        Category? @relation(fields: [categoryId], references: [id])
+  
+  // Lista opłaconych już rat wygenerowanych z tego zlecenia
+  expenses        Expense[] 
+  
+  createdAt       DateTime @default(now())
+}
+
+// Model Category pozostaje bez zmian (upewnij się tylko, że nie ma błędów)
+model Category {
+  id        String    @id @default(uuid())
+  name      String
+  icon      String
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses  Expense[]
+  recurrings RecurringPayment[] // Relacja wsteczna
+}
+

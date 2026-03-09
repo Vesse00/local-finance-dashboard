@@ -10,23 +10,26 @@ import {
 import { pl } from "date-fns/locale";
 import { ExpenseModal } from "@/components/calendar/expense-modal";
 import { AddIncomeModal } from "@/components/dashboard/add-income-modal";
-import { DayDetailsModal } from "@/components/calendar/day-details-modal"; // NOWY IMPORT
+import { DayDetailsModal } from "@/components/calendar/day-details-modal";
+import { CategoryManagerModal } from "@/components/calendar/category-manager-modal";
+import { ImportModal } from "@/components/dashboard/import-modal";
 
 interface CalendarUIProps {
   expenses: any[];
   incomes: any[];
+  categories: any[];
 }
 
-export function CalendarUI({ expenses, incomes }: CalendarUIProps) {
+export function CalendarUI({ expenses, incomes, categories }: CalendarUIProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   
-  // Stany dla modala Dodawania Wydatku
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [expenseDate, setExpenseDate] = useState<Date | null>(null);
 
-  // Stany dla modala Szczegółów Dnia (NOWE)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [detailsDate, setDetailsDate] = useState<Date | null>(null);
+
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -34,14 +37,12 @@ export function CalendarUI({ expenses, incomes }: CalendarUIProps) {
     setCurrentMonth(setYear(currentMonth, parseInt(e.target.value)));
   };
 
-  // Otwieranie Modala dodawania
   const handleAddExpense = (e: React.MouseEvent, date: Date) => {
-    e.stopPropagation(); // Blokuje kliknięcie w sam "dzień" pod spodem!
+    e.stopPropagation(); 
     setExpenseDate(date);
     setIsExpenseModalOpen(true);
   };
 
-  // Otwieranie Modala szczegółów
   const handleDayClick = (date: Date) => {
     setDetailsDate(date);
     setIsDetailsModalOpen(true);
@@ -83,9 +84,14 @@ export function CalendarUI({ expenses, incomes }: CalendarUIProps) {
           </button>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          <ImportModal />
           <AddIncomeModal />
-          <button className="flex items-center gap-2 p-2 px-4 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors border border-black/5 dark:border-white/10">
+          
+          <button 
+            onClick={() => setIsCategoryModalOpen(true)}
+            className="flex items-center gap-2 p-2 px-4 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors border border-black/5 dark:border-white/10"
+          >
             <Settings className="w-4 h-4 text-zinc-500" />
             <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">Kategorie</span>
           </button>
@@ -103,13 +109,25 @@ export function CalendarUI({ expenses, incomes }: CalendarUIProps) {
           {calendarDays.map((date, i) => {
             const isCurrentMonth = isSameMonth(date, currentMonth);
             const isCurrentDay = isToday(date);
+            
+            // Pobieramy transakcje z danego dnia
             const dayExpenses = expenses.filter(e => isSameDay(new Date(e.date), date));
             const dayIncomes = incomes.filter(inc => isSameDay(new Date(inc.date), date));
+
+            // Łączymy wszystkie w jedną tablicę do wygodnego limitowania
+            const allDayTransactions = [
+              ...dayIncomes.map(inc => ({ ...inc, isIncome: true })),
+              ...dayExpenses.map(exp => ({ ...exp, isIncome: false }))
+            ];
+
+            // Ustalamy limit widocznych elementów (np. 3 pierwsze)
+            const MAX_VISIBLE = 3;
+            const visibleTransactions = allDayTransactions.slice(0, MAX_VISIBLE);
+            const hiddenCount = allDayTransactions.length - MAX_VISIBLE;
 
             return (
               <div 
                 key={i} 
-                // Dodajemy onClick do całej kafelki dnia! (cursor-pointer)
                 onClick={() => isCurrentMonth && handleDayClick(date)}
                 className={`group relative min-h-[120px] p-2 transition-colors border-t border-l border-transparent
                   ${isCurrentMonth ? "bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer" : "bg-zinc-50/50 dark:bg-zinc-900/30 cursor-default"}
@@ -125,22 +143,31 @@ export function CalendarUI({ expenses, incomes }: CalendarUIProps) {
                   {format(date, 'd')}
                 </span>
 
-                <div className="flex flex-col gap-1 mt-1 max-h-[75px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  {dayIncomes.map(income => (
-                    <div key={income.id} title={income.source} className="truncate rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium border border-emerald-500/20">
-                      + {income.amount} zł
-                    </div>
+                {/* Wyświetlanie transakcji bez scrollbara, obcięte do MAX_VISIBLE */}
+                <div className="flex flex-col gap-1 mt-1">
+                  {visibleTransactions.map(tx => (
+                    tx.isIncome ? (
+                      <div key={`inc-${tx.id}`} title={tx.source} className="truncate rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium border border-emerald-500/20">
+                        + {tx.amount} zł
+                      </div>
+                    ) : (
+                      <div key={`exp-${tx.id}`} title={tx.description || tx.category?.name} className={`truncate rounded px-1.5 py-0.5 text-[10px] font-medium border ${tx.type === "EXPENSE" ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20" : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"}`}>
+                        {tx.type === "EXPENSE" ? "-" : ""} {tx.amount} zł {tx.category?.icon}
+                      </div>
+                    )
                   ))}
-                  {dayExpenses.map(expense => (
-                    <div key={expense.id} title={expense.description || expense.category?.name} className={`truncate rounded px-1.5 py-0.5 text-[10px] font-medium border ${expense.type === "EXPENSE" ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20" : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"}`}>
-                      {expense.type === "EXPENSE" ? "-" : ""} {expense.amount} zł {expense.category?.icon}
+                  
+                  {/* Jeśli są jakieś ukryte transakcje, pokaż mały chip z informacją */}
+                  {hiddenCount > 0 && (
+                    <div className="truncate rounded bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold border border-black/5 dark:border-white/5 text-center mt-0.5">
+                      + {hiddenCount} więcej
                     </div>
-                  ))}
+                  )}
                 </div>
 
                 {isCurrentMonth && (
                   <button 
-                    onClick={(e) => handleAddExpense(e, date)} // <--- e.stopPropagation wewnątrz tej funkcji
+                    onClick={(e) => handleAddExpense(e, date)}
                     className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white opacity-0 shadow-lg transition-all transform scale-90 group-hover:opacity-100 group-hover:scale-100 hover:bg-primary/80 z-10"
                   >
                     +
@@ -152,20 +179,25 @@ export function CalendarUI({ expenses, incomes }: CalendarUIProps) {
         </div>
       </div>
 
-      {/* Stare dodawanie wydatków */}
       <ExpenseModal 
         isOpen={isExpenseModalOpen} 
         onClose={() => setIsExpenseModalOpen(false)} 
         selectedDate={expenseDate}
+        categories={categories}
       />
 
-      {/* NOWY Modal ze szczegółami dnia */}
       <DayDetailsModal
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
         date={detailsDate}
         allExpenses={expenses}
         allIncomes={incomes}
+      />
+
+      <CategoryManagerModal 
+        isOpen={isCategoryModalOpen} 
+        onClose={() => setIsCategoryModalOpen(false)} 
+        categories={categories} 
       />
     </div>
   );

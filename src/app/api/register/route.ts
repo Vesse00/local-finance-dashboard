@@ -1,28 +1,29 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
+import bcrypt from "bcryptjs";
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
     const { username, password } = await req.json();
 
-    if (!username || !password) {
-      return NextResponse.json({ message: "Brak danych" }, { status: 400 });
+    if (!username || password.length < 6) {
+      return NextResponse.json({ message: "Nieprawidłowe dane logowania." }, { status: 400 });
     }
 
-    // Sprawdzamy czy użytkownik już istnieje
     const existingUser = await prisma.user.findUnique({
       where: { username },
     });
 
     if (existingUser) {
-      return NextResponse.json({ message: "Użytkownik już istnieje" }, { status: 400 });
+      return NextResponse.json({ message: "Taki użytkownik już istnieje!" }, { status: 400 });
     }
 
-    // Hashowanie hasła
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Zapis do bazy
+    
+    // Tworzenie użytkownika
     const user = await prisma.user.create({
       data: {
         username,
@@ -30,9 +31,21 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ message: "Użytkownik stworzony", user: { id: user.id, username: user.username } }, { status: 201 });
-  } catch (error) {
-    console.error("Registration error:", error);
-    return NextResponse.json({ message: "Wystąpił błąd serwera", error: String(error) }, { status: 500 });
+    // NOWOŚĆ: Generowanie domyślnych kategorii dla nowego użytkownika!
+    const defaultCategories = [
+      { name: "Jedzenie", icon: "🍔", userId: user.id },
+      { name: "Transport", icon: "🚗", userId: user.id },
+      { name: "Dom", icon: "🏠", userId: user.id },
+      { name: "Rozrywka", icon: "🎮", userId: user.id },
+    ];
+
+    await prisma.category.createMany({
+      data: defaultCategories
+    });
+
+    return NextResponse.json({ message: "Zarejestrowano pomyślnie!", user: { username: user.username } }, { status: 201 });
+  } catch (error: any) {
+    console.error("Błąd rejestracji:", error);
+    return NextResponse.json({ message: "Wystąpił błąd serwera." }, { status: 500 });
   }
 }

@@ -2,59 +2,107 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, ArrowRightLeft, PieChart, Target, Settings, LogOut, CalendarDays } from "lucide-react";
+import { useState } from "react";
+import { 
+  LayoutDashboard, ArrowRightLeft, PieChart, 
+  LogOut, CalendarDays, PiggyBank, Repeat, ChevronDown, Wallet, LineChart 
+} from "lucide-react";
 
-const navItems = [
+// Samodzielne, najważniejsze linki na samej górze
+const topItems = [
   { name: "Pulpit", href: "/", icon: LayoutDashboard },
-  { name: "Kalendarz", href: "/calendar", icon: CalendarDays }, // <--- NOWY LINK
-  { name: "Transakcje", href: "/transactions", icon: ArrowRightLeft },
+  { name: "Analiza", href: "/analysis", icon: LineChart }, // <--- ANALIZA PRZENIESIONA TUTAJ
+];
+
+// Grupy rozwijane
+const navGroups = [
+  {
+    title: "Finanse",
+    icon: Wallet,
+    items: [
+      { name: "Kalendarz", href: "/calendar", icon: CalendarDays },
+      { name: "Zlecenia i Raty", href: "/calendar/recurring", icon: Repeat },
+      { name: "Oszczędności", href: "/savings", icon: PiggyBank },
+      { name: "Transakcje", href: "/transactions", icon: ArrowRightLeft },
+    ]
+  }
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ "Finanse": true });
+
+  const toggleGroup = (title: string) => {
+    setOpenGroups(prev => ({ ...prev, [title]: !prev[title] }));
+  };
 
   return (
-    <aside className="hidden w-64 flex-col border-r border-black/5 dark:border-white/10 bg-white/30 dark:bg-black/20 backdrop-blur-xl transition-all duration-300 md:flex">
-      <div className="flex flex-1 flex-col py-6 px-4 gap-2">
-        <div className="px-3 mb-4 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-          Menu główne
+    <aside className="w-64 border-r border-black/5 dark:border-white/10 bg-white/50 dark:bg-black/20 backdrop-blur-xl hidden md:flex flex-col h-screen sticky top-0 z-50">
+      <div className="p-6">
+        <div className="flex items-center gap-3 font-bold text-xl tracking-tight text-zinc-900 dark:text-white">
+          <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
+            <PieChart className="w-5 h-5" />
+          </div>
+          Finance<span className="text-primary">App</span>
         </div>
+      </div>
+
+      <nav className="flex-1 px-4 space-y-6 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         
-        <nav className="flex-1 space-y-1.5">
-          {navItems.map((item) => {
+        <div className="space-y-1">
+          {topItems.map(item => {
             const isActive = pathname === item.href;
-            const Icon = item.icon;
-            
             return (
-              <Link
-                key={item.href}
+              <Link 
+                key={item.name} 
                 href={item.href}
-                className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 ${
-                  isActive
-                    ? "bg-gradient-to-r from-primary/10 to-purple-500/10 text-primary dark:text-purple-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] border border-primary/20"
-                    : "text-zinc-600 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white border border-transparent"
-                }`}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm
+                  ${isActive ? "bg-primary text-white shadow-md shadow-primary/20" : "text-zinc-600 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/5"}
+                `}
               >
-                <Icon className={`h-5 w-5 transition-transform duration-300 ${isActive ? "scale-110" : "group-hover:scale-110"}`} />
+                <item.icon className={`w-5 h-5 ${isActive ? "text-white" : "text-zinc-500"}`} />
                 {item.name}
               </Link>
             );
           })}
-        </nav>
-
-        <div className="mt-auto pt-4 border-t border-black/5 dark:border-white/10">
-          <Link
-            href="/settings"
-            className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white transition-all duration-300"
-          >
-            <Settings className="h-5 w-5 group-hover:rotate-90 transition-transform duration-500" />
-            Ustawienia
-          </Link>
-          <button className="w-full mt-1 group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-300">
-            <LogOut className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
-            Wyloguj
-          </button>
         </div>
+
+        <div className="space-y-4">
+          {navGroups.map((group) => {
+            const isOpen = openGroups[group.title];
+            return (
+              <div key={group.title} className="space-y-1">
+                <button onClick={() => toggleGroup(group.title)} className="w-full flex items-center justify-between gap-3 px-3 py-2 rounded-xl font-bold transition-all text-xs uppercase tracking-wider text-zinc-500 hover:text-zinc-900 dark:hover:text-white">
+                  <div className="flex items-center gap-2">
+                    <group.icon className="w-4 h-4" />
+                    {group.title}
+                  </div>
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-300 ease-in-out ${isOpen ? "rotate-0" : "-rotate-90"}`} />
+                </button>
+                <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100 mt-2" : "grid-rows-[0fr] opacity-0 mt-0"}`}>
+                  <div className="overflow-hidden space-y-1">
+                    {group.items.map(item => {
+                      const isActive = pathname === item.href;
+                      return (
+                        <Link key={item.name} href={item.href} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm ${isActive ? "bg-primary text-white shadow-md shadow-primary/20" : "text-zinc-600 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/5"}`}>
+                          <item.icon className={`w-5 h-5 ${isActive ? "text-white" : "text-zinc-500"}`} />
+                          {item.name}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </nav>
+
+      <div className="p-4 mt-auto">
+        <button className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-sm text-zinc-600 dark:text-zinc-400 hover:bg-red-500/10 hover:text-red-500 transition-all">
+          <LogOut className="w-5 h-5" />
+          Wyloguj się
+        </button>
       </div>
     </aside>
   );

@@ -121,18 +121,205 @@ export async function getDashboardStats() {
 export async function getCalendarData() {
   const userId = await getUserId();
   
-  // Pobieramy wszystkie wydatki i inwestycje z podpiętą kategorią
   const expenses = await prisma.expense.findMany({
     where: { userId },
     include: { category: true },
     orderBy: { date: 'asc' }
   });
   
-  // Pobieramy wszystkie wpływy
   const incomes = await prisma.income.findMany({
     where: { userId },
     orderBy: { date: 'asc' }
   });
+
+  // NOWE: Pobieramy też kategorie przypisane do użytkownika
+  const categories = await prisma.category.findMany({
+    where: { userId },
+    orderBy: { name: 'asc' }
+  });
   
-  return { expenses, incomes };
+  return { expenses, incomes, categories };
+}
+// Tworzenie nowej kategorii
+export async function createCategory(formData: FormData) {
+  const name = formData.get("name") as string;
+  const icon = formData.get("icon") as string;
+  const userId = await getUserId();
+
+  await prisma.category.create({
+    data: { name, icon: icon || "🏷️", userId }
+  });
+
+  revalidatePath("/calendar");
+}
+
+// Usuwanie kategorii
+export async function deleteCategory(formData: FormData) {
+  const id = formData.get("id") as string;
+  const userId = await getUserId();
+
+  // Najpierw usuwamy przypisanie kategorii z wydatków, żeby nie wywaliło błędu bazy
+  await prisma.expense.updateMany({
+    where: { categoryId: id, userId },
+    data: { categoryId: null }
+  });
+
+  // Następnie usuwamy samą kategorię
+  await prisma.category.delete({
+    where: { id, userId }
+  });
+
+  revalidatePath("/calendar");
+}
+
+// --- USUWANIE WYDATKU / TRANSFERU ---
+export async function deleteExpense(formData: FormData) {
+  const id = formData.get("id") as string;
+  const userId = await getUserId();
+
+  // Najpierw pobieramy wydatek, żeby sprawdzić jego typ
+  const expense = await prisma.expense.findUnique({
+    where: { id, userId }
+  });
+
+  if (!expense) return;
+
+  // Jeśli to był transfer na oszczędności, musimy "oddać" pieniądze z powrotem!
+  if (expense.type === "SAVING" || expense.type === "INVESTMENT") {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { savings: { decrement: expense.amount } }
+    });
+  }
+
+  // Usuwamy wpis z bazy
+  await prisma.expense.delete({
+    where: { id }
+  });
+
+  revalidatePath("/");
+  revalidatePath("/calendar");
+}
+
+// --- USUWANIE WPŁYWU ---
+export async function deleteIncome(formData: FormData) {
+  const id = formData.get("id") as string;
+  const userId = await getUserId();
+
+  await prisma.income.delete({
+    where: { id, userId }
+  });
+
+  revalidatePath("/");
+  revalidatePath("/calendar");
+}
+
+// --- ZLECENIA STAŁE I RATY ---
+
+export async function addRecurringPayment(formData: FormData) {
+  const userId = await getUserId();
+  const name = formData.get("name") as string;
+  const defaultAmount = parseFloat(formData.get("defaultAmount") as string);
+  const dayOfMonth = parseInt(formData.get("dayOfMonth") as string);
+  const categoryId = formData.get("categoryId") as string;
+  
+  const totalAmountStr = formData.get("totalAmount") as string;
+  const totalAmount = totalAmountStr ? parseFloat(totalAmountStr) : null;
+  const remainingAmount = totalAmount; 
+
+  // NOWOŚĆ: Pobieranie i formatowanie daty końcowej
+  const endDateStr = formData.get("endDate") as string;
+  const endDate = endDateStr ? new Date(endDateStr) : null;
+
+  await prisma.recurringPayment.create({
+    data: {
+      name,
+      defaultAmount,
+      dayOfMonth,
+      totalAmount,
+      remainingAmount,
+      endDate, // <--- ZAPIS DO BAZY
+      categoryId: categoryId !== "null" ? categoryId : null,
+      userId,
+    }
+  });
+
+  revalidatePath("/calendar/recurring");
+}
+
+export async function deleteRecurringPayment(formData: FormData) {
+  const id = formData.get("id") as string;
+  const userId = await getUserId();
+
+  await prisma.recurringPayment.delete({
+    where: { id, userId }
+  });
+
+  revalidatePath("/calendar/recurring");
+}
+
+// --- WYRÓWNYWANIE SALDA (UZGODNIENIE) ---
+
+export async function adjustMainBalance(formData: FormData) {
+  // Pobieramy użytkownika (jeśli masz już autoryzację, użyj swojej funkcji, np. getUserId())
+  const user = await prisma.user.findFirst();
+  if (!user) throw new Error("Nie znaleziono użytkownika");
+  const userId = user.id;
+
+  const targetAmount = parseFloat(formData.get("amount") as string);
+
+  // Pobieramy to, co aplikacja uważa za "obecny stan" w tym miesiącu
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const expenses = await prisma.expense.aggregate({
+    where: { userId, date: { gte: startOfMonth }, type: { in: ["EXPENSE", "SAVING"] } },
+    _sum: { amount: true }
+  });
+  const incomes = await prisma.income.aggregate({
+    where: { userId, date: { gte: startOfMonth } },
+    _sum: { amount: true }
+  });
+
+  const spent = expenses._sum.amount || 0;
+  const totalIncome = incomes._sum.amount || 0;
+  const currentBalance = totalIncome - spent;
+
+  // Obliczamy ile brakuje (lub ile jest za dużo)
+  const difference = targetAmount - currentBalance;
+
+  // Jeśli saldo się zgadza, nic nie robimy
+  if (Math.abs(difference) < 0.01) return;
+
+  if (difference > 0) {
+    // Apka ma za mało - dodajemy wpływ korygujący
+    await prisma.income.create({
+      data: {
+        amount: difference,
+        source: "Wyrównanie salda",
+        description: "Automatyczna korekta stanu konta",
+        date: new Date(),
+        userId
+      }
+    });
+  } else {
+    // Apka ma za dużo - dodajemy wydatek korygujący
+    const userCategories = await prisma.category.findMany({ where: { userId } });
+    let cat = userCategories.find(c => c.name.toLowerCase() === "inne");
+    if (!cat) cat = await prisma.category.create({ data: { name: "Inne", icon: "❓", userId } });
+
+    await prisma.expense.create({
+      data: {
+        amount: Math.abs(difference),
+        description: "Wyrównanie salda",
+        recipient: "Korekta automatyczna",
+        date: new Date(),
+        categoryId: cat.id,
+        userId
+      }
+    });
+  }
+
+  revalidatePath("/");
 }
