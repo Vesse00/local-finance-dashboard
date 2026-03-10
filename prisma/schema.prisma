@@ -24,6 +24,9 @@ model User {
   categories Category[] // Relacja do kategorii (każdy ma swoje)
   monthSummaries MonthSummary[] // Relacja do miesięcznych podsumowań
   workDays   WorkDay[] // Relacja do dni pracy i nadgodzin
+  healthDays  HealthDay[] // Relacja do logów zdrowotnych
+  healthEntries HealthEntry[] // Relacja do pojedynczych posiłków i treningów
+  drawerItems DrawerItem[] // Relacja do cyfrowej szuflady
 }
 
 // Tabela na wpływy
@@ -147,4 +150,67 @@ model WorkDay {
   updatedAt   DateTime @updatedAt
 
   @@unique([userId, date]) // Zabezpieczenie, by w jeden dzień był tylko jeden wpis dla danego usera
+}
+
+//  Model do śledzenia zdrowia (Waga, Woda, Treningi, Kalorie)
+model HealthDay {
+  id           String   @id @default(uuid())
+  date         DateTime
+  
+  weight       Float?   // Waga w kg (np. 82.5)
+  waterGlasses Int      @default(0) // Ilość wypitych szklanek/butelek
+  calories     Int?     // Spożyte kalorie
+  workout      String?  // Notatka o treningu (np. "Siłownia - Klatka", "Bieganie 5km")
+
+  // Wymiary (w cm)
+  chest        Float?   // Klatka piersiowa
+  waist        Float?   // Pas / Talia
+  hips         Float?   // Biodra
+  biceps       Float?   // Ramię / Biceps
+  thigh        Float?   // Udo
+  
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, date]) // Jeden wpis zdrowotny na jeden konkretny dzień
+}
+
+// Model do śledzenia pojedynczych treningów i posiłków
+model HealthEntry {
+  id          String   @id @default(uuid())
+  date        DateTime
+  
+  type        String   // "WORKOUT" lub "CALORIES"
+  title       String   // Nazwa (np. "Siłownia", "Śniadanie")
+  calories    Int      @default(0) // Ilość kalorii (tylko dla typu CALORIES)
+  detasils     String?  // Pole na szczegóły ćwiczeń (zapisane jako JSON)
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+}
+
+// Cyfrowa Szuflada (Umowy, Gwarancje, Subskrypcje)
+model DrawerItem {
+  id           String   @id @default(uuid())
+  title        String   // np. "Umowa Wynajmu Mieszkania", "Telewizor Samsung"
+  type         String   // "CONTRACT" (Umowa) lub "WARRANTY" (Gwarancja)
+  
+  startDate    DateTime // Data zawarcia umowy / zakupu
+  endDate      DateTime? // Data końca umowy / gwarancji
+  
+  cost         Float?   // Koszt
+  isRecurring  Boolean  @default(false) // Czy to płatność cykliczna (abonament/rata)
+  
+  documentUrl  String?  // Opcjonalny link do pliku na dysku/chmurze
+  notes        String?  
+
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt    DateTime @default(now())
 }
