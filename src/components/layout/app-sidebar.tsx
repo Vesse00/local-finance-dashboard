@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { 
   LayoutDashboard, ArrowRightLeft, PieChart, 
-  LogOut, CalendarDays, PiggyBank, Repeat, ChevronDown, Wallet, LineChart , Settings
+  LogOut, CalendarDays, PiggyBank, Repeat, ChevronDown, Wallet, LineChart , Settings, Clock, Briefcase
 } from "lucide-react";
 
 // Samodzielne, najważniejsze linki na samej górze
@@ -25,12 +25,19 @@ const navGroups = [
       { name: "Oszczędności", href: "/savings", icon: PiggyBank },
       { name: "Transakcje", href: "/transactions", icon: ArrowRightLeft },
     ]
+  },
+  {
+    title: "Praca i Czas",
+    icon: Briefcase,
+    items: [
+      { name: "Grafik pracy", href: "/work-schedule", icon: Clock },
+    ]
   }
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ "Finanse": true });
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ "Finanse": true, "Praca i Czas": true });
 
   const toggleGroup = (title: string) => {
     setOpenGroups(prev => ({ ...prev, [title]: !prev[title] }));

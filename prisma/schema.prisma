@@ -23,6 +23,7 @@ model User {
   incomes    Income[]   // Relacja do dynamicznych wpływów (wypłat)
   categories Category[] // Relacja do kategorii (każdy ma swoje)
   monthSummaries MonthSummary[] // Relacja do miesięcznych podsumowań
+  workDays   WorkDay[] // Relacja do dni pracy i nadgodzin
 }
 
 // Tabela na wpływy
@@ -121,4 +122,29 @@ model MonthSummary {
   createdAt       DateTime @default(now())
 
   @@unique([userId, monthYear]) // Zapewnia, że nie zdublujemy podsumowania dla tego samego miesiąca
+}
+
+// NOWOŚĆ: Model do śledzenia czasu pracy, zmian i nadgodzin
+model WorkDay {
+  id          String   @id @default(uuid())
+  date        DateTime // Konkretny dzień w kalendarzu
+  
+  // Klasyczne godziny zmiany, np. "13:45" i "21:45"
+  startTime   String?
+  endTime     String?
+  
+  // Informacje o nadgodzinach
+  isOvertime  Boolean  @default(false) // Czy tego dnia były nadgodziny?
+  overtimeHours Float  @default(0)     // Ile godzin dodatkowych (np. 4.5)
+  
+  shiftType   String   @default("REGULAR") // "REGULAR", "OVERTIME_ONLY" (np. sobota)
+  notes       String?  // Opcjonalne notatki do dnia
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, date]) // Zabezpieczenie, by w jeden dzień był tylko jeden wpis dla danego usera
 }
