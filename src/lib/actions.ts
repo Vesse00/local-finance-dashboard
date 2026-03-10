@@ -86,36 +86,57 @@ export async function transferToSavings(formData: FormData) {
 }
 
 export async function getDashboardStats() {
-  const userId = await getUserId();
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
+  const user = await prisma.user.findFirst();
+  if (!user) {
+    return { kwotaWolna: 0, wydano: 0, wplywy: 0, oszczednosci: 0 };
+  }
 
-  // Zliczamy tylko to co faktycznie wydaliśmy (EXPENSE) oraz transfery na oszczędności z tego miesiąca (SAVING)
-  const expenses = await prisma.expense.aggregate({
-    where: { 
-      userId, 
-      date: { gte: startOfMonth },
-      type: { in: ["EXPENSE", "SAVING"] } 
-    },
-    _sum: { amount: true }
+  const today = new Date();
+  
+  // Domyślne ramy czasowe to 1. do ostatniego dnia OBRCNEGO miesiąca
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+  // Zliczamy WYDANO -> Ale TYLKO wydatki, OMIJAMY przelewy na oszczędności (SAVING)
+  const monthlyExpenses = await prisma.expense.aggregate({
+    _sum: { amount: true },
+    where: {
+      userId: user.id,
+      date: { gte: startOfMonth, lte: endOfMonth },
+      type: "EXPENSE" // <--- KLUCZOWA POPRAWKA! 
+    }
   });
 
-  const incomes = await prisma.income.aggregate({
-    where: { userId, date: { gte: startOfMonth } },
-    _sum: { amount: true }
+  // Zliczamy transfery do oszczędności zrobione W TYM MIESIĄCU (by odjąć je od dostępnej puli)
+  const monthlySavingsTransfers = await prisma.expense.aggregate({
+    _sum: { amount: true },
+    where: {
+      userId: user.id,
+      date: { gte: startOfMonth, lte: endOfMonth },
+      type: "SAVING"
+    }
   });
 
-  const spent = expenses._sum.amount || 0;
-  const totalIncome = incomes._sum.amount || 0;
-  
+  const monthlyIncomes = await prisma.income.aggregate({
+    _sum: { amount: true },
+    where: {
+      userId: user.id,
+      date: { gte: startOfMonth, lte: endOfMonth }
+    }
+  });
+
+  const wydano = monthlyExpenses._sum.amount || 0;
+  const wplywy = monthlyIncomes._sum.amount || 0;
+  const odlozonoWTymMiesiacu = monthlySavingsTransfers._sum.amount || 0;
+
+  // Kwota wolna to wpływy MINUS to co wydałeś MINUS to co schowałeś do skarbonki
+  const kwotaWolna = wplywy - wydano - odlozonoWTymMiesiacu;
+
   return {
-    wydano: spent,
-    wplywy: totalIncome,
-    kwotaWolna: totalIncome - spent,
-    oszczednosci: user?.savings || 0,
+    kwotaWolna,
+    wydano, // Tutaj widnieją JUŻ TYLKO realne wydatki!
+    wplywy,
+    oszczednosci: user.savings // Całkowity stan skarbonki (z bazy)
   };
 }
 export async function getCalendarData() {
@@ -224,65 +245,62 @@ export async function addRecurringPayment(formData: FormData) {
   const dayOfMonth = parseInt(formData.get("dayOfMonth") as string);
   const rawCategoryId = formData.get("categoryId") as string;
   const endDateStr = formData.get("endDate") as string;
+  
   const totalAmountStr = formData.get("totalAmount") as string;
+  const remainingAmountStr = formData.get("remainingAmount") as string;
 
   const totalAmount = totalAmountStr ? parseFloat(totalAmountStr) : null;
+  const initialRemaining = remainingAmountStr ? parseFloat(remainingAmountStr) : totalAmount;
   const endDate = endDateStr ? new Date(endDateStr) : null;
 
   let categoryId = rawCategoryId !== "null" ? rawCategoryId : null;
 
-  // 1. INTELIGENTNE ZARZĄDZANIE KATEGORIĄ (jeśli użytkownik nie wybrał własnej)
   if (!categoryId) {
     const categoryName = totalAmount !== null ? "Raty" : "Subskrypcje";
     const categoryIcon = totalAmount !== null ? "🏦" : "🔄";
 
-    let category = await prisma.category.findFirst({
-      where: { userId, name: categoryName }
-    });
-
+    let category = await prisma.category.findFirst({ where: { userId, name: categoryName } });
     if (!category) {
-      category = await prisma.category.create({
-        data: { name: categoryName, icon: categoryIcon, userId }
-      });
+      category = await prisma.category.create({ data: { name: categoryName, icon: categoryIcon, userId } });
     }
     categoryId = category.id;
   }
 
-  // 2. TWORZYMY GŁÓWNE ZLECENIE
   const newRecurring = await prisma.recurringPayment.create({
     data: {
-      name,
-      defaultAmount,
-      dayOfMonth,
-      categoryId,
-      endDate,
-      totalAmount,
-      remainingAmount: totalAmount,
-      userId
+      name, defaultAmount, dayOfMonth, categoryId, endDate,
+      totalAmount, remainingAmount: initialRemaining, userId
     }
   });
 
-  // 3. GENEROWANIE 12 MIESIĘCY W PRZÓD Z TWOIM RECURRINGID
   const today = new Date();
   const MONTHS_TO_GENERATE = 12; 
-  
   const expensesToCreate = [];
-  let accumulated = 0; 
+  
+  let alreadyPaidBefore = totalAmount !== null ? (totalAmount - (initialRemaining || 0)) : 0;
+  let simulatedAccumulated = alreadyPaidBefore;
 
   for (let i = 0; i < MONTHS_TO_GENERATE; i++) {
-    const expenseDate = new Date(today.getFullYear(), today.getMonth() + i, dayOfMonth);
+    // NAPRAWA: Jeśli ustawisz ratę na 31. dnia, a miesiąc ma 28 dni (Luty),
+    // to "lastDayOfMonth" ustawi tę datę bezpiecznie na 28. lutego!
+    const targetYear = today.getFullYear();
+    const targetMonth = today.getMonth() + i;
     
-    // Sprawdzanie daty końcowej zlecenia
+    // Ustalanie ostatniego dnia danego miesiąca, aby zapobiec przerolowaniu na kolejny
+    const lastDayOfMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+    const finalDay = dayOfMonth > lastDayOfMonth ? lastDayOfMonth : dayOfMonth;
+
+    const expenseDate = new Date(targetYear, targetMonth, finalDay);
+    
     if (endDate && expenseDate > endDate) break;
 
     let amountForThisMonth = defaultAmount;
 
-    // Logika spłaty długu/rat
     if (totalAmount !== null) {
-      if (accumulated + defaultAmount > totalAmount) {
-        amountForThisMonth = totalAmount - accumulated;
+      if (simulatedAccumulated + defaultAmount > totalAmount) {
+        amountForThisMonth = totalAmount - simulatedAccumulated;
       }
-      accumulated += amountForThisMonth;
+      simulatedAccumulated += amountForThisMonth;
     }
 
     if (amountForThisMonth > 0) {
@@ -293,17 +311,15 @@ export async function addRecurringPayment(formData: FormData) {
         type: "EXPENSE",
         categoryId: categoryId, 
         userId: userId,
-        recurringId: newRecurring.id // <--- Używamy Twojej istniejącej nazwy pola
+        recurringId: newRecurring.id
       });
     }
 
-    if (totalAmount !== null && accumulated >= totalAmount) break;
+    if (totalAmount !== null && simulatedAccumulated >= totalAmount) break;
   }
 
   if (expensesToCreate.length > 0) {
-    await prisma.expense.createMany({
-      data: expensesToCreate
-    });
+    await prisma.expense.createMany({ data: expensesToCreate });
   }
 
   revalidatePath("/calendar");
@@ -320,6 +336,110 @@ export async function deleteRecurringPayment(formData: FormData) {
   });
 
   revalidatePath("/calendar/recurring");
+}
+
+// --- NADPŁATA KREDYTU / RATY ---
+export async function overpayRecurring(formData: FormData) {
+  const id = formData.get("id") as string;
+  const amount = parseFloat(formData.get("amount") as string);
+
+  if (!id || isNaN(amount) || amount <= 0) return;
+
+  const rec = await prisma.recurringPayment.findUnique({ where: { id } });
+  if (!rec || rec.totalAmount === null) return; // Upewniamy się, że to na pewno dług/rata
+
+  const today = new Date();
+
+  // 1. Zaksięguj nadpłatę jako wydatek w dniu dzisiejszym
+  await prisma.expense.create({
+    data: {
+      amount,
+      description: `${rec.name} (Nadpłata)`,
+      date: today,
+      type: "EXPENSE",
+      categoryId: rec.categoryId,
+      userId: rec.userId,
+      recurringId: rec.id
+    }
+  });
+
+  // 2. Oblicz nowe saldo i zaktualizuj zlecenie
+  const currentRemaining = rec.remainingAmount || 0;
+  const newRemaining = currentRemaining - amount;
+  
+  await prisma.recurringPayment.update({
+    where: { id },
+    data: { remainingAmount: newRemaining > 0 ? newRemaining : 0 }
+  });
+
+  // 3. Usuń wszystkie przyszłe, niezapłacone jeszcze raty (by zrobić miejsce na nowy, zaktualizowany harmonogram)
+  await prisma.expense.deleteMany({
+    where: {
+      recurringId: id,
+      date: { gt: today }
+    }
+  });
+
+  // Jeśli spłaciliśmy wszystko, kończymy pracę!
+  if (newRemaining <= 0) {
+    revalidatePath("/calendar");
+    revalidatePath("/calendar/recurring");
+    revalidatePath("/");
+    return;
+  }
+
+  // 4. Generuj nowy harmonogram na podstawie zaktualizowanego salda
+  const MONTHS_TO_GENERATE = 12;
+  const expensesToCreate = [];
+  let simulatedAccumulated = 0; // Ile nowego długu już zaplanowaliśmy
+
+  // Sprawdzamy, czy w tym miesiącu minął już dzień raty. Jeśli nie, to kolejna rata jest jeszcze w TYM miesiącu.
+  let startMonthOffset = today.getDate() < rec.dayOfMonth ? 0 : 1;
+
+  for (let i = 0; i < MONTHS_TO_GENERATE; i++) {
+    const targetYear = today.getFullYear();
+    const targetMonth = today.getMonth() + startMonthOffset + i;
+    
+    // Bezpieczne rolowanie dat (np. dla lutego)
+    const lastDayOfMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+    const finalDay = rec.dayOfMonth > lastDayOfMonth ? lastDayOfMonth : rec.dayOfMonth;
+
+    const expenseDate = new Date(targetYear, targetMonth, finalDay);
+    
+    if (rec.endDate && expenseDate > rec.endDate) break;
+
+    let amountForThisMonth = rec.defaultAmount;
+
+    // Sprawdzamy czy ta rata nie przekroczy już nowego salda
+    if (simulatedAccumulated + rec.defaultAmount > newRemaining) {
+      amountForThisMonth = newRemaining - simulatedAccumulated; // Rata wyrównująca
+    }
+    
+    simulatedAccumulated += amountForThisMonth;
+
+    if (amountForThisMonth > 0) {
+      expensesToCreate.push({
+        amount: amountForThisMonth,
+        description: rec.name,
+        date: expenseDate,
+        type: "EXPENSE",
+        categoryId: rec.categoryId, 
+        userId: rec.userId,
+        recurringId: rec.id
+      });
+    }
+
+    // Zatrzymujemy generowanie jeśli rozpisaliśmy całą resztę długu
+    if (simulatedAccumulated >= newRemaining) break;
+  }
+
+  if (expensesToCreate.length > 0) {
+    await prisma.expense.createMany({ data: expensesToCreate });
+  }
+
+  revalidatePath("/calendar");
+  revalidatePath("/calendar/recurring");
+  revalidatePath("/");
 }
 
 // --- WYRÓWNYWANIE SALDA (UZGODNIENIE) ---

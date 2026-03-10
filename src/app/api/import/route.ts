@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { categoryRules } from "@/lib/categoryRules"; // <-- Nasz nowy import
 
 const parseDateStr = (ds: string) => {
   if (!ds) return new Date();
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
     let defaultCategory = userCategories.find(c => c.name.toLowerCase() === "inne");
     if (!defaultCategory) {
       defaultCategory = await prisma.category.create({ data: { name: "Inne", icon: "❓", userId } });
+      userCategories.push(defaultCategory); // Zabezpieczenie, by tablica była aktualna
     }
 
     let importedCount = 0;
@@ -64,8 +66,6 @@ export async function POST(req: Request) {
       const isMainProduct = mainProducts.includes(currentProduct) || (mainProducts.length === 0 && currentProduct === "GŁÓWNE");
 
       // --- ŁAPANIE NAJNOWSZEGO SALDA ---
-      // Ponieważ plik leci od najnowszych (góra) do najstarszych (dół), 
-      // pierwsze napotkane saldo jest naszym "dzisiejszym" saldem.
       if (isMainProduct && finalMainBalance === null && !isNaN(rowSaldo)) {
         finalMainBalance = rowSaldo;
       }
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
 
       // --- ZAPISYWANIE TRANSAKCJI ---
       if (hasSavingsProduct && currentProduct === savingsProduct) {
-        // Konta oszczędnościowe pomijamy w dodawaniu do bazy (nie chcemy śmiecić na kalendarzu)
+        // Konta oszczędnościowe pomijamy w dodawaniu do bazy
         continue; 
       }
 
@@ -114,29 +114,43 @@ export async function POST(req: Request) {
           } else {
             let categoryId = defaultCategory.id;
             const textToSearch = (odbiorca + " " + opis).toLowerCase();
+
+            // Funkcja pomocnicza tworząca kategorię, jeśli nie istnieje
+            const getOrCreateCategory = async (name: string, icon: string) => {
+              let cat = userCategories.find(c => c.name.toLowerCase() === name.toLowerCase());
+              if (!cat) {
+                cat = await prisma.category.create({ data: { name, icon, userId } });
+                userCategories.push(cat); 
+              }
+              return cat.id;
+            };
             
-            if (textToSearch.includes('biedronka') || textToSearch.includes('lidl') || textToSearch.includes('zabka') || textToSearch.includes('żabka') || textToSearch.includes('kaufland') || textToSearch.includes('auchan')) {
-              const cat = userCategories.find(c => c.name.toLowerCase() === 'jedzenie');
-              if (cat) categoryId = cat.id;
-            } else if (textToSearch.includes('orlen') || textToSearch.includes('bp') || textToSearch.includes('shell') || textToSearch.includes('circle')) {
-              const cat = userCategories.find(c => c.name.toLowerCase() === 'transport');
-              if (cat) categoryId = cat.id;
-            } else if (textToSearch.includes('netflix') || textToSearch.includes('spotify') || textToSearch.includes('steam') || textToSearch.includes('kino')) {
-              const cat = userCategories.find(c => c.name.toLowerCase() === 'rozrywka');
-              if (cat) categoryId = cat.id;
+            // SZUKANIE KATEGORII NA PODSTAWIE REGUŁ
+            for (const rule of categoryRules) {
+              const regex = new RegExp(rule.keywords.join('|'), 'i');
+              if (regex.test(textToSearch)) {
+                categoryId = await getOrCreateCategory(rule.name, rule.icon);
+                break; 
+              }
             }
 
+            // Dodanie wydatku z już poprawną (znalezioną lub nową) kategorią
             await prisma.expense.create({
               data: {
-                amount: absAmount, description: opis, recipient: odbiorca,
-                bankTransactionType: typ, date, categoryId, userId
+                amount: absAmount, 
+                description: opis, 
+                recipient: odbiorca,
+                bankTransactionType: typ, 
+                date, 
+                categoryId, 
+                userId
               }
             });
           }
-          importedCount++;
+          importedCount++; // Ten licznik musiał tu zostać i to on mógł powodować błędy przy ręcznym kopiowaniu
         }
       }
-    }
+    } // <-- TUTAJ KOŃCZY SIĘ GŁÓWNA PĘTLA FOR DLA TRANSAKCJI
 
     // =========================================================
     // ETAP 2: AUTOMATYCZNE WYRÓWNYWANIE SALDA (MAGIA)
@@ -152,7 +166,6 @@ export async function POST(req: Request) {
 
     // 2. Wyrównujemy konto główne (Kwota Wolna)
     if (finalMainBalance !== null) {
-      // Obliczamy ile apka uważa, że mamy teraz na koncie w obecnym miesiącu
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
