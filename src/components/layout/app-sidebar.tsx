@@ -6,7 +6,7 @@ import { useState } from "react";
 import { 
   LayoutDashboard, ArrowRightLeft, PieChart, 
   LogOut, CalendarDays, PiggyBank, Repeat, ChevronDown, Wallet, LineChart, Settings, 
-  Briefcase, Clock, Activity, Droplet, Dumbbell, Scale, User, Heart, Archive
+  Briefcase, Clock, Activity, Droplet, Dumbbell, Scale, User, Heart, Archive, CarFront
 } from "lucide-react";
 
 // Samodzielne, najważniejsze linki na samej górze
@@ -33,6 +33,7 @@ const navGroups = [
     ],
     items: [
       { name: "Umowy i Gwarancje", href: "/drawer", icon: Archive },
+      { name: "Garaż", href: "/garage", icon: CarFront },
     ]
   },
   {

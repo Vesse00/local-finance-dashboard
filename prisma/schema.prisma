@@ -27,6 +27,7 @@ model User {
   healthDays  HealthDay[] // Relacja do logów zdrowotnych
   healthEntries HealthEntry[] // Relacja do pojedynczych posiłków i treningów
   drawerItems DrawerItem[] // Relacja do cyfrowej szuflady
+  cars         Car[]        // Relacja do Garażu
 }
 
 // Tabela na wpływy
@@ -211,6 +212,47 @@ model DrawerItem {
 
   userId       String
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt    DateTime @default(now())
+}
+
+// ==========================================
+// MODUŁ GARAŻ (Zarządzanie samochodami)
+// ==========================================
+
+model Car {
+  id           String     @id @default(uuid())
+  make         String     // Marka (np. Toyota)
+  model        String     // Model (np. Yaris)
+  plate        String?    // Numer rejestracyjny
+  year         Int?       // Rok produkcji
+  
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  events       CarEvent[] // Historia serwisowa i opłaty
+  
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model CarEvent {
+  id           String   @id @default(uuid())
+  type         String   // "INSURANCE" (OC/AC), "INSPECTION" (Przegląd), "OIL" (Olej), "REPAIR" (Naprawa)
+  date         DateTime // Data wykonania
+  nextDueDate  DateTime? // Kiedy następny raz? (Ważność OC / Kolejny przegląd)
+  nextDueMileage Int?      // NOWOŚĆ: Limit kilometrów na kolejny serwis
+  
+  cost         Float?   // Koszt usługi
+  description  String?  // Opis (np. "Wymiana klocków przód")
+
+  
+  mileage      Int?     // Stan licznika (przebieg)
+  liters       Float?   // Ilość zatankowanego paliwa (L)
+  pricePerLiter Float?  // Cena za litr (PLN)
+  
+  carId        String
+  car          Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
   
   createdAt    DateTime @default(now())
 }

@@ -6,7 +6,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   Menu, X, LayoutDashboard, LineChart, Wallet, CalendarDays, Repeat, PiggyBank, 
-  ArrowRightLeft, Briefcase, Clock, User, Heart, Dumbbell, Scale, Archive, Settings, LogOut, ChevronDown 
+  ArrowRightLeft, Briefcase, Clock, User, Heart, Dumbbell, Scale, Archive, Settings, LogOut, ChevronDown, 
+  CarFront
 } from "lucide-react";
 
 const topItems = [
@@ -31,6 +32,7 @@ const navGroups = [
     ],
     items: [
       { name: "Umowy i Gwarancje", href: "/drawer", icon: Archive },
+      { name: "Garaż", href: "/garage", icon: CarFront },
     ]
   },
   {
