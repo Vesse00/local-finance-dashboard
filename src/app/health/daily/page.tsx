@@ -230,7 +230,7 @@ export default function DailyHealthPage() {
                     {isCurrentMonth && (
                       <div 
                         onClick={(e) => openAddModal(date, e)}
-                        className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white opacity-0 shadow-lg transition-all transform scale-90 group-hover:opacity-100 group-hover:scale-100 z-10"
+                        className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white opacity-0 shadow-lg transition-all transform scale-90 opacity-100 md:opacity-0 md:group-hover:opacity-100 group-hover:scale-100 z-10"
                       >
                         <Plus className="w-4 h-4" />
                       </div>

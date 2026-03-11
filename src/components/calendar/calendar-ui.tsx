@@ -168,7 +168,7 @@ export function CalendarUI({ expenses, incomes, categories }: CalendarUIProps) {
                 {isCurrentMonth && (
                   <button 
                     onClick={(e) => handleAddExpense(e, date)}
-                    className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white opacity-0 shadow-lg transition-all transform scale-90 group-hover:opacity-100 group-hover:scale-100 hover:bg-primary/80 z-10"
+                    className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white opacity-0 shadow-lg transition-all transform scale-90 opacity-100 md:opacity-0 md:group-hover:opacity-100 group-hover:scale-100 hover:bg-primary/80 z-10"
                   >
                     +
                   </button>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Moon, Sun, Bell, Sparkles } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { MobileNav } from "./mobile-nav";
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
@@ -20,6 +21,7 @@ export function Navbar() {
         
         {/* Lewa strona - Logo i powitanie */}
         <div className="flex items-center gap-4">
+          <MobileNav />
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-purple-600 shadow-lg shadow-primary/20">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
