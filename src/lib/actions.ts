@@ -10,6 +10,12 @@ const getUserId = async (): Promise<string> => {
   return user.id;
 };
 
+// PANCERNA TARCZA: Konwertuje wszystko co Prisma wypluje, włączając w to BigInty
+const safeSerialize = (data: any) => 
+  JSON.parse(JSON.stringify(data, (key, value) => 
+    typeof value === 'bigint' ? value.toString() : value
+  ));
+
 export async function addExpense(formData: FormData) {
   const amount = parseFloat(formData.get("amount") as string);
   const description = formData.get("description") as string;
@@ -130,14 +136,14 @@ export async function getDashboardStats() {
   const odlozonoWTymMiesiacu = monthlySavingsTransfers._sum.amount || 0;
 
   // Kwota wolna to wpływy MINUS to co wydałeś MINUS to co schowałeś do skarbonki
-  const kwotaWolna = wplywy - wydano - odlozonoWTymMiesiacu;
+  const kwotaWolna = (wplywy as number) - (wydano as number) - (odlozonoWTymMiesiacu as number);
 
-  return {
+  return safeSerialize({
     kwotaWolna,
     wydano, // Tutaj widnieją JUŻ TYLKO realne wydatki!
     wplywy,
     oszczednosci: user.savings // Całkowity stan skarbonki (z bazy)
-  };
+  });
 }
 export async function getCalendarData() {
   const userId = await getUserId();
@@ -159,7 +165,7 @@ export async function getCalendarData() {
     orderBy: { name: 'asc' }
   });
   
-  return { expenses, incomes, categories };
+  return safeSerialize({ expenses, incomes, categories });
 }
 // Tworzenie nowej kategorii
 export async function createCategory(formData: FormData) {

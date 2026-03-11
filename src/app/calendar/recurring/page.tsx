@@ -3,6 +3,11 @@ import { RecurringUI } from "@/components/calendar/recurring-ui";
 
 export const dynamic = "force-dynamic";
 
+const safeSerialize = (data: any) => 
+  JSON.parse(JSON.stringify(data, (key, value) => 
+    typeof value === 'bigint' ? value.toString() : value
+  ));
+
 export default async function RecurringPage() {
   const user = await prisma.user.findFirst();
   if (!user) return null;
@@ -20,5 +25,5 @@ export default async function RecurringPage() {
     orderBy: { name: 'asc' }
   });
 
-  return <RecurringUI recurrings={recurrings} categories={categories} />;
+  return <RecurringUI recurrings={safeSerialize(recurrings)} categories={safeSerialize(categories)} />;
 }

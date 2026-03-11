@@ -7,6 +7,12 @@ import { HealthAnalysis } from "@/components/analysis/health-analysis";
 
 export const dynamic = "force-dynamic";
 
+// TARCZA NA BIGINT
+const safeSerialize = (data: any) => 
+  JSON.parse(JSON.stringify(data, (key, value) => 
+    typeof value === 'bigint' ? value.toString() : value
+  ));
+
 export default async function AnalysisPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const user = await prisma.user.findFirst();
   if (!user) return null;
@@ -36,7 +42,6 @@ export default async function AnalysisPage({ searchParams }: { searchParams: Pro
       orderBy: { date: 'asc' }
     });
   } else if (activeTab === "health") {
-    // Pobieramy obie tabele zdrowotne
     healthDays = await prisma.healthDay.findMany({
       where: { userId: user.id },
       orderBy: { date: 'asc' }
@@ -50,7 +55,6 @@ export default async function AnalysisPage({ searchParams }: { searchParams: Pro
   return (
     <div className="flex-1 p-6 md:p-8 space-y-8">
       
-      {/* NAGŁÓWEK */}
       <div className="flex flex-col gap-6">
         <h1 className="text-3xl font-bold flex items-center gap-3 text-zinc-900 dark:text-white">
           <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-500">
@@ -66,10 +70,9 @@ export default async function AnalysisPage({ searchParams }: { searchParams: Pro
         </div>
       </div>
 
-      {/* RENDEROWANIE MODUŁÓW */}
-      {activeTab === "finances" && <FinanceAnalysis expenses={expenses} incomes={incomes} baseCurrency="PLN" />}
-      {activeTab === "time" && <TimeAnalysis workDays={workDays} />}
-      {activeTab === "health" && <HealthAnalysis healthDays={healthDays} healthEntries={healthEntries} />}
+      {activeTab === "finances" && <FinanceAnalysis expenses={safeSerialize(expenses)} incomes={safeSerialize(incomes)} baseCurrency="PLN" />}
+      {activeTab === "time" && <TimeAnalysis workDays={safeSerialize(workDays)} />}
+      {activeTab === "health" && <HealthAnalysis healthDays={safeSerialize(healthDays)} healthEntries={safeSerialize(healthEntries)} />}
 
     </div>
   );
