@@ -1,81 +1,261 @@
-import { prisma } from "@/lib/db";
-import { PiggyBank, ArrowRightLeft } from "lucide-react";
-import { format } from "date-fns";
-import { pl } from "date-fns/locale";
+"use client";
+
+import { useState, useEffect } from "react";
+import { PiggyBank, Briefcase, Building, ChevronRight, Plus, Landmark, X, Trash2 } from "lucide-react";
 import { TransferUI } from "@/components/savings/transfer-ui";
+import Link from "next/link";
 
-export const dynamic = "force-dynamic";
+export default function SavingsPage() {
+  const [mainSavings, setMainSavings] = useState(0);
+  const [subAccounts, setSubAccounts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function SavingsPage() {
-  const user = await prisma.user.findFirst();
-  if (!user) return null;
+  // Modal dodawania subkonta
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newAccount, setNewAccount] = useState({ name: "", balance: "", type: "SAVINGS" });
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const savingHistory = await prisma.expense.findMany({
-    where: { userId: user.id, type: "SAVING" },
-    orderBy: { date: 'desc' }
-  });
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/savings");
+      if (res.ok) {
+        const data = await res.json();
+        setMainSavings(data.mainSavings || 0); 
+        setSubAccounts(data.accounts || []);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const handleAddAccount = async () => {
+    setErrorMessage("");
+    try {
+      const res = await fetch("/api/savings", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newAccount.name || (newAccount.type === "IKE" ? "Konto IKE" : newAccount.type === "IKZE" ? "Konto IKZE" : "Dodatkowe oszczędności"),
+          balance: newAccount.balance || "0",
+          type: newAccount.type
+        })
+      });
+      
+      if (res.ok) {
+        setIsAddModalOpen(false);
+        setNewAccount({ name: "", balance: "", type: "SAVINGS" });
+        fetchData();
+      } else {
+        const err = await res.json();
+        setErrorMessage(err.error || "Wystąpił błąd");
+      }
+    } catch (err) { 
+      setErrorMessage("Błąd połączenia z serwerem.");
+    }
+  };
+
+  const handleDeleteAccount = async (id: string, name: string, balance: number) => {
+    const msg = balance > 0 
+      ? `Czy na pewno chcesz usunąć portfel "${name}"?\n\nUWAGA: Znajduje się na nim ${balance.toFixed(2)} PLN. Zostaną one automatycznie przelane do Twojego Głównego Portfela (jako wpływ) i będą dostępne w kalendarzu.`
+      : `Czy na pewno chcesz usunąć portfel "${name}"?`;
+      
+    if (!confirm(msg)) return;
+    
+    try {
+      const res = await fetch("/api/savings", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      });
+      if (res.ok) fetchData(); 
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const totalSavings = mainSavings + subAccounts.reduce((acc, curr) => acc + curr.balance, 0);
+
+  const getAccountIcon = (type: string) => {
+    if (type === "IKE") return <Briefcase className="w-8 h-8 text-blue-500" />;
+    if (type === "IKZE") return <Building className="w-8 h-8 text-purple-500" />;
+    return <PiggyBank className="w-8 h-8 text-emerald-500" />;
+  };
+
+  const getAccountColor = (type: string) => {
+    if (type === "IKE") return "from-blue-500/20 to-blue-500/5 border-blue-500/30";
+    if (type === "IKZE") return "from-purple-500/20 to-purple-500/5 border-purple-500/30";
+    return "from-emerald-500/20 to-emerald-500/5 border-emerald-500/30";
+  };
+
+  // Logika blokowania przycisków
+  const hasIKE = subAccounts.some(acc => acc.type === "IKE");
+  const hasIKZE = subAccounts.some(acc => acc.type === "IKZE");
 
   return (
-    <div className="flex-1 p-6 md:p-8 space-y-8">
+    <div className="flex-1 p-6 md:p-8 space-y-8 max-w-7xl mx-auto w-full">
+      {/* NAGŁÓWEK */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 p-8 rounded-3xl border border-blue-500/20 bg-blue-500/5 backdrop-blur-xl relative overflow-hidden">
         <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-500 opacity-20 blur-[80px] pointer-events-none"></div>
         
         <div>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-3 rounded-2xl bg-blue-500/20 text-blue-600 dark:text-blue-400">
-              <PiggyBank className="w-6 h-6" />
+              <Landmark className="w-6 h-6" />
             </div>
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Moje Oszczędności</h2>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Centrum Oszczędności</h2>
           </div>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-sm mt-2">
-            Pieniądze przeniesione z konta głównego, odłożona "reszta" z miesiąca oraz saldo kont oszczędnościowych.
+            Pieniądze przeniesione z konta głównego, odłożona "reszta" z miesiąca oraz saldo subkont oszczędnościowych.
           </p>
         </div>
 
         <div className="flex flex-col items-center md:items-end gap-4 z-10">
-          <div className="text-5xl md:text-6xl font-extrabold tracking-tight text-blue-600 dark:text-blue-400">
-            {user.savings.toLocaleString("pl-PL", { style: "currency", currency: "PLN" })}
+          <div className="text-4xl md:text-5xl font-extrabold tracking-tight text-blue-600 dark:text-blue-400">
+            {totalSavings.toLocaleString("pl-PL", { style: "currency", currency: "PLN" })}
           </div>
-          {/* Używamy naszego TransferUI */}
-          <TransferUI />
+          <div className="flex gap-2">
+            <button onClick={() => { setErrorMessage(""); setIsAddModalOpen(true); }} className="px-4 py-3 bg-white/50 dark:bg-black/30 hover:bg-white/80 dark:hover:bg-black/50 rounded-xl font-bold text-sm text-zinc-700 dark:text-zinc-300 transition-colors flex items-center gap-2 border border-black/5 dark:border-white/5 shadow-sm">
+              <Plus className="w-4 h-4" /> Nowe Subkonto
+            </button>
+            <TransferUI onTransferComplete={fetchData} />
+          </div>
         </div>
       </div>
 
-      {/* HISTORIA ODKŁADANIA (Bez zmian) */}
+      {/* KARUZELA KONT */}
       <div>
-        <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-zinc-900 dark:text-white">
-          <ArrowRightLeft className="w-5 h-5 text-zinc-400" /> Historia odkładania
-        </h3>
+        <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+          Twoje Portfele <ChevronRight className="w-5 h-5 text-zinc-400" />
+        </h2>
         
-        <div className="space-y-3">
-          {savingHistory.length === 0 ? (
-            <div className="text-center py-8 text-zinc-500 bg-white/30 dark:bg-black/20 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700">
-              Jeszcze nic nie odłożono.
-            </div>
+        <div className="flex overflow-x-auto pb-6 -mx-4 px-4 snap-x snap-mandatory hide-scrollbar gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:overflow-visible md:pb-0 md:px-0 md:mx-0">
+          {loading ? (
+            <div className="min-w-[280px] w-full h-40 bg-zinc-100 dark:bg-zinc-900 rounded-3xl animate-pulse"></div>
           ) : (
-            savingHistory.map(saving => (
-              <div key={saving.id} className="flex items-center justify-between p-4 rounded-2xl border border-black/5 dark:border-white/5 bg-white/60 dark:bg-black/40 backdrop-blur-md">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
-                    <PiggyBank className="w-5 h-5" />
+            <>
+              {/* KAFELEK: GŁÓWNE OSZCZĘDNOŚCI */}
+              <Link href="/savings/main" className="snap-center block min-w-[280px] w-full bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/30 backdrop-blur-xl rounded-3xl p-6 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300 group cursor-pointer">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="bg-white/80 dark:bg-black/50 p-3 rounded-2xl backdrop-blur-md shadow-sm">
+                    <PiggyBank className="w-8 h-8 text-blue-500" />
+                  </div>
+                  <span className="px-3 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
+                    GŁÓWNE
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-600 dark:text-zinc-400 mb-1">Główne Oszczędności</h3>
+                  <p className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{mainSavings.toFixed(2)} <span className="text-lg font-bold opacity-50">PLN</span></p>
+                </div>
+              </Link>
+
+              {/* KAFELKI: POZOSTAŁE SUBKONTA */}
+              {subAccounts.map(acc => (
+                <Link href={`/savings/${acc.id}`} key={acc.id} className={`snap-center block min-w-[280px] w-full bg-gradient-to-br ${getAccountColor(acc.type)} backdrop-blur-xl border rounded-3xl p-6 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300 relative group cursor-pointer`}>
+                  
+                  <button 
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteAccount(acc.id, acc.name, acc.balance); }}
+                    className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 z-10"
+                    title="Usuń to subkonto"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-white/80 dark:bg-black/50 p-3 rounded-2xl backdrop-blur-md shadow-sm">
+                        {getAccountIcon(acc.type)}
+                      </div>
+                      <span className="px-3 py-1 bg-white/50 dark:bg-black/30 rounded-lg text-xs font-bold uppercase tracking-wider backdrop-blur-sm text-zinc-800 dark:text-white">
+                        {acc.type}
+                      </span>
+                    </div>
                   </div>
                   <div>
-                    <p className="font-semibold text-zinc-900 dark:text-white">
-                      {saving.description || saving.recipient || "Transfer do oszczędności"}
-                    </p>
-                    <p className="text-xs text-zinc-500">
-                      {format(new Date(saving.date), 'dd MMMM yyyy', { locale: pl })}
-                    </p>
+                    <h3 className="text-sm font-bold text-zinc-600 dark:text-zinc-400 mb-1 pr-8 truncate">{acc.name}</h3>
+                    <p className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{acc.balance.toFixed(2)} <span className="text-lg font-bold opacity-50">PLN</span></p>
                   </div>
-                </div>
-                <div className="font-bold text-blue-600 dark:text-blue-400">
-                  +{saving.amount.toLocaleString("pl-PL", { style: "currency", currency: "PLN" })}
-                </div>
-              </div>
-            ))
+                </Link>
+              ))}
+            </>
           )}
         </div>
       </div>
+
+      {/* MODAL DODAWANIA SUBKONTA */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-950 w-full max-w-md rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-in zoom-in-95">
+            <div className="p-6 border-b border-zinc-100 dark:border-zinc-900 flex justify-between items-center">
+              <h3 className="font-bold text-lg text-zinc-900 dark:text-white">Nowy Portfel</h3>
+              <button onClick={() => setIsAddModalOpen(false)} className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-white"><X className="w-5 h-5" /></button>
+            </div>
+            
+            <div className="p-6 space-y-5">
+              
+              {errorMessage && (
+                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm font-bold text-center">
+                  {errorMessage}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-zinc-500 uppercase">Rodzaj konta</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button 
+                    onClick={() => setNewAccount({...newAccount, type: "SAVINGS"})} 
+                    className={`p-3 rounded-xl flex flex-col items-center gap-2 border-2 transition-all ${newAccount.type === "SAVINGS" ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900"}`}
+                  >
+                    <PiggyBank className="w-6 h-6" /><span className="text-[10px] font-bold">Standard</span>
+                  </button>
+                  
+                  {/* IKE (z opcją zablokowania) */}
+                  <button 
+                    onClick={() => !hasIKE && setNewAccount({...newAccount, type: "IKE"})} 
+                    disabled={hasIKE}
+                    className={`p-3 rounded-xl flex flex-col items-center gap-2 border-2 transition-all ${hasIKE ? "opacity-40 cursor-not-allowed border-zinc-200 dark:border-zinc-800 text-zinc-400 bg-zinc-50 dark:bg-zinc-900" : newAccount.type === "IKE" ? "border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900"}`}
+                  >
+                    <Briefcase className="w-6 h-6" /><span className="text-[10px] font-bold">IKE</span>
+                  </button>
+
+                  {/* IKZE (z opcją zablokowania) */}
+                  <button 
+                    onClick={() => !hasIKZE && setNewAccount({...newAccount, type: "IKZE"})} 
+                    disabled={hasIKZE}
+                    className={`p-3 rounded-xl flex flex-col items-center gap-2 border-2 transition-all ${hasIKZE ? "opacity-40 cursor-not-allowed border-zinc-200 dark:border-zinc-800 text-zinc-400 bg-zinc-50 dark:bg-zinc-900" : newAccount.type === "IKZE" ? "border-purple-500 bg-purple-500/10 text-purple-600 dark:text-purple-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900"}`}
+                  >
+                    <Building className="w-6 h-6" /><span className="text-[10px] font-bold">IKZE</span>
+                  </button>
+                </div>
+                {(hasIKE || hasIKZE) && (
+                   <p className="text-[10px] text-zinc-400 mt-1">Zgodnie z ustawą, możesz posiadać tylko jedno konto IKE oraz jedno IKZE.</p>
+                )}
+              </div>
+              <div className="space-y-2 pt-2">
+                <label className="text-xs font-bold text-zinc-500 uppercase">Nazwa konta (Opcjonalna)</label>
+                <input type="text" value={newAccount.name} onChange={e => setNewAccount({...newAccount, name: e.target.value})} className="w-full p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl outline-none focus:border-blue-500 font-medium" placeholder={newAccount.type === "IKE" ? "np. IKE mBank" : newAccount.type === "IKZE" ? "np. IKZE w XTB" : "np. Poduszka Finansowa"} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-zinc-500 uppercase">Początkowe saldo (PLN)</label>
+                <input type="number" step="0.01" value={newAccount.balance} onChange={e => setNewAccount({...newAccount, balance: e.target.value})} className="w-full p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl outline-none focus:border-blue-500 font-mono text-xl font-bold" placeholder="0.00" />
+              </div>
+            </div>
+            <div className="p-4 bg-zinc-50 dark:bg-zinc-900/50 flex gap-3 border-t border-zinc-100 dark:border-zinc-900">
+              <button onClick={() => setIsAddModalOpen(false)} className="flex-1 py-3 px-4 rounded-xl font-bold border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Anuluj</button>
+              <button onClick={handleAddAccount} className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20">Utwórz konto</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Globalne ukrycie scrollbara */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}} />
     </div>
   );
 }

@@ -5,11 +5,15 @@ import { createPortal } from "react-dom";
 import { ArrowRightLeft, X } from "lucide-react";
 import { TransferForm } from "@/components/calendar/transfer-form";
 
-export function TransferUI() {
+interface TransferUIProps {
+  onTransferComplete?: () => void;
+}
+
+export function TransferUI({ onTransferComplete }: TransferUIProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Upewniamy się, że komponent renderuje portal dopiero po stronie klienta (w przeglądarce)
+  // Upewniamy się, że komponent renderuje portal dopiero po stronie klienta
   useEffect(() => setMounted(true), []);
 
   // Blokowanie scrollowania strony gdy modal jest otwarty
@@ -31,15 +35,18 @@ export function TransferUI() {
         </button>
         
         <h3 className="text-xl font-bold mb-1 flex items-center gap-2 text-zinc-900 dark:text-white">
-          <ArrowRightLeft className="w-5 h-5 text-blue-500" /> Transfer środków
+          <ArrowRightLeft className="w-5 h-5 text-indigo-500" /> Transfer środków
         </h3>
         <p className="text-sm text-zinc-500 mb-6">Szybkie przesunięcie pieniędzy między kontami</p>
 
-        {/* Wstrzykujemy czysty formularz z domyślnym Oszczędności -> Portfel */}
+        {/* Wstrzykujemy formularz i po sukcesie wywołujemy odświeżenie danych */}
         <TransferForm 
-          onSuccess={() => setIsModalOpen(false)} 
-          defaultFrom="SAVINGS" 
-          defaultTo="MAIN" 
+          onSuccess={() => {
+            setIsModalOpen(false);
+            if (onTransferComplete) onTransferComplete();
+          }} 
+          defaultFrom="MAIN" 
+          defaultTo="SAVINGS" 
         />
 
       </div>
@@ -50,9 +57,9 @@ export function TransferUI() {
     <>
       <button 
         onClick={() => setIsModalOpen(true)}
-        className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+        className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-sm transition-all shadow-lg shadow-indigo-500/20 active:scale-95"
       >
-        <ArrowRightLeft className="w-5 h-5" />
+        <ArrowRightLeft className="w-4 h-4" />
         Transfer środków
       </button>
 

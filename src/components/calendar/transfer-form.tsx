@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 
 interface TransferFormProps {
   defaultDate?: Date | null;
@@ -14,9 +14,19 @@ interface TransferFormProps {
 export function TransferForm({ defaultDate, onSuccess, defaultFrom = "MAIN", defaultTo = "SAVINGS" }: TransferFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [accounts, setAccounts] = useState<any[]>([]);
   
   const [fromAccount, setFromAccount] = useState(defaultFrom);
   const [toAccount, setToAccount] = useState(defaultTo);
+
+  useEffect(() => {
+    fetch("/api/savings")
+      .then(res => res.json())
+      .then(data => {
+        if (data.accounts) setAccounts(data.accounts);
+      })
+      .catch(err => console.error(err));
+  }, []);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,7 +49,6 @@ export function TransferForm({ defaultDate, onSuccess, defaultFrom = "MAIN", def
         router.refresh(); 
         onSuccess();
       } catch (error: any) {
-        console.error(error);
         alert("Wystąpił błąd. Spróbuj ponownie.");
       }
     });
@@ -48,42 +57,83 @@ export function TransferForm({ defaultDate, onSuccess, defaultFrom = "MAIN", def
   const isSameAccount = fromAccount === toAccount;
 
   return (
-    <form className="space-y-4 animate-in fade-in duration-300" onSubmit={handleSubmit}>
+    <form className="space-y-6 animate-in fade-in duration-300" onSubmit={handleSubmit}>
       <input type="hidden" name="date" value={defaultDate?.toISOString() || new Date().toISOString()} />
       
-      {/* SELEKCJA KONT */}
-      <div className="flex items-center gap-2 bg-black/5 dark:bg-white/5 p-3 rounded-2xl border border-black/5 dark:border-white/5">
-        <div className="flex-1">
-          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-zinc-500">Z konta</label>
-          <select value={fromAccount} onChange={(e) => setFromAccount(e.target.value)} className="w-full bg-transparent outline-none font-semibold text-sm text-zinc-900 dark:text-white cursor-pointer">
-            <option value="MAIN" className="bg-white dark:bg-zinc-900">Portfel</option>
-            <option value="SAVINGS" className="bg-white dark:bg-zinc-900">Oszczędności</option>
-            <option value="INVESTMENTS" disabled className="bg-white dark:bg-zinc-900 text-zinc-400">Inwestycje</option>
-            <option value="CURRENCY" disabled className="bg-white dark:bg-zinc-900 text-zinc-400">Walutowe</option>
+      {/* SEKCJA KONT (PIONOWA WIEŻA Z NAKŁADAJĄCĄ SIĘ STRZAŁKĄ) */}
+      <div className="relative space-y-3">
+        
+        {/* Z KONTA */}
+        <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm focus-within:border-indigo-500 transition-colors relative z-0">
+          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-zinc-500">Z konta</label>
+          <select 
+            value={fromAccount} 
+            onChange={(e) => setFromAccount(e.target.value)} 
+            className="w-full bg-transparent outline-none font-bold text-zinc-900 dark:text-white cursor-pointer appearance-none"
+          >
+            <option value="MAIN" className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900">Portfel Główny (Dostępne środki)</option>
+            <option value="SAVINGS" className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900">Główne Oszczędności</option>
+            {accounts.length > 0 && (
+              <optgroup label="Subkonta oszczędnościowe" className="text-zinc-500 bg-zinc-100 dark:bg-zinc-800 font-semibold">
+                {accounts.map(acc => (
+                  <option key={acc.id} value={acc.id} className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900 font-bold">
+                    {acc.name} ({acc.type})
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
         </div>
         
-        <div className="flex items-center justify-center text-zinc-400 bg-white dark:bg-zinc-800 p-1.5 rounded-full shadow-sm">
-           <ArrowRight className="w-4 h-4" />
+        {/* ELEGANCKI ODDZIELACZ (KÓŁKO NA ŚRODKU) */}
+        <div className="absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-full flex items-center justify-center z-10 shadow-sm text-zinc-400 pointer-events-none">
+           <ArrowDown className="w-4 h-4" />
         </div>
 
-        <div className="flex-1 text-right">
-          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 text-zinc-500">Na konto</label>
-          <select value={toAccount} onChange={(e) => setToAccount(e.target.value)} className="w-full bg-transparent outline-none font-semibold text-sm text-zinc-900 dark:text-white cursor-pointer appearance-none" style={{ textAlignLast: 'right' }}>
-            <option value="MAIN" className="bg-white dark:bg-zinc-900 text-left">Portfel</option>
-            <option value="SAVINGS" className="bg-white dark:bg-zinc-900 text-left">Oszczędności</option>
-            <option value="INVESTMENTS" disabled className="bg-white dark:bg-zinc-900 text-zinc-400 text-left">Inwestycje</option>
-            <option value="CURRENCY" disabled className="bg-white dark:bg-zinc-900 text-zinc-400 text-left">Walutowe</option>
+        {/* NA KONTO */}
+        <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm focus-within:border-indigo-500 transition-colors relative z-0">
+          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-zinc-500">Na konto</label>
+          <select 
+            value={toAccount} 
+            onChange={(e) => setToAccount(e.target.value)} 
+            className="w-full bg-transparent outline-none font-bold text-zinc-900 dark:text-white cursor-pointer appearance-none"
+          >
+            <option value="MAIN" className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900">Portfel Główny (Dostępne środki)</option>
+            <option value="SAVINGS" className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900">Główne Oszczędności</option>
+            {accounts.length > 0 && (
+              <optgroup label="Subkonta oszczędnościowe" className="text-zinc-500 bg-zinc-100 dark:bg-zinc-800 font-semibold">
+                {accounts.map(acc => (
+                  <option key={acc.id} value={acc.id} className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900 font-bold">
+                    {acc.name} ({acc.type})
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
         </div>
       </div>
 
-      <div className="pt-2">
-        <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Przesuwana kwota (PLN)</label>
-        <input name="amount" type="number" step="0.01" placeholder="np. 500" className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-zinc-900 dark:text-white text-lg font-bold" required />
+      {/* POLE KWOTY */}
+      <div>
+        <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 text-zinc-500 ml-1">Przesuwana kwota (PLN)</label>
+        <div className="relative">
+          <input 
+            name="amount" 
+            type="number" 
+            step="0.01" 
+            placeholder="0.00" 
+            className="w-full rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-4 pr-12 outline-none focus:border-indigo-500 transition-all text-zinc-900 dark:text-white text-2xl font-black text-center shadow-sm" 
+            required 
+          />
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">PLN</span>
+        </div>
       </div>
 
-      <button type="submit" disabled={isPending || isSameAccount} className="w-full mt-4 rounded-xl py-3 text-white font-semibold shadow-lg transition-all hover:brightness-110 disabled:opacity-50 bg-blue-600 shadow-blue-600/20">
+      <button 
+        type="submit" 
+        disabled={isPending || isSameAccount} 
+        className="w-full rounded-2xl py-4 text-white font-bold shadow-lg transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed bg-indigo-500 shadow-indigo-500/20"
+      >
         {isPending ? "Przetwarzanie..." : isSameAccount ? "Wybierz różne konta" : "Wykonaj transfer"}
       </button>
     </form>
