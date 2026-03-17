@@ -1,35 +1,29 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Navbar } from "./navbar";
 import { AppSidebar } from "./app-sidebar";
+import { Navbar } from "./navbar";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
-  // Sprawdzamy, czy jesteśmy na stronach autoryzacji
-  const isAuthPage = pathname === "/login" || pathname === "/register";
+  // Lista stron, które NIE MAJĄ mieć paska bocznego ani nawigacji (strony publiczne/auth)
+  const authRoutes = ["/login", "/register", "/forgot-password", "/reset-password"];
+  const isAuthRoute = authRoutes.includes(pathname);
 
-  // Jeśli to logowanie/rejestracja, renderujemy czystą stronę
-  if (isAuthPage) {
+  // Jeśli to strona logowania, rejestracji lub resetu - pokazujemy tylko czystą zawartość
+  if (isAuthRoute) {
     return <main className="min-h-screen bg-background">{children}</main>;
   }
 
-  // Jeśli to dashboard, renderujemy pełny układ z Sidebar i Navbar
+  // W przeciwnym razie pokazujemy pełny Dashboard z menu
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Pasek boczny (Sidebar) - ukryty na małych ekranach */}
       <AppSidebar />
-      
-      {/* Główna sekcja (Navbar + Treść) */}
-      <div className="flex flex-col flex-1 overflow-hidden relative">
+      <div className="flex-1 flex flex-col overflow-hidden relative">
         <Navbar />
-        
-        {/* Kontener na treść strony (np. wykresy, statystyki) */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden relative">
-          <div className="mx-auto max-w-7xl w-full">
-            {children}
-          </div>
+        <main className="flex-1 overflow-y-auto">
+          {children}
         </main>
       </div>
     </div>

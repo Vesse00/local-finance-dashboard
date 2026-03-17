@@ -13,9 +13,14 @@ datasource db {
 model User {
   id       String    @id @default(uuid())
   username String    @unique
+  email    String    @unique
   password String    // Zahashowane hasło bcrypt
   currency String    @default("PLN") // Miejsce na przyszłą obsługę walut
   savings  Float     @default(0.0)
+
+  // POLA DO ODZYSKIWANIA HASŁA E-MAILEM
+  resetToken       String?  @unique
+  resetTokenExpiry DateTime?
   
   // Relacje
   recurringPayments RecurringPayment[]

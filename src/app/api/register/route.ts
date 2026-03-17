@@ -2,50 +2,46 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
 export async function POST(req: Request) {
   try {
-    const { username, password } = await req.json();
+    const { username, email, password } = await req.json();
 
-    if (!username || password.length < 6) {
-      return NextResponse.json({ message: "Nieprawidłowe dane logowania." }, { status: 400 });
+    if (!username || !email || !password) {
+      return NextResponse.json({ error: "Brak wymaganych danych" }, { status: 400 });
     }
 
-    const existingUser = await prisma.user.findUnique({
-      where: { username },
+    // Sprawdzamy, czy login LUB email jest już zajęty
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { username: username },
+          { email: email }
+        ]
+      }
     });
 
     if (existingUser) {
-      return NextResponse.json({ message: "Taki użytkownik już istnieje!" }, { status: 400 });
+      if (existingUser.username === username) {
+        return NextResponse.json({ error: "Ten login jest już zajęty." }, { status: 400 });
+      }
+      if (existingUser.email === email) {
+        return NextResponse.json({ error: "Ten adres e-mail jest już zarejestrowany." }, { status: 400 });
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    
-    // Tworzenie użytkownika
-    const user = await prisma.user.create({
+
+    const newUser = await prisma.user.create({
       data: {
         username,
+        email,
         password: hashedPassword,
       },
     });
 
-    // NOWOŚĆ: Generowanie domyślnych kategorii dla nowego użytkownika!
-    const defaultCategories = [
-      { name: "Jedzenie", icon: "🍔", userId: user.id },
-      { name: "Transport", icon: "🚗", userId: user.id },
-      { name: "Dom", icon: "🏠", userId: user.id },
-      { name: "Rozrywka", icon: "🎮", userId: user.id },
-    ];
-
-    await prisma.category.createMany({
-      data: defaultCategories
-    });
-
-    return NextResponse.json({ message: "Zarejestrowano pomyślnie!", user: { username: user.username } }, { status: 201 });
-  } catch (error: any) {
-    console.error("Błąd rejestracji:", error);
-    return NextResponse.json({ message: "Wystąpił błąd serwera." }, { status: 500 });
+    return NextResponse.json({ success: true, user: { id: newUser.id, username: newUser.username } });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Błąd serwera" }, { status: 500 });
   }
 }

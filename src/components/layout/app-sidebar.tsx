@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { signOut } from "next-auth/react";
 import { 
   LayoutDashboard, ArrowRightLeft, PieChart, 
   LogOut, CalendarDays, PiggyBank, Repeat, ChevronDown, Wallet, LineChart, Settings, 
@@ -180,16 +181,19 @@ export function AppSidebar() {
       </div>
 
       {/* Footer Sidebaru */}
-      <div className="p-4 border-t border-black/5 dark:border-white/10">
-        <Link href="/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm text-zinc-600 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/5">
-          <Settings className="w-4 h-4" />
-          Ustawienia
-        </Link>
-        <button className="w-full mt-1 flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30">
-          <LogOut className="w-4 h-4" />
-          Wyloguj
-        </button>
-      </div>
+        <div className="p-4 border-t border-black/5 dark:border-white/10">
+          <Link href="/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm text-zinc-600 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/5">
+            <Settings className="w-4 h-4" />
+            Ustawienia
+          </Link>
+          <button 
+            onClick={() => signOut({ callbackUrl: '/login' })} 
+            className="w-full mt-1 flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
+          >
+            <LogOut className="w-4 h-4" />
+            Wyloguj
+          </button>
+        </div>
     </aside>
   );
 }

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { UserPlus, Sparkles, User, Lock, ShieldCheck, Eye, EyeOff } from "lucide-react";
+import { UserPlus, Sparkles, User, Lock, ShieldCheck, Eye, EyeOff, Mailbox } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 export default function RegisterPage() {
   const router = useRouter();
   const [error, setError] = useState("");
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   
   // Stany dla widoczności haseł
@@ -80,6 +81,22 @@ export default function RegisterPage() {
               <div className="relative flex items-center">
                 <User className="absolute left-3 h-4 w-4 text-zinc-500 pointer-events-none" />
                 <Input name="username" placeholder="Login..." className="pl-10 h-11 bg-white/[0.05] border-white/10 text-white rounded-xl" required />
+              </div>
+            </div>
+
+              {/* E-mail */}
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Adres E-mail</Label>
+              <div className="relative flex items-center">
+                <Mailbox className="absolute left-3 h-4 w-4 text-zinc-500 pointer-events-none" />
+                <Input 
+                  type="email" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  required 
+                  placeholder="np. jan@kowalski.pl"
+                  className="pl-10 pr-10 h-11 bg-white/[0.05] border-white/10 text-white rounded-x" 
+                />
               </div>
             </div>
             

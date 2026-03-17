@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { 
   Menu, X, LayoutDashboard, LineChart, Wallet, CalendarDays, Repeat, PiggyBank, 
   ArrowRightLeft, Briefcase, Clock, User, Heart, Dumbbell, Scale, Archive, Settings, LogOut, ChevronDown, 
@@ -167,7 +168,10 @@ export function MobileNav() {
           <Link href="/settings" onClick={closeMenu} className="flex items-center gap-3 px-3 py-3 rounded-xl font-bold transition-all text-sm text-zinc-600 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/5">
             <Settings className="w-5 h-5" /> Ustawienia
           </Link>
-          <button className="w-full mt-1 flex items-center gap-3 px-3 py-3 rounded-xl font-bold transition-all text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30">
+          <button 
+            onClick={() => signOut({ callbackUrl: '/login' })} 
+            className="w-full mt-1 flex items-center gap-3 px-3 py-3 rounded-xl font-bold transition-all text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
+          >
             <LogOut className="w-5 h-5" /> Wyloguj
           </button>
         </div>

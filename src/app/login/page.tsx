@@ -14,7 +14,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // Stan widoczności hasła
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -56,8 +56,9 @@ export default function LoginPage() {
         
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4 px-8 pb-6 bg-transparent">
+            
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-zinc-300 ml-1">Użytkownik</Label>
+              <Label htmlFor="username" className="text-zinc-300 ml-1">E-mail lub Użytkownik</Label>
               <div className="relative flex items-center">
                 <User className="absolute left-3 h-4 w-4 text-zinc-500 pointer-events-none" />
                 <Input 
@@ -69,19 +70,26 @@ export default function LoginPage() {
                 />
               </div>
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-zinc-300 ml-1">Hasło</Label>
+              <div className="flex items-center justify-between ml-1">
+                <Label htmlFor="password" className="text-zinc-300">Hasło</Label>
+                {/* MAGICZNY GUZIK ODZYSKIWANIA HASŁA */}
+                <Link href="/forgot-password" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors">
+                  Zapomniałeś hasła?
+                </Link>
+              </div>
+              
               <div className="relative flex items-center">
                 <Lock className="absolute left-3 h-4 w-4 text-zinc-500 pointer-events-none" />
                 <Input 
                   id="password" 
                   name="password" 
-                  type={showPassword ? "text" : "password"} // Dynamiczna zmiana typu
+                  type={showPassword ? "text" : "password"} 
                   placeholder="••••••••"
                   className="pl-10 pr-10 h-11 bg-white/[0.05] border-white/10 text-white placeholder:text-zinc-600 focus:border-primary/50 focus:ring-0 transition-all rounded-xl" 
                   required 
                 />
-                {/* Przycisk oka */}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -91,6 +99,7 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+
             {error && (
               <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center">
                 {error}
