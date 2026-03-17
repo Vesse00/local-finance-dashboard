@@ -1,3 +1,4 @@
+import { DailyBriefing } from "@/components/dashboard/daily-briefing"; // <--- NOWY IMPORT
 import { MainWidget } from "@/components/dashboard/main-widget";
 import { WorkWidget } from "@/components/dashboard/work-widget";
 import { HealthWidget } from "@/components/dashboard/health-widget";
@@ -5,7 +6,6 @@ import { getDashboardStats } from "@/lib/actions";
 import { prisma } from "@/lib/db";
 import { startOfMonth, endOfMonth } from "date-fns";
 
-// PANCERNA TARCZA: Konwertuje wszystko co Prisma wypluje, włączając w to BigInty
 const safeSerialize = (data: any) => 
   JSON.parse(JSON.stringify(data, (key, value) => 
     typeof value === 'bigint' ? value.toString() : value
@@ -40,6 +40,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex-1 space-y-6 p-6 md:p-8 pt-6">
+      
+      {/* --- NASZ NOWY ASYSTENT --- */}
+      <DailyBriefing />
       
       {/* 1. GŁÓWNY WIDŻET FINANSÓW */}
       <div className="w-full">
