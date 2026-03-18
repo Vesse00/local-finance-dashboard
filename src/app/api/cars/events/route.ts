@@ -22,8 +22,27 @@ export async function POST(req: Request) {
     });
 
     if (createExpense && cost) {
-      let category = await prisma.category.findFirst({ where: { name: "Samochód" } });
-      if (!category) category = await prisma.category.findFirst();
+      // 1. Szukamy odpowiedniej nazwy w zależności od tego, co robimy w Garażu
+      const categoryName = type === 'REFUELING' ? 'Tankowanie' : 'Auto i Serwis';
+
+      // 2. Sprawdzamy, czy kategoria już istnieje dla tego użytkownika
+      let category = await prisma.category.findFirst({
+        where: { 
+          userId: user.id, 
+          name: categoryName 
+        }
+      });
+
+      // 3. Jeśli nie ma, tworzymy ją "w locie"
+      if (!category) {
+        category = await prisma.category.create({
+          data: {
+            userId: user.id,
+            name: categoryName,
+            icon: "⛽"
+          }
+        });
+      }
 
       let expenseName = "";
       if (type === "REFUELING") {
@@ -33,14 +52,17 @@ export async function POST(req: Request) {
       }
 
       await prisma.expense.create({
-        data: {
-          userId: user.id,
-          amount: parseFloat(cost),
-          name: expenseName,
-          date: new Date(date),
-          categoryId: category?.id || ""
-        }
-      });
+    data: {
+      userId: user.id,
+      amount: parseFloat(cost),
+      currency: "PLN", // Twój model wymaga tego pola!
+      description: `Garaż: ${type === 'REFUELING' ? 'Tankowanie' : 'Serwis/Opłata'}`, 
+      recipient: "Stacja / Serwis", 
+      date: new Date(date || new Date()),
+      createdAt: new Date(date || new Date()),
+      categoryId: category.id
+    }
+  });
     }
 
     return NextResponse.json(event);
