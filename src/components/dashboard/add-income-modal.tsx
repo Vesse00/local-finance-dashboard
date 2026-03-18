@@ -63,7 +63,7 @@ export function AddIncomeModal() {
             <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Źródło (opcjonalnie)</label>
             <input name="source" type="text" placeholder="np. Wypłata z etatu" className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-zinc-900 dark:text-white" />
           </div>
-          <button type="submit" disabled={isPending} className="w-full mt-2 rounded-xl bg-primary py-3 text-white font-semibold shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]">
+          <button type="submit" disabled={isPending} className="active:scale-95 ease-in-out w-full  mt-2 rounded-xl bg-primary py-3 text-white font-semibold shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]">
             {isPending ? "Dodawanie..." : "Zapisz wpływ"}
           </button>
         </form>
@@ -73,7 +73,7 @@ export function AddIncomeModal() {
 
   return (
     <>
-      <button onClick={() => setIsOpen(true)} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors border border-primary/20">
+      <button onClick={() => setIsOpen(true)} className="active:scale-95 ease-in-out flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors border border-primary/20">
         <Plus className="w-4 h-4" /> Dodaj wpływ
       </button>
       {/* Wypychamy modal na samą górę drzewa dokumentu */}
