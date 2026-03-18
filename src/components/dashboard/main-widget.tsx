@@ -93,7 +93,7 @@ export function MainWidget({ currentStats, summaries }: MainWidgetProps) {
   const activeData = timelineData[slide];
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-black/5 dark:border-white/10 bg-white/60 dark:bg-black/40 backdrop-blur-xl p-8 shadow-2xl transition-all min-h-[320px] md:min-h-[220px] flex flex-col group">
+    <div className="relative overflow-hidden rounded-3xl border border-black/5 dark:border-white/10 bg-white/60 dark:bg-black/40 backdrop-blur-md p-8 shadow-2xl transition-all min-h-[320px] md:min-h-[220px] flex flex-col group">
       <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary opacity-20 blur-[80px] dark:opacity-30 pointer-events-none"></div>
       
       <div className="relative flex flex-col md:flex-row justify-between gap-8 flex-1">

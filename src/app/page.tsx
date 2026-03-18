@@ -3,8 +3,10 @@ import { MainWidget } from "@/components/dashboard/main-widget";
 import { WorkWidget } from "@/components/dashboard/work-widget";
 import { HealthWidget } from "@/components/dashboard/health-widget";
 import { getDashboardStats } from "@/lib/actions";
+import { getBriefingData } from "@/lib/services/briefing"; // Zgrabnie i elegancko podzielone!
 import { prisma } from "@/lib/db";
 import { startOfMonth, endOfMonth } from "date-fns";
+
 
 // Bezpieczna konwersja danych z bazy (BigInt do String)
 const safeSerialize = (data: any) => 
@@ -13,7 +15,10 @@ const safeSerialize = (data: any) =>
   ));
 
 export default async function DashboardPage() {
-  const stats = await getDashboardStats();
+  const [stats, briefingData] = await Promise.all([
+    getDashboardStats(),
+    getBriefingData() // <--- NASZE NOWE POBIERANIE W TLE
+  ]);
   
   const user = await prisma.user.findFirst({
     include: {
@@ -52,7 +57,7 @@ export default async function DashboardPage() {
         
         {/* 1. ASYSTENT NA SAMEJ GÓRZE */}
         <div className="w-full animate-in fade-in slide-in-from-top-4 duration-700">
-          <DailyBriefing />
+          <DailyBriefing initialData={safeSerialize(briefingData)}/>
         </div>
         
         {/* 2. GŁÓWNA SIATKA DASHBOARDU (3 Kolumny) */}

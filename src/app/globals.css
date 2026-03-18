@@ -98,3 +98,17 @@
     min-height: 100vh;
   }
 }
+
+@keyframes shimmer {
+  0% { transform: translateX(-150%) skewX(-15deg); }
+  100% { transform: translateX(200%) skewX(-15deg); }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s infinite linear;
+}
+
+/* Wgniecenie przy kliknięciu dla przycisków */
+.btn-physics:active {
+  transform: scale(0.97);
+}

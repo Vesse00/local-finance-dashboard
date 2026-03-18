@@ -18,6 +18,8 @@ model User {
   currency String    @default("PLN") // Miejsce na przyszłą obsługę walut
   savings  Float     @default(0.0)
 
+  location         String?
+
   // POLA DO ODZYSKIWANIA HASŁA E-MAILEM
   resetToken       String?  @unique
   resetTokenExpiry DateTime?
