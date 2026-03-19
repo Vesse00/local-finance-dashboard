@@ -16,7 +16,7 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-black/5 dark:border-white/10 bg-white/60 dark:bg-black/40 backdrop-blur-xl transition-all duration-300">
+    <header className="sticky top-0 z-40 w-full border-b border-black/5 dark:border-white/10 bg-transparent dark:bg-transparent backdrop-blur-xl transition-all duration-300">
       <div className="flex h-16 items-center justify-between px-6 lg:px-8">
         
         {/* Lewa strona - Logo i powitanie */}

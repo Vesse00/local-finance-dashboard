@@ -453,31 +453,18 @@ export async function overpayRecurring(formData: FormData) {
 
 // --- WYRÓWNYWANIE SALDA (UZGODNIENIE) ---
 
+// --- WYRÓWNYWANIE SALDA (UZGODNIENIE) ---
+
 export async function adjustMainBalance(formData: FormData) {
-  // Pobieramy użytkownika (jeśli masz już autoryzację, użyj swojej funkcji, np. getUserId())
   const user = await prisma.user.findFirst();
   if (!user) throw new Error("Nie znaleziono użytkownika");
   const userId = user.id;
 
   const targetAmount = parseFloat(formData.get("amount") as string);
 
-  // Pobieramy to, co aplikacja uważa za "obecny stan" w tym miesiącu
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
-
-  const expenses = await prisma.expense.aggregate({
-    where: { userId, date: { gte: startOfMonth }, type: { in: ["EXPENSE", "SAVING"] } },
-    _sum: { amount: true }
-  });
-  const incomes = await prisma.income.aggregate({
-    where: { userId, date: { gte: startOfMonth } },
-    _sum: { amount: true }
-  });
-
-  const spent = expenses._sum.amount || 0;
-  const totalIncome = incomes._sum.amount || 0;
-  const currentBalance = totalIncome - spent;
+  // FIX: Pobieramy to, co aplikacja uważa za "obecny stan" używając DOKŁADNIE tej samej funkcji co Dashboard!
+  const stats = await getDashboardStats();
+  const currentBalance = stats.kwotaWolna;
 
   // Obliczamy ile brakuje (lub ile jest za dużo)
   const difference = targetAmount - currentBalance;
@@ -491,7 +478,6 @@ export async function adjustMainBalance(formData: FormData) {
       data: {
         amount: difference,
         source: "Wyrównanie salda",
-        description: "Automatyczna korekta stanu konta",
         date: new Date(),
         userId
       }
@@ -509,7 +495,8 @@ export async function adjustMainBalance(formData: FormData) {
         recipient: "Korekta automatyczna",
         date: new Date(),
         categoryId: cat.id,
-        userId
+        userId,
+        type: "EXPENSE" // Jawnie oznaczamy to jako zwykły wydatek
       }
     });
   }
@@ -538,4 +525,142 @@ export async function saveMonthSummary(monthName: string) {
   });
 
   revalidatePath("/");
+}
+
+export async function updateRecurringPayment(formData: FormData) {
+  const userId = await getUserId(); 
+  
+  const id = formData.get("id") as string;
+  const name = formData.get("name") as string;
+  const defaultAmount = parseFloat(formData.get("defaultAmount") as string);
+  const dayOfMonth = parseInt(formData.get("dayOfMonth") as string);
+  const rawCategoryId = formData.get("categoryId") as string;
+  const endDateStr = formData.get("endDate") as string;
+  
+  const totalAmountStr = formData.get("totalAmount") as string;
+  const remainingAmountStr = formData.get("remainingAmount") as string;
+
+  const totalAmount = totalAmountStr ? parseFloat(totalAmountStr) : null;
+  const remainingAmount = remainingAmountStr ? parseFloat(remainingAmountStr) : totalAmount;
+  const endDate = endDateStr ? new Date(endDateStr) : null;
+
+  let categoryId = rawCategoryId !== "null" ? rawCategoryId : null;
+
+  // Aktualizacja Głównego Rekordu
+  const updatedRecurring = await prisma.recurringPayment.update({
+    where: { id, userId },
+    data: {
+      name, defaultAmount, dayOfMonth, categoryId, endDate,
+      totalAmount, remainingAmount
+    }
+  });
+
+  const today = new Date();
+
+  // USUŃ STARE ZAPLANOWANE RATY (od jutra w przód), aby wygenerować nowe
+  await prisma.expense.deleteMany({
+    where: {
+      recurringId: id,
+      date: { gt: today }
+    }
+  });
+
+  // GENEROWANIE NOWYCH RAT W PRZÓD (na bazie nowych danych)
+  const MONTHS_TO_GENERATE = 12; 
+  const expensesToCreate = [];
+  
+  let simulatedAccumulated = totalAmount !== null ? (totalAmount - (remainingAmount || 0)) : 0;
+  
+  // Jeśli w tym miesiącu minął już nowy dzień raty, zaczynamy od następnego miesiąca
+  let startMonthOffset = today.getDate() < dayOfMonth ? 0 : 1;
+
+  for (let i = 0; i < MONTHS_TO_GENERATE; i++) {
+    const targetYear = today.getFullYear();
+    const targetMonth = today.getMonth() + startMonthOffset + i;
+    
+    const lastDayOfMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+    const finalDay = dayOfMonth > lastDayOfMonth ? lastDayOfMonth : dayOfMonth;
+
+    const expenseDate = new Date(targetYear, targetMonth, finalDay);
+    
+    if (endDate && expenseDate > endDate) break;
+
+    let amountForThisMonth = defaultAmount;
+
+    if (totalAmount !== null) {
+      if (simulatedAccumulated + defaultAmount > totalAmount) {
+        amountForThisMonth = totalAmount - simulatedAccumulated;
+      }
+      simulatedAccumulated += amountForThisMonth;
+    }
+
+    if (amountForThisMonth > 0) {
+      expensesToCreate.push({
+        amount: amountForThisMonth,
+        description: name,
+        date: expenseDate,
+        type: "EXPENSE",
+        categoryId: categoryId, 
+        userId: userId,
+        recurringId: id
+      });
+    }
+
+    if (totalAmount !== null && simulatedAccumulated >= totalAmount) break;
+  }
+
+  if (expensesToCreate.length > 0) {
+    await prisma.expense.createMany({ data: expensesToCreate });
+  }
+
+  revalidatePath("/calendar");
+  revalidatePath("/calendar/recurring");
+  revalidatePath("/");
+}
+
+// --- MODUŁ ENERGII / BATERII ---
+
+export async function saveEnergyEntry(formData: FormData) {
+  // getUserId() to Twoja funkcja z początku actions.ts
+  const userId = await getUserId();
+
+  const dateStr = formData.get("date") as string;
+  const overallScore = parseInt(formData.get("overallScore") as string);
+  
+  const workScoreStr = formData.get("workScore") as string;
+  const freeTimeScoreStr = formData.get("freeTimeScore") as string;
+  
+  const workScore = workScoreStr ? parseInt(workScoreStr) : null;
+  const freeTimeScore = freeTimeScoreStr ? parseInt(freeTimeScoreStr) : null;
+  const note = formData.get("note") as string;
+
+  // Zerujemy godzinę, żeby uniknąć duplikatów dla tego samego dnia
+  const entryDate = dateStr ? new Date(dateStr) : new Date();
+  entryDate.setHours(0, 0, 0, 0);
+
+
+  // WALIDACJA: Nie pozwalamy zapisywać nastroju w przyszłości
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (entryDate > today) {
+    throw new Error("Nie można zapisywać nastroju w przyszłości!");
+  }
+
+  await prisma.energyEntry.upsert({
+    where: { userId_date: { userId, date: entryDate } },
+    update: { overallScore, workScore, freeTimeScore, note },
+    create: { userId, date: entryDate, overallScore, workScore, freeTimeScore, note }
+  });
+
+  revalidatePath("/health/energy");
+  revalidatePath("/");
+}
+
+export async function deleteEnergyEntry(formData: FormData) {
+  const id = formData.get("id") as string;
+  const userId = await getUserId();
+
+  await prisma.energyEntry.delete({ where: { id, userId } });
+  revalidatePath("/health/energy");
 }

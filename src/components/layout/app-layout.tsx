@@ -20,9 +20,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       
       {/* 🔮 POTĘŻNE, WIDOCZNE PLAMY ŚWIATŁA W TLE */}
       {/* Zwiększyliśmy 'opacity' do 30-40%, by światło przebijało przez nasze szklane widgety */}
-      <div className="absolute top-[-5%] left-[-5%] w-[500px] h-[500px] bg-indigo-500/40 dark:bg-indigo-600/30 rounded-full blur-[100px] pointer-events-none animate-pulse" style={{ animationDuration: '8s' }}></div>
-      <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-fuchsia-500/30 dark:bg-purple-600/30 rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDuration: '12s' }}></div>
-      <div className="absolute top-[30%] left-[40%] w-[400px] h-[400px] bg-emerald-500/20 dark:bg-emerald-600/20 rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: '10s' }}></div>
+      <div className="absolute top-[-5%] left-[-5%] w-[500px] h-[500px] bg-indigo-500/40 dark:bg-indigo-600/30 rounded-full blur-[100px] pointer-events-none" style={{ animationDuration: '8s' }}></div>
+      <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-fuchsia-500/30 dark:bg-purple-600/30 rounded-full blur-[120px] pointer-events-none" style={{ animationDuration: '12s' }}></div>
+      <div className="absolute top-[30%] left-[40%] w-[400px] h-[400px] bg-emerald-500/20 dark:bg-emerald-600/20 rounded-full blur-[90px] pointer-events-none" style={{ animationDuration: '10s' }}></div>
 
       <AppSidebar />
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">

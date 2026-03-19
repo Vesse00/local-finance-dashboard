@@ -7,7 +7,7 @@ import { signOut } from "next-auth/react";
 import { 
   LayoutDashboard, ArrowRightLeft, PieChart, 
   LogOut, CalendarDays, PiggyBank, Repeat, ChevronDown, Wallet, LineChart, Settings, 
-  Briefcase, Clock, Activity, Droplet, Dumbbell, Scale, User, Heart, Archive, CarFront
+  Briefcase, Clock, Activity, Droplet, Dumbbell, Scale, User, Heart, Archive, CarFront, Zap
 } from "lucide-react";
 
 // Samodzielne, najważniejsze linki na samej górze
@@ -28,6 +28,7 @@ const navGroups = [
         items: [
           { name: "Dziennik Aktywności", href: "/health/daily", icon: Dumbbell },
           { name: "Waga i Wymiary", href: "/health/body", icon: Scale },
+          { name: "Nastrój i Energia", href: "/health/energy", icon: Zap },
         ]
       }
       // W przyszłości łatwo dodasz tu np: { title: "Nawyki", items: [...] }

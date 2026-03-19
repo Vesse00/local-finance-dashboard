@@ -72,29 +72,25 @@ export default async function DashboardPage() {
           </div>
 
           {/* PIERWSZY RZĄD: Puste pole obok (1/3 ekranu) - idealne na coś szybkiego */}
-          <div className="lg:col-span-1 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border border-zinc-200/50 dark:border-zinc-800/50 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] flex items-center justify-center min-h-[160px] h-full text-zinc-500 text-sm font-medium text-center transition-all duration-500 hover:shadow-xl hover:border-indigo-500/30 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 fill-mode-both">
+          <div className="lg:col-span-1 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-lg border border-zinc-200/50 dark:border-zinc-800/50 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] flex items-center justify-center min-h-[160px] h-full text-zinc-500 text-sm font-medium text-center transition-all duration-500 hover:shadow-xl hover:border-indigo-500/30 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 fill-mode-both">
             Miejsce na przyszły widget<br/>(np. Szybkie Akcje)
           </div>
 
           {/* DRUGI RZĄD: Czas Pracy (1/3 ekranu) */}
           <div className="lg:col-span-1 group animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both">
-            <div className="transition-transform duration-500 group-hover:-translate-y-1 h-full">
               <WorkWidget workDays={safeSerialize(currentMonthWorkDays)} />
-            </div>
           </div>
 
           {/* DRUGI RZĄD: Zdrowie (1/3 ekranu) */}
           <div className="lg:col-span-1 group animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both">
-            <div className="transition-transform duration-500 group-hover:-translate-y-1 h-full">
               <HealthWidget 
                 healthDays={safeSerialize(currentMonthHealthDays)} 
                 healthEntries={safeSerialize(currentMonthHealthEntries)} 
               />
-            </div>
           </div>
 
           {/* DRUGI RZĄD: Puste pole dopełniające (1/3 ekranu) */}
-          <div className="lg:col-span-1 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border border-dashed border-zinc-300 dark:border-zinc-800/50 rounded-3xl p-6 flex items-center justify-center min-h-[300px] text-zinc-500 text-sm font-medium text-center animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both">
+          <div className="lg:col-span-1 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-lg border border-dashed border-zinc-300 dark:border-zinc-800/50 rounded-3xl p-6 flex items-center justify-center min-h-[300px] text-zinc-500 text-sm font-medium text-center animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both">
             Miejsce na kolejny moduł<br/>(np. Garaż lub Wykres)
           </div>
 

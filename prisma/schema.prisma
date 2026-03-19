@@ -37,6 +37,7 @@ model User {
   cars         Car[]        // Relacja do Garażu
   savingsAccounts SavingsAccount[] // Relacja do kont oszczędnościowych
   savingsTransactions SavingsTransaction[] // Relacja do transakcji na kontach oszczędnościowych
+  energyEntries   EnergyEntry[] // Relacja do logów  nastrójów
 }
 
 // Tabela na wpływy
@@ -298,4 +299,20 @@ model SavingsTransaction {
 
   userId           String
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EnergyEntry {
+  id            String   @id @default(uuid())
+  userId        String
+  date          DateTime // Zwykłe DateTime, bez @db.Date!
+  overallScore  Int      // Skala 0-100%
+  workScore     Int?     // Opcjonalne 0-100%
+  freeTimeScore Int?     // Opcjonalne 0-100%
+  note          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date]) // Zabezpieczenie: tylko 1 główny wpis na dzień
 }

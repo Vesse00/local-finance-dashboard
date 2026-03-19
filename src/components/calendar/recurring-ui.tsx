@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Repeat, Plus, X, Trash2, CalendarDays, ArrowUpCircle } from "lucide-react";
+import { Repeat, Plus, X, Trash2, CalendarDays, ArrowUpCircle, Edit } from "lucide-react";
 import { addRecurringPayment, deleteRecurringPayment, overpayRecurring } from "@/lib/actions";
 import { RecurringForm } from "./recurring-form";
 
@@ -12,6 +12,7 @@ interface RecurringUIProps {
 
 export function RecurringUI({ recurrings, categories }: RecurringUIProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingPayment, setEditingPayment] = useState<any>(null);
   const [overpayModalId, setOverpayModalId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -33,7 +34,17 @@ export function RecurringUI({ recurrings, categories }: RecurringUIProps) {
     });
   };
 
-  return (
+  const openAddModal = () => {
+    setEditingPayment(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (payment: any) => {
+    setEditingPayment(payment);
+    setIsModalOpen(true);
+  };
+
+return (
     <div className="flex-1 p-6 md:p-8 space-y-6">
       
       {/* NAGŁÓWEK */}
@@ -48,7 +59,7 @@ export function RecurringUI({ recurrings, categories }: RecurringUIProps) {
           </p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={openAddModal}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-medium shadow-lg shadow-indigo-500/20 transition-all"
         >
           <Plus className="w-5 h-5" /> Nowe zlecenie
@@ -70,6 +81,16 @@ export function RecurringUI({ recurrings, categories }: RecurringUIProps) {
             return (
               <div key={rec.id} className="relative p-5 rounded-2xl bg-white/60 dark:bg-zinc-900/50 backdrop-blur-md border border-black/5 dark:border-white/5 shadow-sm group hover:border-indigo-500/30 transition-all flex flex-col">
                 
+                {/* NOWE: Ołówek do edycji */}
+                <button 
+                  onClick={() => openEditModal(rec)}
+                  className="absolute top-4 right-12 p-1.5 text-zinc-400 opacity-0 group-hover:opacity-100 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all"
+                  title="Edytuj to zlecenie"
+                >
+                  <Edit className="w-4 h-4" />
+                </button>
+
+                {/* Stary kosz do usuwania */}
                 <button 
                   onClick={() => handleDelete(rec.id)}
                   className="absolute top-4 right-4 p-1.5 text-zinc-400 opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
@@ -83,7 +104,7 @@ export function RecurringUI({ recurrings, categories }: RecurringUIProps) {
                     {rec.category?.icon || "🔄"}
                   </div>
                   <div>
-                    <h3 className="font-bold text-zinc-900 dark:text-white leading-tight pr-8">{rec.name}</h3>
+                    <h3 className="font-bold text-zinc-900 dark:text-white leading-tight pr-14">{rec.name}</h3>
                     <p className="text-xs font-medium text-indigo-600 dark:text-indigo-400 flex items-center gap-1 mt-0.5">
                       <CalendarDays className="w-3 h-3" /> Płatne {rec.dayOfMonth}. dnia
                     </p>
@@ -127,7 +148,7 @@ export function RecurringUI({ recurrings, categories }: RecurringUIProps) {
         )}
       </div>
 
-      {/* MODAL DODAWANIA ZLECENIA */}
+      {/* MODAL DODAWANIA/EDYCJI ZLECENIA */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setIsModalOpen(false)}>
           <div className="relative w-full max-w-md rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
@@ -135,14 +156,15 @@ export function RecurringUI({ recurrings, categories }: RecurringUIProps) {
               <X className="h-5 w-5" />
             </button>
             <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <Repeat className="w-5 h-5 text-indigo-500" /> Dodaj zlecenie stałe
+              <Repeat className="w-5 h-5 text-indigo-500" /> {editingPayment ? "Edytuj zlecenie" : "Dodaj zlecenie stałe"}
             </h3>
-            <RecurringForm categories={categories} onSuccess={() => setIsModalOpen(false)} />
+            {/* NOWE: Przekazujemy initialData do formularza! */}
+            <RecurringForm categories={categories} onSuccess={() => setIsModalOpen(false)} initialData={editingPayment} />
           </div>
         </div>
       )}
 
-      {/* MODAL NADPŁATY */}
+      {/* MODAL NADPŁATY - bez zmian */}
       {overpayModalId && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setOverpayModalId(null)}>
           <div className="relative w-full max-w-sm rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>

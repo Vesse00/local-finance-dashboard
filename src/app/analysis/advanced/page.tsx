@@ -16,30 +16,58 @@ export default async function AdvancedAnalysisPage() {
   const daysLeft = daysInMonth - now.getDate();
 
   // --- ZAAWANSOWANE ZAPYTANIA RÓWNOLEGŁE (Naprawiony TypeScript) ---
+// --- ZAAWANSOWANE ZAPYTANIA RÓWNOLEGŁE (Naprawiony TypeScript i Filtrowanie) ---
+// --- ZAAWANSOWANE ZAPYTANIA RÓWNOLEGŁE ---
   const [
     incomesAgg,
     expensesAgg,
-    topExpenses, // Zmiana z groupBy na findMany (Pobiera 3 największe transakcje z tego miesiąca)
+    savingsAgg,       // NOWOŚĆ: Pobieramy to, co odłożyłeś do skarbonki
+    topExpenses,
+    largestExpense,
     recurringPayments,
     workDays,
     carEvents
   ] = await Promise.all([
     prisma.income.aggregate({ where: { userId: user.id, date: { gte: start, lte: end } }, _sum: { amount: true } }).catch(() => ({ _sum: { amount: 0 } })),
-    prisma.expense.aggregate({ where: { userId: user.id, date: { gte: start, lte: end } }, _sum: { amount: true } }).catch(() => ({ _sum: { amount: 0 } })),
     
-    // Pobiera konkretne, największe transakcje (najbezpieczniejsza opcja!)
-    prisma.expense.findMany({ where: { userId: user.id, date: { gte: start, lte: end } }, orderBy: { amount: 'desc' }, take: 3 }).catch(() => []),
+    // Zwykłe wydatki (z ratami)
+    prisma.expense.aggregate({ where: { userId: user.id, date: { gte: start, lte: end }, type: 'EXPENSE' }, _sum: { amount: true } }).catch(() => ({ _sum: { amount: 0 } })),
+    
+    // Transfery na oszczędności
+    prisma.expense.aggregate({ where: { userId: user.id, date: { gte: start, lte: end }, type: 'SAVING' }, _sum: { amount: true } }).catch(() => ({ _sum: { amount: 0 } })),
+    
+    // GŁÓWNE STRZAŁY
+    prisma.expense.findMany({ 
+      where: { userId: user.id, date: { gte: start, lte: end }, type: 'EXPENSE' }, 
+      orderBy: { amount: 'desc' }, 
+      take: 3 
+    }).catch(() => []),
+    
+    // ANOMALIA
+    prisma.expense.findFirst({ 
+      where: { 
+        userId: user.id, 
+        date: { gte: start, lte: end }, 
+        type: 'EXPENSE',
+        recurringId: null,
+        OR: [
+          { categoryId: null },
+          { category: { name: { notIn: ['Tankowanie', 'Paliwo'] } } }
+        ]
+      }, 
+      orderBy: { amount: 'desc' } 
+    }).catch(() => null),
     
     prisma.recurringPayment.findMany({ where: { userId: user.id, isActive: true } }).catch(() => []),
     prisma.workDay.findMany({ where: { userId: user.id, date: { gte: start, lte: end }, shiftType: 'REGULAR' } }).catch(() => []),
     prisma.carEvent.findMany({ where: { car: { userId: user.id }, nextDueDate: { gte: start, lte: addDays(now, 30) } } }).catch(() => [])
   ]);
-
   const totalIncome = incomesAgg._sum?.amount || 0;
-  const totalExpense = expensesAgg._sum?.amount || 0;
-  const balance = totalIncome - totalExpense;
+  const pureExpenses = expensesAgg._sum?.amount || 0;
+  const savingsTransfers = savingsAgg._sum?.amount || 0;
 
-  const largestExpense = topExpenses[0] || null; // Największa z TOP 3 to nasza Anomalia
+  const totalExpense = pureExpenses + savingsTransfers;
+  const balance = totalIncome - totalExpense;
 
   // --- WYLICZENIA ANALITYCZNE ---
   const dailyBurnRate = currentDay > 0 ? (totalExpense / currentDay) : 0;
@@ -55,6 +83,42 @@ export default async function AdvancedAnalysisPage() {
   const fixedPercent = totalExpense > 0 ? (fixedCosts / totalExpense) * 100 : 0;
   const variablePercent = totalExpense > 0 ? (variableCosts / totalExpense) * 100 : 0;
 
+  // --- ZAAWANSOWANA SYMULACJA ZOBOWIĄZAŃ (Następne 12 m-cy) ---
+  let annualRecurringBurden = 0;
+  const simDate = new Date();
+
+  recurringPayments.forEach(rec => {
+    // Sprawdzamy, czy to jest dług/rata (ma totalAmount)
+    let remaining = rec.totalAmount !== null ? (rec.remainingAmount || 0) : null;
+
+    // Symulujemy rok do przodu (12 płatności)
+    for (let i = 0; i < 12; i++) {
+      let targetMonth = simDate.getMonth() + i;
+      let expenseDate = new Date(simDate.getFullYear(), targetMonth, rec.dayOfMonth);
+
+      // 1. Zabezpieczenie daty (jeśli subskrypcja ma ustawiony koniec)
+      if (rec.endDate && expenseDate > rec.endDate) break;
+
+      let amountThisMonth = rec.defaultAmount;
+
+      // 2. Zabezpieczenie długu (jeśli rata wyczerpuje saldo)
+      if (remaining !== null) {
+        if (amountThisMonth > remaining) {
+          amountThisMonth = remaining; // Rata wyrównująca na koniec
+        }
+        remaining -= amountThisMonth;
+      }
+
+      // Dodajemy kwotę do rocznego bagażu
+      if (amountThisMonth > 0) {
+        annualRecurringBurden += amountThisMonth;
+      }
+
+      // Jeśli spłaciliśmy cały dług, przerywamy symulację dla tej raty
+      if (remaining !== null && remaining <= 0) break;
+    }
+  });
+
   // --- WYCENA CZASU (Wskaźnik ROI) ---
   let totalHoursWorked = 0;
   workDays.forEach(day => {
@@ -65,6 +129,11 @@ export default async function AdvancedAnalysisPage() {
     }
   });
   const realHourlyRate = totalHoursWorked > 0 ? (totalIncome / totalHoursWorked) : 0;
+  
+  // NOWOŚĆ: Stawka Życia i Prędkość Bogacenia
+  const totalHoursInMonth = daysInMonth * 24;
+  const lifeHourlyRate = totalIncome / totalHoursInMonth; // Ile warta jest 1 godzina Twojego życia
+  const wealthVelocity = balance / totalHoursInMonth; // Ile zarabiasz na czysto (nawet podczas snu)
 
   return (
     <div className="relative flex-1 p-4 md:p-6 min-h-screen animate-in fade-in duration-500">
@@ -96,7 +165,7 @@ export default async function AdvancedAnalysisPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
           
           {/* PRZEPŁYW (Sankey) */}
-          <div className="lg:col-span-2 bg-white/40 dark:bg-black/20 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-2xl p-5 shadow-sm">
+          <div className="lg:col-span-2 bg-white/40 dark:bg-black/20 backdrop-blur-lg border border-white/50 dark:border-white/10 rounded-2xl p-5 shadow-sm">
             <h2 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-6 flex items-center gap-1.5">
               <Activity className="w-3.5 h-3.5" /> Bieżący Przepływ
             </h2>
@@ -140,29 +209,42 @@ export default async function AdvancedAnalysisPage() {
             </div>
           </div>
 
-          {/* WYCENA CZASU */}
-          <div className="bg-white/40 dark:bg-black/20 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+          {/* WYCENA CZASU I ŻYCIA */}
+          <div className="bg-white/40 dark:bg-black/20 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-2xl p-5 shadow-sm flex flex-col justify-between group">
             <div>
-              <h2 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
-                <Hourglass className="w-3.5 h-3.5" /> Analiza Wartości Czasu
+              <h2 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-5 flex items-center justify-between">
+                <span className="flex items-center gap-1.5"><Hourglass className="w-3.5 h-3.5" /> Wycena Czasu i Życia</span>
               </h2>
-              {totalHoursWorked > 0 ? (
-                <>
-                  <p className="text-[10px] text-zinc-500 mb-1 font-medium">Realna stawka w tym miesiącu:</p>
-                  <p className="text-3xl font-black text-zinc-900 dark:text-white">{realHourlyRate.toFixed(1)} <span className="text-sm text-zinc-400">zł/h</span></p>
-                </>
-              ) : (
-                <p className="text-xs text-zinc-500">Brak przepracowanych godzin w grafiku.</p>
-              )}
-            </div>
-            
-            {totalHoursWorked > 0 && (
-              <div className="mt-4 p-3 bg-zinc-100/50 dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700/50">
-                <p className="text-[10px] text-zinc-500 leading-tight">
-                  W tym miesiącu spędzisz w pracy <strong>{totalHoursWorked} godzin</strong>. Każda godzina Twojego życia jest warta obecnie <strong>{realHourlyRate.toFixed(0)} zł</strong> (Zestawienie całkowitego wpływu i etatu).
-                </p>
+
+              <div className="space-y-4">
+                {/* Porównanie stawek */}
+                <div className="flex justify-between items-end gap-2">
+                  <div className="bg-zinc-100/50 dark:bg-zinc-800/50 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700/50 flex-1">
+                    <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider mb-0.5">Roboczogodzina</p>
+                    <p className="text-xl font-black text-zinc-900 dark:text-white">
+                      {realHourlyRate.toFixed(1)} <span className="text-[10px] font-medium text-zinc-400">zł/h</span>
+                    </p>
+                  </div>
+                  
+                  <div className="bg-indigo-50 dark:bg-indigo-500/10 p-3 rounded-xl border border-indigo-100 dark:border-indigo-500/20 flex-1 text-right">
+                    <p className="text-[9px] text-indigo-500 font-bold uppercase tracking-wider mb-0.5">Godzina Życia</p>
+                    <p className="text-xl font-black text-indigo-600 dark:text-indigo-400">
+                      {lifeHourlyRate.toFixed(2)} <span className="text-[10px] font-medium opacity-60">zł/h</span>
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Prędkość Bogacenia się */}
+                <div className="mt-4 p-3 rounded-xl border border-zinc-100 dark:border-white/5 bg-white/50 dark:bg-white/5">
+                  <p className="text-[10px] text-zinc-500 font-medium leading-tight mb-1">
+                    Po odliczeniu wydatków, nawet podczas snu Twoje saldo rośnie o:
+                  </p>
+                  <p className={`text-2xl font-black tracking-tight ${wealthVelocity >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                    {wealthVelocity > 0 ? '+' : ''}{wealthVelocity.toFixed(2)} <span className="text-xs font-bold opacity-70">zł / każdą godzinę</span>
+                  </p>
+                </div>
               </div>
-            )}
+            </div>
           </div>
 
           {/* AI BURN RATE FORECAST */}
@@ -192,7 +274,7 @@ export default async function AdvancedAnalysisPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           
           {/* 1. Koszty Stałe vs Zmienne */}
-          <div className="bg-white/40 dark:bg-black/20 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+          <div className="bg-white/40 dark:bg-black/20 backdrop-blur-lg border border-white/50 dark:border-white/10 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
             <div>
               <h3 className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
                 <PieChart className="w-3.5 h-3.5" /> Struktura Kosztów
@@ -225,7 +307,7 @@ export default async function AdvancedAnalysisPage() {
           </div>
 
           {/* 2. TOP 3 Pojedyncze Wydatki */}
-          <div className="bg-white/40 dark:bg-black/20 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-2xl p-5 shadow-sm">
+          <div className="bg-white/40 dark:bg-black/20 backdrop-blur-lg border border-white/50 dark:border-white/10 rounded-2xl p-5 shadow-sm">
             <h3 className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
               <Tags className="w-3.5 h-3.5" /> Główne Strzały w M-cu
             </h3>
@@ -258,7 +340,7 @@ export default async function AdvancedAnalysisPage() {
           </div>
 
           {/* RADAR OBCIĄŻEŃ I ZOBOWIĄZAŃ */}
-          <div className="bg-white/40 dark:bg-black/20 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-2xl p-5 shadow-sm">
+          <div className="bg-white/40 dark:bg-black/20 backdrop-blur-lg border border-white/50 dark:border-white/10 rounded-2xl p-5 shadow-sm">
             <h3 className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
               <ShieldAlert className="w-3.5 h-3.5" /> Radar Zobowiązań
             </h3>
@@ -266,10 +348,10 @@ export default async function AdvancedAnalysisPage() {
               <div className="p-3 bg-red-50 dark:bg-red-500/5 rounded-xl border border-red-100 dark:border-red-500/10">
                 <div className="flex items-center gap-2 text-red-600 dark:text-red-400 mb-1">
                   <RefreshCw className="w-3.5 h-3.5" />
-                  <p className="text-[10px] font-bold uppercase">Roczny Ciężar Subskrypcji</p>
+                  <p className="text-[10px] font-bold uppercase">Zobowiązania (Kolejne 12 m-cy)</p>
                 </div>
                 <p className="text-lg font-black text-red-700 dark:text-red-300">
-                  {(fixedCosts * 12).toLocaleString('pl-PL')} zł <span className="text-[10px] text-red-500/70 font-medium">/ rok</span>
+                  {annualRecurringBurden.toLocaleString('pl-PL', { maximumFractionDigits: 0 })} zł <span className="text-[10px] text-red-500/70 font-medium">/ rok</span>
                 </p>
               </div>
 
@@ -286,7 +368,7 @@ export default async function AdvancedAnalysisPage() {
           </div>
 
           {/* Wykrywacz Anomalii */}
-          <div className="bg-amber-50 dark:bg-amber-500/5 backdrop-blur-2xl border border-amber-200 dark:border-amber-500/20 rounded-2xl p-5 shadow-sm">
+          <div className="bg-amber-50 dark:bg-amber-500/5 backdrop-blur-lg border border-amber-200 dark:border-amber-500/20 rounded-2xl p-5 shadow-sm">
             <h3 className="text-[11px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
               <AlertOctagon className="w-3.5 h-3.5" /> Analiza Anomalii
             </h3>

@@ -152,7 +152,7 @@ export default function SettingsPage() {
       </div>
 
       {/* GŁÓWNY KONTENER */}
-      <div className="bg-white/40 dark:bg-black/20 backdrop-blur-2xl border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] overflow-hidden transition-all duration-500">
+      <div className="bg-white/40 dark:bg-black/20 backdrop-blur-lg border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] overflow-hidden transition-all duration-500">
         
         {/* ======================================= */}
         {/* TAB 1: ZABEZPIECZENIA                   */}
