@@ -83,7 +83,7 @@ export function FinanceAnalysis({ expenses, incomes, baseCurrency }: FinanceAnal
   }, {} as Record<string, number>);
 
   const pieData = Object.entries(expensesByCategory)
-    .map(([name, value]) => ({ name, value }))
+    .map(([name, value]) => ({ name, value: value as number }))
     .sort((a, b) => b.value - a.value);
 
   // 2. Wykres Dzienny (Trend wzdłuż osi czasu miesiąca)

@@ -81,7 +81,7 @@ export async function POST(req: Request) {
         data: {
           userId: user.id,
           amount: parseFloat(cost),
-          name: title + (isRecurring ? " (Abonament)" : " (Szuflada)"),
+          description: title + (isRecurring ? " (Abonament)" : " (Szuflada)"),
           date: new Date(startDate),
           categoryId: category?.id || ""
         }

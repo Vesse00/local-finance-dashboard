@@ -46,7 +46,7 @@ export async function POST(req: Request) {
         type,
         title,
         calories: calories ? parseInt(calories) : 0,
-        details: details || null // <-- Zapisujemy szczegóły do bazy
+        detasils: details || null // <-- Zapisujemy szczegóły do bazy
       }
     });
 

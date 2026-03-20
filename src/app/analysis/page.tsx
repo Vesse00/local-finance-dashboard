@@ -20,11 +20,11 @@ export default async function AnalysisPage({ searchParams }: { searchParams: Pro
   const resolvedParams = await searchParams;
   const activeTab = resolvedParams.tab || "finances";
 
-  let expenses = [];
-  let incomes = [];
-  let workDays = []; 
-  let healthDays = [];
-  let healthEntries = [];
+  let expenses: any[] = [];
+  let incomes: any[] = [];
+  let workDays: any[] = []; 
+  let healthDays: any[] = [];
+  let healthEntries: any[] = [];
 
   if (activeTab === "finances") {
     expenses = await prisma.expense.findMany({
