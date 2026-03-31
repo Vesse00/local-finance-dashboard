@@ -1,100 +1,116 @@
 <div align="center">
   <h1 align="center">MeBase.</h1>
   <p align="center">
-    <strong>Twój prywatny system operacyjny do życia. Offline by default.</strong>
+    <strong>Your private life operating system. Offline by default.</strong>
   </p>
   <p align="center">
-    <a href="#vision">Wizja</a> •
-    <a href="#features">Funkcje</a> •
-    <a href="#roadmap">Roadmapa</a> •
+    <a href="#vision">Vision</a> •
+    <a href="#features">Features</a> •
+    <a href="#roadmap">Roadmap</a> •
     <a href="#tech-stack">Tech Stack</a> •
-    <a href="#getting-started">Instalacja</a>
+    <a href="#getting-started">Getting Started</a>
   </p>
 </div>
 
 ---
 
-## 👁️ Wizja (The Vision)
+## 👁️ Vision
 
-W erze subskrypcji i chmur danych, które analizują każdy Twój ruch, **MeBase** obiera inną drogę. To modułowy, osobisty "Life OS" (System Operacyjny Życia), w którym to **Ty** masz 100% kontroli nad swoimi danymi. Żadnych ukrytych serwerów, żadnego przesyłania telemetrii. Twoje finanse, zdrowie i codzienne obowiązki zostają tam, gdzie ich miejsce – na Twoim urządzeniu.
+In an era of endless subscriptions and cloud services analyzing your every move, **MeBase** takes a fundamentally different path. It's a modular, personal "Life OS" where **You** retain 100% control over your data. No hidden servers, no telemetry, no tracking. Your finances, health metrics, and daily routines stay exactly where they belong — on your device.
 
-Płacisz raz. Używasz zawsze.
+Pay once. Use forever.
 
-## ✨ Główne Moduły
+## ✨ Core Modules & Features
 
-MeBase dzieli Twoje życie na inteligentne, zaszyfrowane środowiska (moduły):
+MeBase is designed as a collection of deeply integrated, highly specialized modules. Everything is interconnected yet neatly organized.
 
-- 💳 **Finanse:** Śledzenie budżetu, kategoryzacja wydatków, cele oszczędnościowe i analiza kosztów.
-- 🧬 **Zdrowie & Czas:** Monitorowanie poziomu energii, snu, wagi oraz ewidencja nadgodzin. Poznaj swoje limity.
-- 🚗 **Garaż:** Pełna ewidencja pojazdu – od raportów spalania po przypomnienia o ubezpieczeniu i przeglądach.
+### 💳 Finance Node
+- **Expense & Income Tracking:** Log transactions manually or bulk-import. Use custom tags for granular categorization.
+- **Subscription Manager:** Never miss a renewal date. Track monthly/yearly recurring costs and identify unused services.
+- **Budgeting Engine:** Set strict limits for specific categories and visualize your monthly "burn rate" in real-time.
+- **Advanced Analytics:** Interactive charts displaying your cash flow, net worth progression, and historical spending habits.
 
-*(Kolejne moduły w przygotowaniu)*
+### 🧬 Health & Productivity
+- **Biometrics Dashboard:** Track weight, daily energy levels, sleep duration, and overall mood.
+- **Habit Matrix:** Build routines with streak tracking and visual heatmaps (GitHub-style contribution graphs).
+- **Time Allocation:** Log deep work sessions, track overtime, and calculate your true hourly yield.
+- **Encrypted Journal:** A private, distraction-free space for daily reflections and notes, secured locally.
 
-## 🗺️ Roadmapa (Fazy Projektu)
+### 🚗 Garage & Assets
+- **Maintenance Timeline:** A complete service history with mileage logs and attached invoices/receipts.
+- **Cost-per-Distance Analysis:** Automatically calculate how much your vehicle actually costs to run per km/mile.
+- **Document Vault:** Keep your insurance policies, registration details, and upcoming inspection dates in one quick-access tab.
 
-MeBase jest obecnie w aktywnej fazie rozwoju. Nasz plan przejścia do pełnego ekosystemu:
+### 🛡️ System & Privacy (The Core)
+- **100% Local-First:** Powered by a local SQLite database. Zero cloud latency, zero external API dependencies.
+- **Data Portability:** Your data is strictly yours. Prevent vendor lock-in with one-click full exports to CSV and JSON.
+- **Bento-style Dashboard:** A highly customizable, beautiful home screen showing vital statistics from all modules at a single glance.
 
-- [x] **Faza 1: Web App (Obecnie)**
-  - Budowa rdzenia systemu (System Core).
-  - Zaprojektowanie modułów (Finanse, Zdrowie, Garaż).
-  - Dopracowanie UI/UX (Aksamitne animacje, minimalistyczny design, efekt Neumorphism/3D).
-- [ ] **Faza 2: Standalone Desktop App (Wkrótce)**
-  - Migracja aplikacji webowej do natywnej aplikacji desktopowej (Windows / macOS).
-  - Wdrożenie lokalnej bazy danych (SQLite) – prawdziwy Local-First.
-- [ ] **Faza 3: Mobile Companion**
-  - Aplikacja mobilna (iOS / Android) do szybkiego wprowadzania danych "w biegu".
-  - Bezpieczna, w pełni szyfrowana synchronizacja (End-to-End) między PC a telefonem (np. via lokalna sieć Wi-Fi).
+## 🗺️ Roadmap
+
+MeBase is in active development. Our roadmap to building a complete, local-first ecosystem:
+
+- [x] **Phase 1: Web App (Current)**
+  - Building the system core.
+  - Designing initial modules (Finance, Health, Garage).
+  - UI/UX refinement (Smooth animations, minimalist design, Neumorphism/Soft 3D effects).
+- [ ] **Phase 2: Standalone Desktop App (Coming Soon)**
+  - Migrating the web app to a native desktop application (Windows / macOS).
+  - Implementation of a local database (SQLite) for a true Local-First experience.
+- [ ] **Phase 3: Mobile Companion**
+  - Mobile application (iOS / Android) for quick data entry on the go.
+  - Secure, fully encrypted End-to-End synchronization between your PC and phone (e.g., via local Wi-Fi network).
 
 ## 🛠️ Tech Stack
 
-Aplikacja jest budowana z wykorzystaniem najnowszych, wiodących technologii, aby zapewnić najwyższą wydajność i niesamowity wygląd:
+Built with cutting-edge technologies to ensure top performance and a stunning, premium look:
 
 - **Framework:** [Next.js](https://nextjs.org/) (React)
 - **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
-- **Animacje:** [Framer Motion](https://www.framer.com/motion/)
-- **Komponenty UI:** [shadcn/ui](https://ui.shadcn.com/) (Styl: Radix Nova / Lucide Icons)
-- **Baza danych:** [Prisma](https://www.prisma.io/) (docelowo SQLite dla Local-First)
+- **Animations:** [Framer Motion](https://www.framer.com/motion/)
+- **UI Components:** [shadcn/ui](https://ui.shadcn.com/) (Style: Radix Nova / Lucide Icons)
+- **Database ORM:** [Prisma](https://www.prisma.io/) (Targeting SQLite for Local-First)
 
-## 🚀 Getting Started (Dla developerów)
+## 🚀 Getting Started (For Developers)
 
-Jeśli chcesz uruchomić obecną wersję Web lokalnie na swoim komputerze:
+If you want to run the current Web version locally on your machine:
 
-### Wymagania
+### Prerequisites
 - Node.js 18+
 - npm / pnpm / yarn
 
-### Instalacja
+### Installation
 
-1. Sklonuj repozytorium:
+1. Clone the repository:
 ```bash
-git clone https://github.com/TWOJA_NAZWA/mebase.git
+git clone https://github.com/YOUR_USERNAME/mebase.git
 ```
 
-2. Wejdź do folderu projektu:
+2. Navigate to the project directory:
 ```bash
 cd mebase
 ```
 
-3. Zainstaluj zależności:
+3. Install dependencies:
 ```bash
 npm install
 ```
 
-4. Skonfiguruj bazę danych (skopiuj `.env.example` do `.env` i wygeneruj klienta Prisma):
+4. Set up the database (copy `.env.example` to `.env` and generate the Prisma client):
 ```bash
 npx prisma generate
 npx prisma db push
 ```
 
-5. Uruchom serwer deweloperski:
+5. Start the development server:
 ```bash
 npm run dev
 ```
 
-Aplikacja będzie dostępna pod adresem [http://localhost:3000](http://localhost:3000).
+The application will be available at [http://localhost:3000](http://localhost:3000).
 
 ---
 
 <div align="center">
-  <sub>Zaprojektowane z pasją do prywatności. MeBase © 2026</sub>
+  <sub>Designed with a passion for privacy. MeBase © 2026</sub>
 </div>
