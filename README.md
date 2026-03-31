@@ -1,78 +1,100 @@
-# 🔋 Personal Resource & Finance Nexus
-
-A high-performance, local-first dashboard designed to treat your life like a managed system. This isn't just a spreadsheet; it's a correlation engine that bridges the gap between your bank account, your physical health, and your mental energy.
-
----
-
-## 🧠 The Concept: Why This Exists
-
-Most tools separate finance from health. This dashboard operates on the philosophy that **everything is connected**. 
-* If your **Energy Level** is low, your **Emotional Spending** usually goes up.
-* If your **Vehicle** isn't maintained, your **Financial Stress** increases.
-* If your **Work Schedule** is overloaded, your **Health Metrics** drop.
-
-This project provides a centralized "Cockpit" to monitor these feedback loops in real-time.
-
----
-
-## 🛠 Functional Modules
-
-### 1. The Finance Engine
-Beyond simple logging, the finance module categorizes your life into **Needs, Wants, and Savings**. 
-* **Dynamic Analysis:** Uses Recharts to visualize spending trends.
-* **The "Drawer" System:** A unique approach to managing "Szuflada" (Drawer) or "Abonament" (Subscription) costs, ensuring small recurring leaks are visible.
-* **Savings Architecture:** Supports internal transfers between accounts to track goal progression without losing sight of total liquidity.
-
-### 2. The "Life Battery" (Energy Tracking)
-The standout feature of this system. Instead of a vague "how do you feel?", it uses a **0-100% Battery Model**.
-* **The Dual-Track System:** Users can break down their day into **Work Energy** (productivity/stress) and **Free Time Energy** (recovery).
-* **Visual Cues:** Uses a custom-built emoji-based slider that changes state (🛑, 🪫, 🔋, ⚡) based on physiological "charge."
-* **Correlational Logic:** The system analyzes if "Low Battery" days lead to higher impulsive spending, providing a "Burnout Warning."
-
-### 3. The Daily Briefing AI
-The central intelligence hub of the application. 
-* **State-Aware UI:** The dashboard changes based on the time of day. 
-* **Evening Check-ins:** The "Energy Prompt" is programmed to remain hidden during productive hours and only emerge after 6:00 PM to encourage reflection.
-* **Insight Generation:** Aggregates data from all modules to give you a "Status Report" on your life.
-
-### 4. Vehicle Maintenance (Garage)
-A dedicated module for tracking the "Health" of your hardware. It logs service events and costs, integrating vehicle upkeep into your total financial footprint.
+<div align="center">
+  <h1 align="center">MeBase.</h1>
+  <p align="center">
+    <strong>Twój prywatny system operacyjny do życia. Offline by default.</strong>
+  </p>
+  <p align="center">
+    <a href="#vision">Wizja</a> •
+    <a href="#features">Funkcje</a> •
+    <a href="#roadmap">Roadmapa</a> •
+    <a href="#tech-stack">Tech Stack</a> •
+    <a href="#getting-started">Instalacja</a>
+  </p>
+</div>
 
 ---
 
-## 🏗 How It Works: Technical Architecture
+## 👁️ Wizja (The Vision)
 
-The application is built on the **Bleeding Edge** of the React ecosystem:
+W erze subskrypcji i chmur danych, które analizują każdy Twój ruch, **MeBase** obiera inną drogę. To modułowy, osobisty "Life OS" (System Operacyjny Życia), w którym to **Ty** masz 100% kontroli nad swoimi danymi. Żadnych ukrytych serwerów, żadnego przesyłania telemetrii. Twoje finanse, zdrowie i codzienne obowiązki zostają tam, gdzie ich miejsce – na Twoim urządzeniu.
 
-### The Stack
-* **Next.js 15 (App Router):** Utilizes React Server Components (RSC) for lightning-fast data fetching directly from the source.
-* **Prisma & SQLite:** A local-first database approach. Your data stays on your hardware, ensuring total privacy.
-* **Server Actions:** All mutations (saving energy, adding expenses) happen through secure, type-safe server-side functions, bypassing the need for traditional REST boilerplate.
+Płacisz raz. Używasz zawsze.
 
-### Data Flow Pattern
-```text
-[User Input] --> [Server Action] --> [Prisma ORM] --> [SQLite DB]
-      ^                                                |
-      |________________ [Revalidation] ________________|
+## ✨ Główne Moduły
+
+MeBase dzieli Twoje życie na inteligentne, zaszyfrowane środowiska (moduły):
+
+- 💳 **Finanse:** Śledzenie budżetu, kategoryzacja wydatków, cele oszczędnościowe i analiza kosztów.
+- 🧬 **Zdrowie & Czas:** Monitorowanie poziomu energii, snu, wagi oraz ewidencja nadgodzin. Poznaj swoje limity.
+- 🚗 **Garaż:** Pełna ewidencja pojazdu – od raportów spalania po przypomnienia o ubezpieczeniu i przeglądach.
+
+*(Kolejne moduły w przygotowaniu)*
+
+## 🗺️ Roadmapa (Fazy Projektu)
+
+MeBase jest obecnie w aktywnej fazie rozwoju. Nasz plan przejścia do pełnego ekosystemu:
+
+- [x] **Faza 1: Web App (Obecnie)**
+  - Budowa rdzenia systemu (System Core).
+  - Zaprojektowanie modułów (Finanse, Zdrowie, Garaż).
+  - Dopracowanie UI/UX (Aksamitne animacje, minimalistyczny design, efekt Neumorphism/3D).
+- [ ] **Faza 2: Standalone Desktop App (Wkrótce)**
+  - Migracja aplikacji webowej do natywnej aplikacji desktopowej (Windows / macOS).
+  - Wdrożenie lokalnej bazy danych (SQLite) – prawdziwy Local-First.
+- [ ] **Faza 3: Mobile Companion**
+  - Aplikacja mobilna (iOS / Android) do szybkiego wprowadzania danych "w biegu".
+  - Bezpieczna, w pełni szyfrowana synchronizacja (End-to-End) między PC a telefonem (np. via lokalna sieć Wi-Fi).
+
+## 🛠️ Tech Stack
+
+Aplikacja jest budowana z wykorzystaniem najnowszych, wiodących technologii, aby zapewnić najwyższą wydajność i niesamowity wygląd:
+
+- **Framework:** [Next.js](https://nextjs.org/) (React)
+- **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
+- **Animacje:** [Framer Motion](https://www.framer.com/motion/)
+- **Komponenty UI:** [shadcn/ui](https://ui.shadcn.com/) (Styl: Radix Nova / Lucide Icons)
+- **Baza danych:** [Prisma](https://www.prisma.io/) (docelowo SQLite dla Local-First)
+
+## 🚀 Getting Started (Dla developerów)
+
+Jeśli chcesz uruchomić obecną wersję Web lokalnie na swoim komputerze:
+
+### Wymagania
+- Node.js 18+
+- npm / pnpm / yarn
+
+### Instalacja
+
+1. Sklonuj repozytorium:
+```bash
+git clone https://github.com/TWOJA_NAZWA/mebase.git
 ```
 
-### Correlation Logic
-The most advanced part of the system is found in the `MoodService`. It performs background calculations:
-```typescript
-// Logic snippet: Checking the cost of a bad mood
-const avgSpentLowEnergy = await getAvgSpendingForDates(lowEnergyDates);
-const avgSpentHighEnergy = await getAvgSpendingForDates(highEnergyDates);
-return (avgSpentLowEnergy - avgSpentHighEnergy); // The "Emotional Tax"
+2. Wejdź do folderu projektu:
+```bash
+cd mebase
 ```
 
+3. Zainstaluj zależności:
+```bash
+npm install
+```
+
+4. Skonfiguruj bazę danych (skopiuj `.env.example` do `.env` i wygeneruj klienta Prisma):
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+5. Uruchom serwer deweloperski:
+```bash
+npm run dev
+```
+
+Aplikacja będzie dostępna pod adresem [http://localhost:3000](http://localhost:3000).
+
 ---
 
-## 🌑 Design Philosophy
-* **Glassmorphism UI:** High use of backdrop blurs and semi-transparent layers for a "modern OS" feel.
-* **Contextual Awareness:** The UI reacts to your data. Warning states (amber/red) trigger when the AI detects financial or energetic anomalies.
-* **Zero Latency:** By utilizing local SQLite and Next.js caching, transitions between your garage, finances, and health logs are near-instant.
-
----
-
-## 📜 Summary
-This dashboard is a **Personal ERP (Enterprise Resource Planning)** system. It treats your time, money, and health as finite resources that must be balanced to avoid the "Empty Battery" state.
+<div align="center">
+  <sub>Zaprojektowane z pasją do prywatności. MeBase © 2026</sub>
+</div>
