@@ -1,12 +1,15 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 
 export async function GET(req: Request) {
   try {
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak użytkownika" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = { id: (session.user as any).id };
 
     const items = await prisma.drawerItem.findMany({
       where: { userId: user.id },
@@ -16,14 +19,15 @@ export async function GET(req: Request) {
     const safeItems = JSON.parse(JSON.stringify(items, (key, value) => typeof value === 'bigint' ? value.toString() : value));
     return NextResponse.json(safeItems);
   } catch (error) {
-    return NextResponse.json({ error: "Wystąpił błąd" }, { status: 500 });
+    return NextResponse.json({ error: "WystÄ…piĹ‚ bĹ‚Ä…d" }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak użytkownika" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = { id: (session.user as any).id };
 
     // Odbieramy dane jako FormData (wspiera pliki)
     const formData = await req.formData();
@@ -45,16 +49,16 @@ export async function POST(req: Request) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      // Ścieżka do folderu public/uploads (tworzy go, jeśli nie istnieje)
+      // ĹšcieĹĽka do folderu public/uploads (tworzy go, jeĹ›li nie istnieje)
       const uploadDir = path.join(process.cwd(), "public/uploads");
       try { await mkdir(uploadDir, { recursive: true }); } catch (e) {}
 
-      // Generujemy unikalną nazwę pliku, żeby się nie nadpisały
+      // Generujemy unikalnÄ… nazwÄ™ pliku, ĹĽeby siÄ™ nie nadpisaĹ‚y
       const uniqueName = `${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
       const filePath = path.join(uploadDir, uniqueName);
       
       await writeFile(filePath, buffer);
-      documentUrl = `/uploads/${uniqueName}`; // Ścieżka, którą zapiszemy w bazie
+      documentUrl = `/uploads/${uniqueName}`; // ĹšcieĹĽka, ktĂłrÄ… zapiszemy w bazie
     }
 
     // 1. Zapisujemy w Cyfrowej Szufladzie z linkiem do pliku
@@ -88,24 +92,25 @@ export async function POST(req: Request) {
       });
     }
 
-    return NextResponse.json({ message: "Zapisano pomyślnie", drawerItem });
+    return NextResponse.json({ message: "Zapisano pomyĹ›lnie", drawerItem });
   } catch (error) {
-    console.error("Błąd zapisu:", error);
-    return NextResponse.json({ error: "Wystąpił błąd" }, { status: 500 });
+    console.error("BĹ‚Ä…d zapisu:", error);
+    return NextResponse.json({ error: "WystÄ…piĹ‚ bĹ‚Ä…d" }, { status: 500 });
   }
 }
 
 export async function DELETE(req: Request) {
   try {
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak użytkownika" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = { id: (session.user as any).id };
 
     const { id } = await req.json();
     await prisma.drawerItem.delete({ where: { id } });
-    // W przyszłości można tu też dodać usuwanie pliku z dysku (fs.unlink)
+    // W przyszĹ‚oĹ›ci moĹĽna tu teĹĽ dodaÄ‡ usuwanie pliku z dysku (fs.unlink)
 
-    return NextResponse.json({ message: "Usunięto pomyślnie" });
+    return NextResponse.json({ message: "UsuniÄ™to pomyĹ›lnie" });
   } catch (error) {
-    return NextResponse.json({ error: "Wystąpił błąd" }, { status: 500 });
+    return NextResponse.json({ error: "WystÄ…piĹ‚ bĹ‚Ä…d" }, { status: 500 });
   }
 }

@@ -56,6 +56,9 @@ model Income {
   user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   createdAt           DateTime @default(now())
+
+  // INDEKSY OPTYMALIZACYJNE:
+  @@index([userId, date])
 }
 
 // Tabela na wydatki i transfery
@@ -78,13 +81,15 @@ model Expense {
   categoryId          String?
   category            Category? @relation(fields: [categoryId], references: [id])
 
-  // Relacja do zlecenia stałego (jeśli to rata)
+  // Relacja z zleceniem stałym
   recurringId         String?
   recurring           RecurringPayment? @relation(fields: [recurringId], references: [id], onDelete: Cascade)
   
-  
-  
   createdAt           DateTime @default(now())
+
+  // INDEKSY OPTYMALIZACYJNE:
+  @@index([userId, date])
+  @@index([categoryId])
 }
 
 // NOWOŚĆ: Zlecenia stałe, subskrypcje i raty kredytowe

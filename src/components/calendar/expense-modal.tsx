@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { addExpense, adjustMainBalance } from "@/lib/actions";
 import { RecurringForm } from "./recurring-form";
 import { TransferForm } from "./transfer-form";
+import { useLanguage } from "@/components/LanguageProvider";
 
 interface ExpenseModalProps {
   isOpen: boolean;
@@ -15,13 +16,15 @@ interface ExpenseModalProps {
 }
 
 export function ExpenseModal({ isOpen, onClose, selectedDate, categories }: ExpenseModalProps) {
+  const { t, language } = useLanguage();
   const [isPending, startTransition] = useTransition();
   const [mounted, setMounted] = useState(false);
   
   // ZMIANA: Mamy 4 opcje
   const [type, setType] = useState<"ONETIME" | "RECURRING" | "CORRECTION" | "TRANSFER">("ONETIME");
 
-  const [categorySelection, setCategorySelection] = useState("nowa");
+  const NEW_CATEGORY_CONST = t("calendar.modals.expense.category_new");
+  const [categorySelection, setCategorySelection] = useState(NEW_CATEGORY_CONST);
   const [customCategory, setCustomCategory] = useState("");
 
   useEffect(() => setMounted(true), []);
@@ -30,7 +33,7 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories }: Expe
     if (isOpen) {
       document.body.style.overflow = "hidden";
       setType("ONETIME");
-      setCategorySelection(categories.length > 0 ? categories[0].name : "nowa");
+      setCategorySelection(categories.length > 0 ? categories[0].name : NEW_CATEGORY_CONST);
       setCustomCategory("");
     } else {
       document.body.style.overflow = "auto";
@@ -41,7 +44,7 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories }: Expe
   const handleOnetimeSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    if (categorySelection === "nowa" && customCategory.trim() !== "") {
+    if (categorySelection === NEW_CATEGORY_CONST && customCategory.trim() !== "") {
       formData.set("category", customCategory.trim());
     }
     startTransition(async () => {
@@ -66,24 +69,24 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories }: Expe
           <X className="h-5 w-5" />
         </button>
 
-        <h3 className="text-xl font-bold mb-1 text-zinc-900 dark:text-white">Operacja w dniu</h3>
+        <h3 className="text-xl font-bold mb-1 text-zinc-900 dark:text-white">{t("calendar.modals.expense.title")}</h3>
         <p className="text-sm text-zinc-500 mb-6">
-          {selectedDate?.toLocaleDateString("pl-PL", { day: 'numeric', month: 'long', year: 'numeric' })}
+          {selectedDate?.toLocaleDateString(language === "en" ? "en-US" : "pl-PL", { day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
 
         {/* SIATKA 2x2 */}
         <div className="grid grid-cols-2 gap-2 mb-6 bg-black/5 dark:bg-white/5 p-2 rounded-2xl">
           <button type="button" onClick={() => setType("ONETIME")} className={`py-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all ${type === "ONETIME" ? "bg-white dark:bg-zinc-800 shadow-sm text-zinc-900 dark:text-white" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}>
-            <CalendarIcon className="w-3.5 h-3.5" /> Wydatek
+            <CalendarIcon className="w-3.5 h-3.5" /> {t("calendar.modals.expense.type_expense")}
           </button>
           <button type="button" onClick={() => setType("TRANSFER")} className={`py-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all ${type === "TRANSFER" ? "bg-blue-500 shadow-md shadow-blue-500/20 text-white" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}>
-            <ArrowRightLeft className="w-3.5 h-3.5" /> Transfer
+            <ArrowRightLeft className="w-3.5 h-3.5" /> {t("calendar.modals.expense.type_transfer")}
           </button>
           <button type="button" onClick={() => setType("RECURRING")} className={`py-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all ${type === "RECURRING" ? "bg-indigo-500 shadow-md shadow-indigo-500/20 text-white" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}>
-            <Repeat className="w-3.5 h-3.5" /> Cykliczna
+            <Repeat className="w-3.5 h-3.5" /> {t("calendar.modals.expense.type_recurring")}
           </button>
           <button type="button" onClick={() => setType("CORRECTION")} className={`py-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all ${type === "CORRECTION" ? "bg-orange-500 shadow-md shadow-orange-500/20 text-white" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}>
-            <Scale className="w-3.5 h-3.5" /> Korekta
+            <Scale className="w-3.5 h-3.5" /> {t("calendar.modals.expense.type_correction")}
           </button>
         </div>
 
@@ -92,23 +95,23 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories }: Expe
           <form className="space-y-4 animate-in slide-in-from-left-4 duration-300" onSubmit={handleOnetimeSubmit}>
             <input type="hidden" name="date" value={selectedDate?.toISOString() || new Date().toISOString()} />
             <div>
-              <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Kwota</label>
-              <input name="amount" type="number" step="0.01" placeholder="0.00" className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary text-zinc-900 dark:text-white" required />
+              <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">{t("calendar.modals.expense.amount_label")}</label>
+              <input name="amount" type="number" step="0.01" placeholder={t("calendar.modals.expense.amount_placeholder")} className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary text-zinc-900 dark:text-white" required />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Kategoria</label>
+              <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">{t("calendar.modals.expense.category_label")}</label>
               <select name="category" value={categorySelection} onChange={(e) => setCategorySelection(e.target.value)} className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary text-zinc-900 dark:text-white mb-2">
                 {categories.map(cat => <option key={cat.id} value={cat.name} className="bg-white dark:bg-zinc-900">{cat.icon} {cat.name}</option>)}
-                <option value="nowa" className="text-primary font-bold bg-white dark:bg-zinc-900">+ Dodaj nową...</option>
+                <option value={NEW_CATEGORY_CONST} className="text-primary font-bold bg-white dark:bg-zinc-900">+ {t("calendar.modals.expense.category_new_label")}</option>
               </select>
-              {categorySelection === "nowa" && <input type="text" placeholder="Wpisz nazwę kategorii..." value={customCategory} onChange={(e) => setCustomCategory(e.target.value)} required className="w-full rounded-xl border border-primary/50 bg-primary/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary text-zinc-900 dark:text-white animate-in slide-in-from-top-2" />}
+              {categorySelection === NEW_CATEGORY_CONST && <input type="text" placeholder={t("calendar.modals.expense.category_custom_placeholder")} value={customCategory} onChange={(e) => setCustomCategory(e.target.value)} required className="w-full rounded-xl border border-primary/50 bg-primary/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary text-zinc-900 dark:text-white animate-in slide-in-from-top-2" />}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Opis</label>
-              <input name="description" type="text" placeholder="np. Zakupy" className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary text-zinc-900 dark:text-white" />
+              <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">{t("calendar.modals.expense.description_label")}</label>
+              <input name="description" type="text" placeholder={t("calendar.modals.expense.description_placeholder")} className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary text-zinc-900 dark:text-white" />
             </div>
             <button type="submit" disabled={isPending} className="w-full mt-2 rounded-xl bg-primary py-3 text-white font-semibold shadow-lg shadow-primary/20 disabled:opacity-50">
-              {isPending ? "Zapisywanie..." : "Zapisz wydatek"}
+              {isPending ? t("calendar.modals.expense.submitting") : t("calendar.modals.expense.submit_expense")}
             </button>
           </form>
         )}
@@ -127,11 +130,11 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories }: Expe
         {type === "CORRECTION" && (
           <form className="space-y-4 animate-in slide-in-from-right-4 duration-300" onSubmit={handleCorrectionSubmit}>
             <div>
-              <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Prawdziwe saldo</label>
-              <input name="amount" type="number" step="0.01" placeholder="np. 1250.50" className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-zinc-900 dark:text-white text-lg font-bold" required />
+              <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">{t("calendar.modals.expense.correction_label")}</label>
+              <input name="amount" type="number" step="0.01" placeholder={t("calendar.modals.expense.correction_placeholder")} className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-zinc-900 dark:text-white text-lg font-bold" required />
             </div>
             <button type="submit" disabled={isPending} className="w-full mt-4 rounded-xl bg-orange-500 py-3 text-white font-semibold shadow-lg shadow-orange-500/20 disabled:opacity-50">
-              {isPending ? "Obliczanie..." : "Wyrównaj saldo"}
+              {isPending ? t("calendar.modals.expense.submitting") : t("calendar.modals.expense.submit_correction")}
             </button>
           </form>
         )}

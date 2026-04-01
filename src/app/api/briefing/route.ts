@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { startOfDay, endOfDay, addDays } from "date-fns";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET() {
   try {
-    // OPTYMALIZACJA 1: Zamiast pobierać całego Usera (razem z hasłem itp.), pobieramy tylko ID i Miasto
-    const user = await prisma.user.findFirst({
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || !(session.user as any).id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+
+    // Pobieramy usera żeby mieć info o lokalizacji (do pogody)
+    const user = await prisma.user.findUnique({
+      where: { id: (session.user as any).id },
       select: { id: true, location: true }
     });
     if (!user) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });

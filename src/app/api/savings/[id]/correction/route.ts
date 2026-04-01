@@ -1,33 +1,38 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const resolvedParams = await params;
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = { id: (session.user as any).id };
+    const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+    if (!dbUser) return NextResponse.json({ error: "Brak usera" }, { status: 404 });
 
     const { newBalance, reason } = await req.json();
     const targetBalance = parseFloat(newBalance);
 
     if (isNaN(targetBalance) || targetBalance < 0) {
-      return NextResponse.json({ error: "Nieprawidłowa kwota" }, { status: 400 });
+      return NextResponse.json({ error: "NieprawidĹ‚owa kwota" }, { status: 400 });
     }
 
-    // Dynamiczne przypisanie opisu w zależności od rodzaju korekty
+    // Dynamiczne przypisanie opisu w zaleĹĽnoĹ›ci od rodzaju korekty
     let description = "Korekta salda";
     if (reason === "INTEREST") description = "Kapitalizacja odsetek";
     if (reason === "PROFIT") description = "Zysk z inwestycji (Wzrost wyceny)";
     if (reason === "LOSS") description = "Strata z inwestycji (Spadek wyceny)";
-    if (reason === "FEE") description = "Opłata za prowadzenie konta / prowizja";
-    if (reason === "MANUAL") description = "Ręczna korekta salda";
+    if (reason === "FEE") description = "OpĹ‚ata za prowadzenie konta / prowizja";
+    if (reason === "MANUAL") description = "RÄ™czna korekta salda";
 
     // -----------------------------------------
-    // LOGIKA DLA GŁÓWNYCH OSZCZĘDNOŚCI ("MAIN")
+    // LOGIKA DLA GĹĂ“WNYCH OSZCZÄDNOĹšCI ("MAIN")
     // -----------------------------------------
     if (resolvedParams.id === "main") {
-      const difference = targetBalance - user.savings;
-      if (difference === 0) return NextResponse.json({ success: true, message: "Brak różnicy" });
+      const difference = targetBalance - dbUser.savings;
+      if (difference === 0) return NextResponse.json({ success: true, message: "Brak rĂłĹĽnicy" });
 
       await prisma.$transaction([
         prisma.user.update({ where: { id: user.id }, data: { savings: targetBalance } }),
@@ -54,9 +59,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (!account) return NextResponse.json({ error: "Nie znaleziono konta" }, { status: 404 });
 
     const difference = targetBalance - account.balance;
-    if (difference === 0) return NextResponse.json({ success: true, message: "Brak różnicy" });
+    if (difference === 0) return NextResponse.json({ success: true, message: "Brak rĂłĹĽnicy" });
 
-    // Zapisujemy nowy stan konta oraz ślad w historii transakcji
+    // Zapisujemy nowy stan konta oraz Ĺ›lad w historii transakcji
     await prisma.$transaction([
       prisma.savingsAccount.update({
         where: { id: account.id },
@@ -76,6 +81,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Correction API Error:", error);
-    return NextResponse.json({ error: "Wystąpił błąd serwera" }, { status: 500 });
+    return NextResponse.json({ error: "WystÄ…piĹ‚ bĹ‚Ä…d serwera" }, { status: 500 });
   }
 }

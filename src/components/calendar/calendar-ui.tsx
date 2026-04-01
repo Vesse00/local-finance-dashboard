@@ -7,7 +7,8 @@ import {
   startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, 
   isToday, setYear, isSameDay
 } from "date-fns";
-import { pl } from "date-fns/locale";
+import { pl, enUS } from "date-fns/locale";
+import { useLanguage } from "@/components/LanguageProvider";
 import { ExpenseModal } from "@/components/calendar/expense-modal";
 import { AddIncomeModal } from "@/components/dashboard/add-income-modal";
 import { DayDetailsModal } from "@/components/calendar/day-details-modal";
@@ -22,6 +23,9 @@ interface CalendarUIProps {
 }
 
 export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: CalendarUIProps) {
+  const { t, language } = useLanguage();
+  const dateLocale = language === "en" ? enUS : pl;
+
   const [currentMonth, setCurrentMonth] = useState(new Date());
   
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -54,7 +58,15 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
   const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
   const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
   const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
-  const weekDays = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Ndz"];
+  const weekDays = [
+    t("calendar.weekdays.mon"),
+    t("calendar.weekdays.tue"),
+    t("calendar.weekdays.wed"),
+    t("calendar.weekdays.thu"),
+    t("calendar.weekdays.fri"),
+    t("calendar.weekdays.sat"),
+    t("calendar.weekdays.sun")
+  ];
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
@@ -69,7 +81,7 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
           
           <div className="flex items-center justify-center gap-2 min-w-[170px]">
             <h2 className="text-xl font-bold capitalize">
-              {format(currentMonth, 'LLLL', { locale: pl })}
+              {format(currentMonth, 'LLLL', { locale: dateLocale })}
             </h2>
             <select 
               value={currentMonth.getFullYear()}
@@ -94,7 +106,7 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
             className="flex items-center gap-2 p-2 px-4 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors border border-black/5 dark:border-white/10"
           >
             <Settings className="w-4 h-4 text-zinc-500" />
-            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">Kategorie</span>
+            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">{t("calendar.categories_button")}</span>
           </button>
         </div>
       </div>
@@ -161,7 +173,7 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
                   {/* Jeśli są jakieś ukryte transakcje, pokaż mały chip z informacją */}
                   {hiddenCount > 0 && (
                     <div className="truncate rounded bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold border border-black/5 dark:border-white/5 text-center mt-0.5">
-                      + {hiddenCount} więcej
+                      {t("calendar.more_transactions").replace("{count}", hiddenCount.toString())}
                     </div>
                   )}
                 </div>

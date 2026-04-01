@@ -1,10 +1,13 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET(req: Request) {
   try {
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak użytkownika" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = { id: (session.user as any).id };
 
     const { searchParams } = new URL(req.url);
     const monthStr = searchParams.get("month");
@@ -24,17 +27,18 @@ export async function GET(req: Request) {
 
     return NextResponse.json(healthDays);
   } catch (error) {
-    return NextResponse.json({ error: "Wystąpił błąd" }, { status: 500 });
+    return NextResponse.json({ error: "WystÄ…piĹ‚ bĹ‚Ä…d" }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak użytkownika" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = { id: (session.user as any).id };
 
     const body = await req.json();
-    // Dodano odbieranie wymiarów: chest, waist, hips, biceps, thigh
+    // Dodano odbieranie wymiarĂłw: chest, waist, hips, biceps, thigh
     const { date, weight, waterGlasses, calories, workout, chest, waist, hips, biceps, thigh } = body;
 
     const targetDate = new Date(date);
@@ -68,8 +72,8 @@ export async function POST(req: Request) {
       }
     });
 
-    return NextResponse.json({ message: "Zapisano pomyślnie", healthDay });
+    return NextResponse.json({ message: "Zapisano pomyĹ›lnie", healthDay });
   } catch (error) {
-    return NextResponse.json({ error: "Wystąpił błąd" }, { status: 500 });
+    return NextResponse.json({ error: "WystÄ…piĹ‚ bĹ‚Ä…d" }, { status: 500 });
   }
 }

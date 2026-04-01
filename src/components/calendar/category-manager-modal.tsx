@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Trash2, Plus, Tags } from "lucide-react";
 import { createCategory, deleteCategory } from "@/lib/actions";
+import { useLanguage } from "@/components/LanguageProvider";
 
 interface CategoryManagerModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface CategoryManagerModalProps {
 }
 
 export function CategoryManagerModal({ isOpen, onClose, categories }: CategoryManagerModalProps) {
+  const { t } = useLanguage();
   const [isPending, startTransition] = useTransition();
   const [mounted, setMounted] = useState(false);
 
@@ -52,8 +54,8 @@ export function CategoryManagerModal({ isOpen, onClose, categories }: CategoryMa
               <Tags className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Kategorie</h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">Zarządzaj swoimi wydatkami</p>
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-white">{t("calendar.modals.category_manager.title")}</h3>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("calendar.modals.category_manager.subtitle")}</p>
             </div>
           </div>
           <button onClick={onClose} className="rounded-full p-2 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
@@ -64,7 +66,7 @@ export function CategoryManagerModal({ isOpen, onClose, categories }: CategoryMa
         {/* Lista aktualnych kategorii */}
         <div className="p-6 overflow-y-auto space-y-2 flex-1 min-h-[200px]">
           {categories.length === 0 ? (
-            <p className="text-center text-sm text-zinc-500 py-4">Brak dodanych kategorii.</p>
+            <p className="text-center text-sm text-zinc-500 py-4">{t("calendar.modals.category_manager.empty")}</p>
           ) : (
             categories.map(category => (
               <div key={category.id} className="flex items-center justify-between p-3 rounded-xl border border-black/5 dark:border-white/5 bg-zinc-50 dark:bg-zinc-900/50">
@@ -76,7 +78,7 @@ export function CategoryManagerModal({ isOpen, onClose, categories }: CategoryMa
                   onClick={() => handleDelete(category.id)}
                   disabled={isPending}
                   className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
-                  title="Usuń kategorię"
+                  title={t("calendar.modals.category_manager.delete_tooltip")}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -91,16 +93,16 @@ export function CategoryManagerModal({ isOpen, onClose, categories }: CategoryMa
             <input 
               name="icon" 
               type="text" 
-              placeholder="🍕" 
+              placeholder={t("calendar.modals.category_manager.icon_placeholder")}
               maxLength={2}
               className="w-14 text-center rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-950 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary text-xl" 
               required
-              title="Wklej jedno emoji"
+              title={t("calendar.modals.category_manager.icon_title")}
             />
             <input 
               name="name" 
               type="text" 
-              placeholder="Nazwa kategorii" 
+              placeholder={t("calendar.modals.category_manager.name_placeholder")} 
               className="flex-1 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-950 p-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary dark:text-white" 
               required
             />

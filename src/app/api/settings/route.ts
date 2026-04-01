@@ -1,13 +1,17 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import bcrypt from "bcryptjs";
 
 export async function GET() {
   try {
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = await prisma.user.findUnique({ where: { id: (session.user as any).id } });
+    if (!user) return NextResponse.json({ error: 'Brak autoryzacji' }, { status: 401 });
     
-    // Zwracamy też lokalizację
+    // Zwracamy teĹĽ lokalizacjÄ™
     return NextResponse.json({ 
       email: user.email, 
       username: user.username, 
@@ -16,20 +20,22 @@ export async function GET() {
       payday: user.payday ?? 10
     });
   } catch (error) {
-    return NextResponse.json({ error: "Błąd serwera" }, { status: 500 });
+    return NextResponse.json({ error: "BĹ‚Ä…d serwera" }, { status: 500 });
   }
 }
 
 export async function PUT(req: Request) {
   try {
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = await prisma.user.findUnique({ where: { id: (session.user as any).id } });
+    if (!user) return NextResponse.json({ error: 'Brak autoryzacji' }, { status: 401 });
 
     const { currentPassword, newEmail, newPassword, location, currency, payday } = await req.json();
 
     const updateData: any = {};
 
-    // 1. ZMIANA PREFERENCJI (Utilities) - Nie wymaga obecnego hasła!
+    // 1. ZMIANA PREFERENCJI (Utilities) - Nie wymaga obecnego hasĹ‚a!
     if (location !== undefined && location !== user.location) {
       updateData.location = location;
     }
@@ -40,35 +46,35 @@ export async function PUT(req: Request) {
       updateData.payday = Number(payday);
     }
 
-    // 2. ZMIANA ZABEZPIECZEŃ (E-mail / Hasło) - Kategorycznie wymaga obecnego hasła!
+    // 2. ZMIANA ZABEZPIECZEĹ (E-mail / HasĹ‚o) - Kategorycznie wymaga obecnego hasĹ‚a!
     if (newEmail || newPassword) {
       if (!currentPassword) {
-        return NextResponse.json({ error: "Musisz podać obecne hasło, aby zmienić e-mail lub hasło." }, { status: 400 });
+        return NextResponse.json({ error: "Musisz podaÄ‡ obecne hasĹ‚o, aby zmieniÄ‡ e-mail lub hasĹ‚o." }, { status: 400 });
       }
       
       const isValid = await bcrypt.compare(currentPassword, user.password);
       if (!isValid) {
-        return NextResponse.json({ error: "Obecne hasło jest nieprawidłowe." }, { status: 400 });
+        return NextResponse.json({ error: "Obecne hasĹ‚o jest nieprawidĹ‚owe." }, { status: 400 });
       }
 
       if (newEmail && newEmail !== user.email) {
         const existingEmail = await prisma.user.findUnique({ where: { email: newEmail } });
         if (existingEmail) {
-          return NextResponse.json({ error: "Ten adres e-mail jest już przypisany do innego konta." }, { status: 400 });
+          return NextResponse.json({ error: "Ten adres e-mail jest juĹĽ przypisany do innego konta." }, { status: 400 });
         }
         updateData.email = newEmail;
       }
 
       if (newPassword) {
         if (newPassword.length < 6) {
-           return NextResponse.json({ error: "Nowe hasło musi mieć min. 6 znaków." }, { status: 400 });
+           return NextResponse.json({ error: "Nowe hasĹ‚o musi mieÄ‡ min. 6 znakĂłw." }, { status: 400 });
         }
         updateData.password = await bcrypt.hash(newPassword, 10);
       }
     }
 
     if (Object.keys(updateData).length === 0) {
-       return NextResponse.json({ error: "Nie wprowadzono żadnych zmian." }, { status: 400 });
+       return NextResponse.json({ error: "Nie wprowadzono ĹĽadnych zmian." }, { status: 400 });
     }
 
     await prisma.user.update({
@@ -80,6 +86,6 @@ export async function PUT(req: Request) {
 
   } catch (error) {
     console.error("Settings API Error:", error);
-    return NextResponse.json({ error: "Wystąpił błąd serwera podczas zapisywania zmian." }, { status: 500 });
+    return NextResponse.json({ error: "WystÄ…piĹ‚ bĹ‚Ä…d serwera podczas zapisywania zmian." }, { status: 500 });
   }
 }

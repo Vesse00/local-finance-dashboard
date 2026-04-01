@@ -1,22 +1,24 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
-// PRAWIDŁOWY IMPORT Z SERWISU:
+// PRAWIDĹOWY IMPORT Z SERWISU:
 import { saveEnergyEntry } from "@/lib/actions";
 import { ChevronDown, ChevronUp, Wind } from "lucide-react";
 
-const getZenConfig = (val: number) => {
-  if (val <= 15) return { emoji: "🥀", color: "bg-rose-500", glow: "shadow-rose-500/50", text: "Wyczerpanie", textColor: "text-rose-500" };
-  if (val <= 40) return { emoji: "🍂", color: "bg-orange-400", glow: "shadow-orange-400/50", text: "Niski Poziom", textColor: "text-orange-400" };
-  if (val <= 65) return { emoji: "🌱", color: "bg-emerald-400", glow: "shadow-emerald-400/50", text: "W Normie", textColor: "text-emerald-500" };
-  if (val <= 85) return { emoji: "🔋", color: "bg-teal-500", glow: "shadow-teal-500/50", text: "Pełny Bak", textColor: "text-teal-500" };
-  return { emoji: "⚡", color: "bg-indigo-500", glow: "shadow-indigo-500/50", text: "Overcharged", textColor: "text-indigo-500" };
+import { useLanguage } from "@/components/LanguageProvider";
+
+const getZenConfig = (val: number, t: any) => {
+  if (val <= 15) return { emoji: "đźĄ€", color: "bg-rose-500", glow: "shadow-rose-500/50", text: t("health_energy.state_1"), textColor: "text-rose-500" };
+  if (val <= 40) return { emoji: "đźŤ‚", color: "bg-orange-400", glow: "shadow-orange-400/50", text: t("health_energy.state_2"), textColor: "text-orange-400" };
+  if (val <= 65) return { emoji: "đźŚ±", color: "bg-emerald-400", glow: "shadow-emerald-400/50", text: t("health_energy.state_3"), textColor: "text-emerald-500" };
+  if (val <= 85) return { emoji: "đź”‹", color: "bg-teal-500", glow: "shadow-teal-500/50", text: t("health_energy.state_4"), textColor: "text-teal-500" };
+  return { emoji: "âšˇ", color: "bg-indigo-500", glow: "shadow-indigo-500/50", text: t("health_energy.state_5"), textColor: "text-indigo-500" };
 };
 
 const STAGES = [10, 35, 60, 85, 100];
 
-const OrganicSelector = ({ value, onChange, label, disabled = false }: any) => {
-  const { emoji, color, text, textColor } = getZenConfig(value);
+const OrganicSelector = ({ value, onChange, label, disabled = false, t }: any) => {
+  const { emoji, color, text, textColor } = getZenConfig(value, t);
 
   return (
     <div className={`flex flex-col items-center gap-6 w-full ${disabled ? 'opacity-40 grayscale-[40%] pointer-events-none' : ''} transition-all duration-500`}>
@@ -50,17 +52,17 @@ const OrganicSelector = ({ value, onChange, label, disabled = false }: any) => {
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
         />
 
-        {/* Kolorowe tło narastające z lewej strony */}
+        {/* Kolorowe tĹ‚o narastajÄ…ce z lewej strony */}
         <div 
           className={`absolute left-0 h-full ${color} opacity-20 transition-all duration-300`} 
           style={{ width: `${value}%` }} 
         />
 
-        {/* Customowy uchwyt (Thumb) przypominający płynną pigułkę */}
+        {/* Customowy uchwyt (Thumb) przypominajÄ…cy pĹ‚ynnÄ… piguĹ‚kÄ™ */}
         <div 
           className={`absolute h-10 px-4 rounded-[2rem] flex items-center justify-center text-xs font-black text-white shadow-lg pointer-events-none transition-all duration-100 z-10 ${color}`}
           style={{ 
-            left: `calc(${value}% + ${10 - (value * 0.2)}px)`, // Korekta przesunięcia, dostosowana do grubości uchwytu, odsuwająca na lewo im większa wartość
+            left: `calc(${value}% + ${10 - (value * 0.2)}px)`, // Korekta przesuniÄ™cia, dostosowana do gruboĹ›ci uchwytu, odsuwajÄ…ca na lewo im wiÄ™ksza wartoĹ›Ä‡
             transform: 'translateX(-50%)',
             minWidth: '56px'
           }}
@@ -73,6 +75,7 @@ const OrganicSelector = ({ value, onChange, label, disabled = false }: any) => {
 };
 
 export function EnergyForm() {
+  const { t } = useLanguage();
   const [isPending, startTransition] = useTransition();
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const todayStr = new Date().toISOString().split('T')[0];
@@ -108,7 +111,7 @@ export function EnergyForm() {
 
       <div className="flex items-center justify-between mb-12">
         <h2 className="text-xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 flex items-center gap-3">
-          <Wind className="w-6 h-6 text-teal-500" /> Stan Umysłu
+          <Wind className="w-6 h-6 text-teal-500" /> Stan UmysĹ‚u
         </h2>
         <input 
           name="date" 
@@ -122,10 +125,11 @@ export function EnergyForm() {
 
       <div className="space-y-12">
         <OrganicSelector 
-          label={showDetails ? "Średnia z całego dnia (Automatyczna)" : "Zasilanie ogólne (Cały dzień)"} 
+          label={showDetails ? t("health_energy.avg_whole_day") : t("health_energy.overall_power")} 
           value={currentOverall} 
           onChange={setOverall} 
           disabled={showDetails} 
+          t={t}
         />
 
         <button 
@@ -134,20 +138,19 @@ export function EnergyForm() {
           className="flex items-center gap-2 text-xs font-bold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors mx-auto uppercase tracking-wide bg-white/30 dark:bg-zinc-800/30 px-6 py-3 rounded-full border border-zinc-200/50 dark:border-zinc-800/50 backdrop-blur-md"
         >
           {showDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          {showDetails ? "Ukryj podział dnia" : "Rozbij na Pracę i Czas Wolny"}
-        </button>
+          {showDetails ? t("health_energy.merge_phases") : t("health_energy.split_phases")}</button>
 
         {showDetails && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 p-6 sm:p-8 bg-black/[0.02] dark:bg-white/[0.02] rounded-[2rem] border border-black/5 dark:border-white/5 animate-in fade-in slide-in-from-top-4 duration-500">
-            <OrganicSelector label="W Pracy (Wydajność)" value={work} onChange={setWork} />
-            <OrganicSelector label="Po Pracy (Wolne)" value={freeTime} onChange={setFreeTime} />
+            <OrganicSelector label={t("health_energy.slider_work")} value={work} onChange={setWork} t={t} />
+            <OrganicSelector label={t("health_energy.slider_free")} value={freeTime} onChange={setFreeTime} t={t} />
           </div>
         )}
 
         <div className="relative group">
           <textarea 
             name="note" 
-            placeholder="Co zaprząta Twoje myśli? Np. 'Świetny poranek, ale potem ciężkie spotkanie'..."
+            placeholder={t("health_energy.note_placeholder")}
             className="w-full rounded-[2rem] border border-white/40 dark:border-white/5 bg-white/40 dark:bg-zinc-900/40 p-6 outline-none focus:border-teal-500/50 focus:ring-4 focus:ring-teal-500/10 text-sm min-h-[120px] backdrop-blur-xl transition-all resize-none shadow-sm dark:text-zinc-300 placeholder:text-zinc-400"
           />
         </div>
@@ -155,7 +158,7 @@ export function EnergyForm() {
         <button type="submit" disabled={isPending} className="relative w-full py-5 rounded-[2rem] font-black text-white bg-zinc-900 dark:bg-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-all shadow-[0_10px_40px_rgba(0,0,0,0.1)] hover:shadow-[0_10px_40px_rgba(0,0,0,0.15)] overflow-hidden group disabled:opacity-50">
           <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <span className="relative flex items-center justify-center gap-2">
-            {isPending ? "Balansowanie..." : "Zapisz do Ogrodu"} <Wind className="w-4 h-4" />
+            {isPending ? t("health_energy.state_balancing") : t("health_energy.save_garden")} <Wind className="w-4 h-4" />
           </span>
         </button>
       </div>

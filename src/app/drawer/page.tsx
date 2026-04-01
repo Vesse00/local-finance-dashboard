@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { format, differenceInDays } from "date-fns";
+import { useLanguage } from "@/components/LanguageProvider";
 import { pl } from "date-fns/locale";
 import { Archive, FileText, ShieldCheck, Plus, Trash2, CalendarDays, Wallet, AlertTriangle, X, Paperclip, UploadCloud, Award } from "lucide-react";
 
 export default function DigitalDrawerPage() {
+  const { t } = useLanguage();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -74,7 +76,7 @@ export default function DigitalDrawerPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Czy na pewno chcesz usunąć ten dokument ze schowka?")) return;
+    if (!confirm(t("drawer_page.delete_confirm"))) return;
     try {
       const res = await fetch("/api/drawer", {
         method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id })
@@ -99,7 +101,7 @@ export default function DigitalDrawerPage() {
 
   // Funkcja obliczająca czas pozostały do końca
   const calculateProgress = (start: string, end: string | null) => {
-    if (!end) return { text: "Bezterminowo", percent: 0, daysLeft: 9999, color: "bg-zinc-200" };
+    if (!end) return { text: t("drawer_page.progress_no_limit"), percent: 0, daysLeft: 9999, color: "bg-zinc-200" };
     
     const startDate = new Date(start).getTime();
     const endDate = new Date(end).getTime();
@@ -109,14 +111,14 @@ export default function DigitalDrawerPage() {
     const elapsed = now - startDate;
     const daysLeft = differenceInDays(new Date(end), new Date());
     
-    if (daysLeft < 0) return { text: "Wygasło", percent: 100, daysLeft, color: "bg-red-500" };
+    if (daysLeft < 0) return { text: t("drawer_page.progress_expired"), percent: 100, daysLeft, color: "bg-red-500" };
     
     const percent = Math.min(Math.max((elapsed / totalDuration) * 100, 0), 100);
     let color = "bg-emerald-500";
     if (daysLeft <= 30) color = "bg-red-500"; 
     else if (daysLeft <= 90) color = "bg-amber-500"; 
 
-    return { text: `Pozostało ${daysLeft} dni`, percent, daysLeft, color };
+    return { text: t("drawer_page.progress_left").replace("{days}", daysLeft.toString()), percent, daysLeft, color };
   };
 
   return (
@@ -129,8 +131,8 @@ export default function DigitalDrawerPage() {
             <Archive className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Cyfrowa Szuflada</h1>
-            <p className="text-sm text-zinc-500">Zarządzaj swoimi umowami, sprzętem i ważnymi dokumentami</p>
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">{t("drawer_page.title")}</h1>
+            <p className="text-sm text-zinc-500">{t("drawer_page.subtitle")}</p>
           </div>
         </div>
       </div>
@@ -139,26 +141,26 @@ export default function DigitalDrawerPage() {
       <div className="flex flex-col xl:flex-row justify-between items-center gap-4">
         <div className="flex flex-wrap justify-center bg-white/60 dark:bg-black/40 backdrop-blur-xl border border-black/5 dark:border-white/10 p-1.5 rounded-2xl shadow-sm gap-1">
           <button onClick={() => setActiveTab("CONTRACT")} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === "CONTRACT" ? "bg-white dark:bg-zinc-900 text-blue-600 dark:text-blue-400 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}>
-            <FileText className="w-4 h-4" /> Umowy i Abonamenty
+            <FileText className="w-4 h-4" /> {t("drawer_page.tab_contracts")}
           </button>
           <button onClick={() => setActiveTab("WARRANTY")} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === "WARRANTY" ? "bg-white dark:bg-zinc-900 text-emerald-600 dark:text-emerald-400 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}>
-            <ShieldCheck className="w-4 h-4" /> Sprzęt i Gwarancje
+            <ShieldCheck className="w-4 h-4" /> {t("drawer_page.tab_warranties")}
           </button>
           <button onClick={() => setActiveTab("CERTIFICATE")} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === "CERTIFICATE" ? "bg-white dark:bg-zinc-900 text-purple-600 dark:text-purple-400 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}>
-            <Award className="w-4 h-4" /> Certyfikaty i Inne
+            <Award className="w-4 h-4" /> {t("drawer_page.tab_certificates")}
           </button>
         </div>
 
         <button onClick={() => openModal(activeTab)} className={`px-5 py-3 rounded-2xl font-bold text-sm text-white flex items-center gap-2 shadow-lg transition-colors w-full xl:w-auto justify-center ${activeTab === "CONTRACT" ? "bg-blue-500 hover:bg-blue-600 shadow-blue-500/20" : activeTab === "WARRANTY" ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20" : "bg-purple-500 hover:bg-purple-600 shadow-purple-500/20"}`}>
           <Plus className="w-5 h-5" /> 
-          Dodaj {activeTab === "CONTRACT" ? "nową umowę" : activeTab === "WARRANTY" ? "nowy sprzęt" : "nowy dokument"}
+          {activeTab === "CONTRACT" ? t("drawer_page.add_contract") : activeTab === "WARRANTY" ? t("drawer_page.add_warranty") : t("drawer_page.add_certificate")}
         </button>
       </div>
 
       {/* ---------------- WIDOK UMÓW ---------------- */}
       {activeTab === "CONTRACT" && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-in fade-in">
-          {contracts.length === 0 && !loading && <p className="col-span-full text-center py-12 text-zinc-500">Nie masz jeszcze dodanych umów. Kliknij przycisk wyżej, aby dodać pierwszą.</p>}
+          {contracts.length === 0 && !loading && <p className="col-span-full text-center py-12 text-zinc-500">{t("drawer_page.empty_contracts")}</p>}
           
           {contracts.map(item => {
             const progress = calculateProgress(item.startDate, item.endDate);
@@ -173,12 +175,12 @@ export default function DigitalDrawerPage() {
                   </div>
                   <h3 className="font-bold text-lg text-zinc-900 dark:text-white mb-1 leading-tight">{item.title}</h3>
                   <div className="flex items-center gap-2 text-xs font-bold text-zinc-500 mb-4">
-                    <CalendarDays className="w-3.5 h-3.5" /> Od: {format(new Date(item.startDate), "dd.MM.yyyy")}
+                    <CalendarDays className="w-3.5 h-3.5" /> {t("drawer_page.from_date")}{format(new Date(item.startDate), "dd.MM.yyyy")}
                   </div>
 
                   {item.documentUrl && (
                     <a href={item.documentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-bold hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors mb-4 border border-zinc-200 dark:border-zinc-700">
-                      <Paperclip className="w-4 h-4" /> Zobacz dokument
+                      <Paperclip className="w-4 h-4" /> {t("drawer_page.view_document")}
                     </a>
                   )}
                   
@@ -186,14 +188,14 @@ export default function DigitalDrawerPage() {
                     <div className="mb-6 flex items-center gap-2 bg-blue-50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-400 p-3 rounded-xl border border-blue-100 dark:border-blue-900/50">
                       <Wallet className="w-4 h-4" />
                       <span className="font-black">{item.cost} zł</span>
-                      <span className="text-xs uppercase">{item.isRecurring ? "/ cykl" : "jednorazowo"}</span>
+                      <span className="text-xs uppercase">{item.isRecurring ? t("drawer_page.cost_recurring") : t("drawer_page.cost_one_time")}</span>
                     </div>
                   )}
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between text-xs font-bold mb-2">
-                    <span className="text-zinc-500 uppercase tracking-wider">Status umowy</span>
+                    <span className="text-zinc-500 uppercase tracking-wider">{t("drawer_page.status_contract")}</span>
                     <span className={progress.daysLeft <= 30 && progress.daysLeft >= 0 ? "text-red-500 animate-pulse flex items-center gap-1" : "text-zinc-900 dark:text-white"}>
                       {progress.daysLeft <= 30 && progress.daysLeft >= 0 && <AlertTriangle className="w-3 h-3" />} {progress.text}
                     </span>
@@ -201,7 +203,7 @@ export default function DigitalDrawerPage() {
                   <div className="w-full h-2 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden">
                     <div className={`h-full rounded-full transition-all ${progress.color}`} style={{ width: `${progress.percent}%` }}></div>
                   </div>
-                  {item.endDate && <p className="text-[10px] text-right mt-1.5 text-zinc-400 font-medium">Koniec: {format(new Date(item.endDate), "dd.MM.yyyy")}</p>}
+                  {item.endDate && <p className="text-[10px] text-right mt-1.5 text-zinc-400 font-medium">{t("drawer_page.end_date")}{format(new Date(item.endDate), "dd.MM.yyyy")}</p>}
                 </div>
               </div>
             );
@@ -212,7 +214,7 @@ export default function DigitalDrawerPage() {
       {/* ---------------- WIDOK GWARANCJI ---------------- */}
       {activeTab === "WARRANTY" && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-in fade-in">
-          {warranties.length === 0 && !loading && <p className="col-span-full text-center py-12 text-zinc-500">Brak zapisanych sprzętów i gwarancji.</p>}
+          {warranties.length === 0 && !loading && <p className="col-span-full text-center py-12 text-zinc-500">{t("drawer_page.empty_warranties")}</p>}
           
           {warranties.map(item => {
             const progress = calculateProgress(item.startDate, item.endDate);
@@ -227,12 +229,12 @@ export default function DigitalDrawerPage() {
                   </div>
                   <h3 className="font-bold text-lg text-zinc-900 dark:text-white mb-1 leading-tight">{item.title}</h3>
                   <div className="flex items-center gap-2 text-xs font-bold text-zinc-500 mb-4">
-                    <CalendarDays className="w-3.5 h-3.5" /> Kupiono: {format(new Date(item.startDate), "dd.MM.yyyy")}
+                    <CalendarDays className="w-3.5 h-3.5" /> {t("drawer_page.bought_date")}{format(new Date(item.startDate), "dd.MM.yyyy")}
                   </div>
 
                   {item.documentUrl && (
                     <a href={item.documentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-bold hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors mb-4 border border-zinc-200 dark:border-zinc-700">
-                      <Paperclip className="w-4 h-4" /> Pokaż paragon
+                      <Paperclip className="w-4 h-4" /> {t("drawer_page.view_receipt")}
                     </a>
                   )}
                   
@@ -240,14 +242,14 @@ export default function DigitalDrawerPage() {
                     <div className="mb-6 flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/10 text-emerald-700 dark:text-emerald-400 p-3 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
                       <Wallet className="w-4 h-4" />
                       <span className="font-black">{item.cost} zł</span>
-                      <span className="text-xs uppercase">wartość sprzętu</span>
+                      <span className="text-xs uppercase">{t("drawer_page.equipment_value")}</span>
                     </div>
                   )}
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between text-xs font-bold mb-2">
-                    <span className="text-zinc-500 uppercase tracking-wider">Okres Gwarancji</span>
+                    <span className="text-zinc-500 uppercase tracking-wider">{t("drawer_page.warranty_period")}</span>
                     <span className={progress.daysLeft <= 30 && progress.daysLeft >= 0 ? "text-red-500 flex items-center gap-1" : "text-zinc-900 dark:text-white"}>
                       {progress.text}
                     </span>
@@ -255,7 +257,7 @@ export default function DigitalDrawerPage() {
                   <div className="w-full h-2 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden">
                     <div className={`h-full rounded-full transition-all ${progress.color}`} style={{ width: `${progress.percent}%` }}></div>
                   </div>
-                  {item.endDate && <p className="text-[10px] text-right mt-1.5 text-zinc-400 font-medium">Ochrona do: {format(new Date(item.endDate), "dd.MM.yyyy")}</p>}
+                  {item.endDate && <p className="text-[10px] text-right mt-1.5 text-zinc-400 font-medium">{t("drawer_page.protection_until")}{format(new Date(item.endDate), "dd.MM.yyyy")}</p>}
                 </div>
               </div>
             );
@@ -266,7 +268,7 @@ export default function DigitalDrawerPage() {
       {/* ---------------- WIDOK CERTYFIKATÓW I INNYCH (NOWOŚĆ) ---------------- */}
       {activeTab === "CERTIFICATE" && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-in fade-in">
-          {certificates.length === 0 && !loading && <p className="col-span-full text-center py-12 text-zinc-500">Brak zapisanych certyfikatów i dokumentów.</p>}
+          {certificates.length === 0 && !loading && <p className="col-span-full text-center py-12 text-zinc-500">{t("drawer_page.empty_certificates")}</p>}
           
           {certificates.map(item => {
             const progress = calculateProgress(item.startDate, item.endDate);
@@ -281,12 +283,12 @@ export default function DigitalDrawerPage() {
                   </div>
                   <h3 className="font-bold text-lg text-zinc-900 dark:text-white mb-1 leading-tight">{item.title}</h3>
                   <div className="flex items-center gap-2 text-xs font-bold text-zinc-500 mb-4">
-                    <CalendarDays className="w-3.5 h-3.5" /> Wydano: {format(new Date(item.startDate), "dd.MM.yyyy")}
+                    <CalendarDays className="w-3.5 h-3.5" /> {t("drawer_page.issued_date")}{format(new Date(item.startDate), "dd.MM.yyyy")}
                   </div>
 
                   {item.documentUrl && (
                     <a href={item.documentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-bold hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors mb-4 border border-zinc-200 dark:border-zinc-700">
-                      <Paperclip className="w-4 h-4" /> Zobacz załącznik
+                      <Paperclip className="w-4 h-4" /> {t("drawer_page.view_attachment")}
                     </a>
                   )}
                   
@@ -299,7 +301,7 @@ export default function DigitalDrawerPage() {
 
                 <div>
                   <div className="flex items-center justify-between text-xs font-bold mb-2">
-                    <span className="text-zinc-500 uppercase tracking-wider">Status Ważności</span>
+                    <span className="text-zinc-500 uppercase tracking-wider">{t("drawer_page.validity_status")}</span>
                     <span className={progress.daysLeft <= 30 && progress.daysLeft >= 0 ? "text-red-500 flex items-center gap-1" : "text-zinc-900 dark:text-white"}>
                       {progress.text}
                     </span>
@@ -307,7 +309,7 @@ export default function DigitalDrawerPage() {
                   <div className="w-full h-2 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden">
                     <div className={`h-full rounded-full transition-all ${progress.color}`} style={{ width: `${progress.percent}%` }}></div>
                   </div>
-                  {item.endDate && <p className="text-[10px] text-right mt-1.5 text-zinc-400 font-medium">Ważne do: {format(new Date(item.endDate), "dd.MM.yyyy")}</p>}
+                  {item.endDate && <p className="text-[10px] text-right mt-1.5 text-zinc-400 font-medium">{t("drawer_page.valid_until")}{format(new Date(item.endDate), "dd.MM.yyyy")}</p>}
                 </div>
               </div>
             );
@@ -323,7 +325,7 @@ export default function DigitalDrawerPage() {
           <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl w-full max-w-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
             <div className={`flex justify-between items-center p-6 border-b border-zinc-100 dark:border-zinc-800 ${formData.type === "CONTRACT" ? "bg-blue-500/5" : formData.type === "WARRANTY" ? "bg-emerald-500/5" : "bg-purple-500/5"}`}>
               <h3 className="font-bold text-lg flex items-center gap-2">
-                {formData.type === "CONTRACT" ? <><FileText className="w-5 h-5 text-blue-500" /> Nowa Umowa</> : formData.type === "WARRANTY" ? <><ShieldCheck className="w-5 h-5 text-emerald-500" /> Nowy Sprzęt</> : <><Award className="w-5 h-5 text-purple-500" /> Nowy Dokument / Certyfikat</>}
+                {formData.type === "CONTRACT" ? <><FileText className="w-5 h-5 text-blue-500" /> {t("drawer_page.modal_title_contract")}</> : formData.type === "WARRANTY" ? <><ShieldCheck className="w-5 h-5 text-emerald-500" /> {t("drawer_page.modal_title_warranty")}</> : <><Award className="w-5 h-5 text-purple-500" /> {t("drawer_page.modal_title_certificate")}</>}
               </h3>
               <button onClick={() => setIsAddModalOpen(false)} className="text-zinc-400 hover:text-zinc-600"><X className="w-5 h-5" /></button>
             </div>
@@ -332,19 +334,19 @@ export default function DigitalDrawerPage() {
               
               <div className="space-y-2">
                 <label className="text-xs font-bold text-zinc-500 uppercase">
-                  Nazwa ({formData.type === "CONTRACT" ? "np. Internet UPC" : formData.type === "WARRANTY" ? "np. Pralka Bosch" : "np. Prawo Jazdy, Umowa o Pracę, SEP"})
+                  {formData.type === "CONTRACT" ? t("drawer_page.name_label_contract") : formData.type === "WARRANTY" ? t("drawer_page.name_label_warranty") : t("drawer_page.name_label_certificate")}
                 </label>
                 <input type="text" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none focus:border-indigo-500 transition-all font-bold" />
               </div>
 
               {/* SEKACJA UPLOADU PLIKÓW (Z poprawką na długie nazwy) */}
               <div className="space-y-2">
-                <label className="text-xs font-bold text-zinc-500 uppercase">Załącznik (Skan, PDF, Zdjęcie)</label>
+                <label className="text-xs font-bold text-zinc-500 uppercase">{t("drawer_page.attachment_label")}</label>
                 <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-zinc-300 dark:border-zinc-700 border-dashed rounded-2xl cursor-pointer bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors overflow-hidden px-4">
                   <div className="flex flex-col items-center justify-center pt-5 pb-6 w-full">
                     <UploadCloud className="w-6 h-6 text-zinc-400 mb-2 flex-shrink-0" />
                     <p className="text-sm text-zinc-500 font-medium truncate max-w-full text-center">
-                      {selectedFile ? selectedFile.name : "Kliknij, aby wgrać plik"}
+                      {selectedFile ? selectedFile.name : t("drawer_page.click_to_upload")}
                     </p>
                   </div>
                   <input type="file" className="hidden" onChange={(e) => setSelectedFile(e.target.files?.[0] || null)} />
@@ -353,11 +355,11 @@ export default function DigitalDrawerPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-zinc-500 uppercase">{formData.type === "CERTIFICATE" ? "Data uzyskania / wydania" : formData.type === "CONTRACT" ? "Data zawarcia" : "Data zakupu"}</label>
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase">{formData.type === "CERTIFICATE" ? t("drawer_page.date_start_cert") : formData.type === "CONTRACT" ? t("drawer_page.date_start_contract") : t("drawer_page.date_start_warranty")}</label>
                   <input type="date" value={formData.startDate} onChange={(e) => setFormData({...formData, startDate: e.target.value})} className="w-full p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none font-medium" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-zinc-500 uppercase">{formData.type === "CERTIFICATE" ? "Ważne do (Opcjonalnie)" : formData.type === "CONTRACT" ? "Zakończenie umowy" : "Koniec gwarancji"}</label>
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase">{formData.type === "CERTIFICATE" ? t("drawer_page.date_end_cert") : formData.type === "CONTRACT" ? t("drawer_page.date_end_contract") : t("drawer_page.date_end_warranty")}</label>
                   <input type="date" value={formData.endDate} onChange={(e) => setFormData({...formData, endDate: e.target.value})} className="w-full p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none font-medium" />
                 </div>
               </div>
@@ -366,7 +368,7 @@ export default function DigitalDrawerPage() {
               {formData.type !== "CERTIFICATE" && (
                 <>
                   <div className="space-y-2 pt-2">
-                    <label className="text-xs font-bold text-zinc-500 uppercase">Koszt</label>
+                    <label className="text-xs font-bold text-zinc-500 uppercase">{t("drawer_page.cost_label")}</label>
                     <input type="number" step="0.01" value={formData.cost} onChange={(e) => setFormData({...formData, cost: e.target.value})} className="w-full p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none focus:border-blue-500 transition-all font-mono text-xl font-bold" placeholder="np. 1500" />
                   </div>
 
@@ -378,10 +380,10 @@ export default function DigitalDrawerPage() {
                     
                     {formData.createExpense && (
                       <div className="pl-6 pt-2 border-l-2 border-amber-200 dark:border-amber-800 animate-in fade-in">
-                        <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">Automatycznie dodaj wydatek na podaną kwotę do kalendarza finansowego.</p>
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">{t("drawer_page.create_expense")}</p>
                         <div className="flex gap-2">
-                          <button onClick={() => setFormData({...formData, isRecurring: false})} className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${!formData.isRecurring ? "bg-amber-500 text-white border-amber-500" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"}`}>Jednorazowo</button>
-                          <button onClick={() => setFormData({...formData, isRecurring: true})} className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${formData.isRecurring ? "bg-amber-500 text-white border-amber-500" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"}`}>Cyklicznie (Abonament)</button>
+                          <button onClick={() => setFormData({...formData, isRecurring: false})} className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${!formData.isRecurring ? "bg-amber-500 text-white border-amber-500" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"}`}>{t("drawer_page.one_time_billing")}</button>
+                          <button onClick={() => setFormData({...formData, isRecurring: true})} className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${formData.isRecurring ? "bg-amber-500 text-white border-amber-500" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"}`}>{t("drawer_page.recurring_billing")}</button>
                         </div>
                       </div>
                     )}
@@ -400,9 +402,9 @@ export default function DigitalDrawerPage() {
             </div>
 
             <div className="p-4 bg-zinc-50 dark:bg-zinc-900/50 flex gap-3 border-t border-zinc-100 dark:border-zinc-800">
-              <button onClick={() => setIsAddModalOpen(false)} className="flex-1 py-3.5 px-4 rounded-xl font-bold bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 transition-colors">Anuluj</button>
+              <button onClick={() => setIsAddModalOpen(false)} className="flex-1 py-3.5 px-4 rounded-xl font-bold bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 transition-colors">{t("drawer_page.cancel_btn")}</button>
               <button onClick={handleSave} disabled={isSaving} className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-white hover:opacity-90 flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 ${formData.type === "CONTRACT" ? "bg-blue-500 shadow-blue-500/20" : formData.type === "WARRANTY" ? "bg-emerald-500 shadow-emerald-500/20" : "bg-purple-500 shadow-purple-500/20"}`}>
-                {isSaving ? "Zapisywanie..." : <><Archive className="w-5 h-5" /> Umieść w Szufladzie</>}
+                {isSaving ? t("drawer_page.saving") : <><Archive className="w-5 h-5" /> {t("drawer_page.save_btn")}</>}
               </button>
             </div>
           </div>

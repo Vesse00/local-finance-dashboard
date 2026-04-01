@@ -1,10 +1,13 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET(req: Request) {
   try {
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak użytkownika" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = { id: (session.user as any).id };
 
     const products = await prisma.customProduct.findMany({
       where: { userId: user.id },
@@ -14,14 +17,15 @@ export async function GET(req: Request) {
     return NextResponse.json(products);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Wystąpił błąd" }, { status: 500 });
+    return NextResponse.json({ error: "WystÄ…piĹ‚ bĹ‚Ä…d" }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak użytkownika" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = { id: (session.user as any).id };
 
     const body = await req.json();
     const { name, kcal, proteins, carbs, fats, isRecipe, ingredients } = body;
@@ -42,6 +46,7 @@ export async function POST(req: Request) {
     return NextResponse.json(product);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Wystąpił błąd podczas dodawania produktu/posiłku" }, { status: 500 });
+    return NextResponse.json({ error: "WystÄ…piĹ‚ bĹ‚Ä…d podczas dodawania produktu/posiĹ‚ku" }, { status: 500 });
   }
 }
+

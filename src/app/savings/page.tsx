@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import { PiggyBank, Briefcase, Building, ChevronRight, Plus, Landmark, X, Trash2 } from "lucide-react";
 import { TransferUI } from "@/components/savings/transfer-ui";
 import Link from "next/link";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function SavingsPage() {
+  const { t } = useLanguage();
   const [mainSavings, setMainSavings] = useState(0);
   const [subAccounts, setSubAccounts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ export default function SavingsPage() {
       const res = await fetch("/api/savings", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: newAccount.name || (newAccount.type === "IKE" ? "Konto IKE" : newAccount.type === "IKZE" ? "Konto IKZE" : "Dodatkowe oszczędności"),
+          name: newAccount.name || (newAccount.type === "IKE" ? t("savings_page.default_ike") : newAccount.type === "IKZE" ? t("savings_page.default_ikze") : t("savings_page.default_savings")),
           balance: newAccount.balance || "0",
           type: newAccount.type
         })
@@ -52,17 +54,17 @@ export default function SavingsPage() {
         fetchData();
       } else {
         const err = await res.json();
-        setErrorMessage(err.error || "Wystąpił błąd");
+        setErrorMessage(err.error || t("savings_page.error_generic"));
       }
     } catch (err) { 
-      setErrorMessage("Błąd połączenia z serwerem.");
+      setErrorMessage(t("savings_page.error_connection"));
     }
   };
 
   const handleDeleteAccount = async (id: string, name: string, balance: number) => {
-          const msg = balance > 0 
-      ? `Czy na pewno chcesz usunąć portfel "${name}"?\n\nUWAGA: Znajduje się na nim ${balance.toFixed(2)} ${currency}. Zostaną one automatycznie przelane do Twojego Głównego Portfela (jako wpływ) i będą dostępne w kalendarzu.`
-      : `Czy na pewno chcesz usunąć portfel "${name}"?`;
+    const msg = balance > 0 
+      ? t("savings_page.delete_confirm_with_balance", { name, balance: balance.toFixed(2), currency })
+      : t("savings_page.delete_confirm", { name });
       
     if (!confirm(msg)) return;
     
@@ -107,10 +109,10 @@ export default function SavingsPage() {
             <div className="p-3 rounded-2xl bg-blue-500/20 text-blue-600 dark:text-blue-400">
               <Landmark className="w-6 h-6" />
             </div>
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Centrum Oszczędności</h2>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-white">{t("savings_page.title")}</h2>
           </div>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-sm mt-2">
-            Pieniądze przeniesione z konta głównego, odłożona "reszta" z miesiąca oraz saldo subkont oszczędnościowych.
+            {t("savings_page.subtitle")}
           </p>
         </div>
 
@@ -120,7 +122,7 @@ export default function SavingsPage() {
           </div>
           <div className="flex gap-2">
             <button onClick={() => { setErrorMessage(""); setIsAddModalOpen(true); }} className="px-4 py-3 bg-white/50 dark:bg-black/30 hover:bg-white/80 dark:hover:bg-black/50 rounded-xl font-bold text-sm text-zinc-700 dark:text-zinc-300 transition-colors flex items-center gap-2 border border-black/5 dark:border-white/5 shadow-sm">
-              <Plus className="w-4 h-4" /> Nowe Subkonto
+              <Plus className="w-4 h-4" /> {t("savings_page.new_subaccount")}
             </button>
             <TransferUI onTransferComplete={fetchData} />
           </div>
@@ -130,7 +132,7 @@ export default function SavingsPage() {
       {/* KARUZELA KONT */}
       <div>
         <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
-          Twoje Portfele <ChevronRight className="w-5 h-5 text-zinc-400" />
+          {t("savings_page.your_wallets")} <ChevronRight className="w-5 h-5 text-zinc-400" />
         </h2>
         
         <div className="flex overflow-x-auto pb-6 -mx-4 px-4 snap-x snap-mandatory hide-scrollbar gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:overflow-visible md:pb-0 md:px-0 md:mx-0">
@@ -145,11 +147,11 @@ export default function SavingsPage() {
                     <PiggyBank className="w-8 h-8 text-blue-500" />
                   </div>
                   <span className="px-3 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
-                    GŁÓWNE
+                    {t("savings_page.main_badge")}
                   </span>
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-zinc-600 dark:text-zinc-400 mb-1">Główne Oszczędności</h3>
+                  <h3 className="text-sm font-bold text-zinc-600 dark:text-zinc-400 mb-1">{t("savings_page.main_savings_title")}</h3>
                   <p className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{mainSavings.toFixed(2)} <span className="text-lg font-bold opacity-50">{currency}</span></p>
                 </div>
               </Link>
@@ -161,7 +163,7 @@ export default function SavingsPage() {
                   <button 
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteAccount(acc.id, acc.name, acc.balance); }}
                     className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 z-10"
-                    title="Usuń to subkonto"
+                    title={t("savings_page.delete_tooltip")}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -192,7 +194,7 @@ export default function SavingsPage() {
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-950 w-full max-w-md rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-in zoom-in-95">
             <div className="p-6 border-b border-zinc-100 dark:border-zinc-900 flex justify-between items-center">
-              <h3 className="font-bold text-lg text-zinc-900 dark:text-white">Nowy Portfel</h3>
+              <h3 className="font-bold text-lg text-zinc-900 dark:text-white">{t("savings_page.modal_title")}</h3>
               <button onClick={() => setIsAddModalOpen(false)} className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-white"><X className="w-5 h-5" /></button>
             </div>
             
@@ -205,13 +207,13 @@ export default function SavingsPage() {
               )}
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-zinc-500 uppercase">Rodzaj konta</label>
+                <label className="text-xs font-bold text-zinc-500 uppercase">{t("savings_page.account_type")}</label>
                 <div className="grid grid-cols-3 gap-2">
                   <button 
                     onClick={() => setNewAccount({...newAccount, type: "SAVINGS"})} 
                     className={`p-3 rounded-xl flex flex-col items-center gap-2 border-2 transition-all ${newAccount.type === "SAVINGS" ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900"}`}
                   >
-                    <PiggyBank className="w-6 h-6" /><span className="text-[10px] font-bold">Standard</span>
+                    <PiggyBank className="w-6 h-6" /><span className="text-[10px] font-bold">{t("savings_page.type_standard")}</span>
                   </button>
                   
                   {/* IKE (z opcją zablokowania) */}
@@ -220,7 +222,7 @@ export default function SavingsPage() {
                     disabled={hasIKE}
                     className={`p-3 rounded-xl flex flex-col items-center gap-2 border-2 transition-all ${hasIKE ? "opacity-40 cursor-not-allowed border-zinc-200 dark:border-zinc-800 text-zinc-400 bg-zinc-50 dark:bg-zinc-900" : newAccount.type === "IKE" ? "border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900"}`}
                   >
-                    <Briefcase className="w-6 h-6" /><span className="text-[10px] font-bold">IKE</span>
+                    <Briefcase className="w-6 h-6" /><span className="text-[10px] font-bold">{t("savings_page.type_ike")}</span>
                   </button>
 
                   {/* IKZE (z opcją zablokowania) */}
@@ -229,25 +231,25 @@ export default function SavingsPage() {
                     disabled={hasIKZE}
                     className={`p-3 rounded-xl flex flex-col items-center gap-2 border-2 transition-all ${hasIKZE ? "opacity-40 cursor-not-allowed border-zinc-200 dark:border-zinc-800 text-zinc-400 bg-zinc-50 dark:bg-zinc-900" : newAccount.type === "IKZE" ? "border-purple-500 bg-purple-500/10 text-purple-600 dark:text-purple-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900"}`}
                   >
-                    <Building className="w-6 h-6" /><span className="text-[10px] font-bold">IKZE</span>
+                    <Building className="w-6 h-6" /><span className="text-[10px] font-bold">{t("savings_page.type_ikze")}</span>
                   </button>
                 </div>
                 {(hasIKE || hasIKZE) && (
-                   <p className="text-[10px] text-zinc-400 mt-1">Zgodnie z ustawą, możesz posiadać tylko jedno konto IKE oraz jedno IKZE.</p>
+                   <p className="text-[10px] text-zinc-400 mt-1">{t("savings_page.ike_ikze_law_notice")}</p>
                 )}
               </div>
               <div className="space-y-2 pt-2">
-                <label className="text-xs font-bold text-zinc-500 uppercase">Nazwa konta (Opcjonalna)</label>
-                <input type="text" value={newAccount.name} onChange={e => setNewAccount({...newAccount, name: e.target.value})} className="w-full p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl outline-none focus:border-blue-500 font-medium" placeholder={newAccount.type === "IKE" ? "np. IKE mBank" : newAccount.type === "IKZE" ? "np. IKZE w XTB" : "np. Poduszka Finansowa"} />
+                <label className="text-xs font-bold text-zinc-500 uppercase">{t("savings_page.account_name_label")}</label>
+                <input type="text" value={newAccount.name} onChange={e => setNewAccount({...newAccount, name: e.target.value})} className="w-full p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl outline-none focus:border-blue-500 font-medium" placeholder={newAccount.type === "IKE" ? t("savings_page.placeholder_ike") : newAccount.type === "IKZE" ? t("savings_page.placeholder_ikze") : t("savings_page.placeholder_standard")} />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-zinc-500 uppercase">Początkowe saldo</label>
+                <label className="text-xs font-bold text-zinc-500 uppercase">{t("savings_page.initial_balance")}</label>
                 <input type="number" step="0.01" value={newAccount.balance} onChange={e => setNewAccount({...newAccount, balance: e.target.value})} className="w-full p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl outline-none focus:border-blue-500 font-mono text-xl font-bold" placeholder="0.00" />
               </div>
             </div>
             <div className="p-4 bg-zinc-50 dark:bg-zinc-900/50 flex gap-3 border-t border-zinc-100 dark:border-zinc-900">
-              <button onClick={() => setIsAddModalOpen(false)} className="flex-1 py-3 px-4 rounded-xl font-bold border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Anuluj</button>
-              <button onClick={handleAddAccount} className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20">Utwórz konto</button>
+              <button onClick={() => setIsAddModalOpen(false)} className="flex-1 py-3 px-4 rounded-xl font-bold border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">{t("savings_page.cancel_btn")}</button>
+              <button onClick={handleAddAccount} className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20">{t("savings_page.create_btn")}</button>
             </div>
           </div>
         </div>

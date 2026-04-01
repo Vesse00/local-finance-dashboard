@@ -2,10 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/components/LanguageProvider";
 import { format, differenceInDays } from "date-fns";
 import { CarFront, Plus, Shield, Droplet, CalendarDays, X, ArrowRight } from "lucide-react";
 
 export default function GaragePage() {
+  const { t, language } = useLanguage();
+
   const [cars, setCars] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCarModalOpen, setIsCarModalOpen] = useState(false);
@@ -64,23 +67,23 @@ export default function GaragePage() {
             <CarFront className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Mój Garaż</h1>
-            <p className="text-sm text-zinc-500">Zarządzaj swoją flotą pojazdów</p>
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">{t("garage_page.title")}</h1>
+            <p className="text-sm text-zinc-500">{t("garage_page.subtitle")}</p>
           </div>
         </div>
         <button onClick={openAddModal} className="px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 dark:text-black text-white rounded-xl font-bold text-sm transition-colors shadow-lg flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Dodaj pojazd
+          <Plus className="w-4 h-4" /> {t("garage_page.btn_add_car")}
         </button>
       </div>
 
       {/* LISTA POJAZDÓW */}
       {loading ? (
-        <p className="text-center text-zinc-500 py-12 animate-pulse">Ładowanie garażu...</p>
+        <p className="text-center text-zinc-500 py-12 animate-pulse">{t("garage_page.loading")}</p>
       ) : cars.length === 0 ? (
         <div className="text-center py-20 bg-white/60 dark:bg-black/40 rounded-3xl border border-dashed border-zinc-300 dark:border-zinc-800">
           <CarFront className="w-12 h-12 mx-auto text-zinc-400 mb-4 opacity-50" />
-          <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Twój garaż jest pusty</h3>
-          <p className="text-zinc-500">Dodaj swój pierwszy samochód lub motocykl.</p>
+          <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">{t("garage_page.empty_title")}</h3>
+          <p className="text-zinc-500">{t("garage_page.empty_subtitle")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -147,18 +150,18 @@ export default function GaragePage() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 z-[60]">
           <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl w-full max-w-md overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center p-5 border-b border-zinc-100 dark:border-zinc-800">
-              <h3 className="font-bold text-lg flex items-center gap-2"><CarFront className="w-5 h-5 text-zinc-500" /> Nowy Pojazd</h3>
+              <h3 className="font-bold text-lg flex items-center gap-2"><CarFront className="w-5 h-5 text-zinc-500" /> {t("garage_page.btn_add_car")}</h3>
               <button onClick={() => setIsCarModalOpen(false)} className="text-zinc-400 hover:text-zinc-600"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-5 space-y-4 overflow-y-auto">
               {/* Sekcja Podstawowa */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-zinc-500 uppercase">Marka</label>
+                  <label className="text-xs font-bold text-zinc-500 uppercase">{t("garage_page.label_make")}</label>
                   <input type="text" value={carForm.make} onChange={e => setCarForm({...carForm, make: e.target.value})} className="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none focus:border-indigo-500 font-bold" placeholder="np. Toyota" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-zinc-500 uppercase">Model</label>
+                  <label className="text-xs font-bold text-zinc-500 uppercase">{t("garage_page.label_model")}</label>
                   <input type="text" value={carForm.model} onChange={e => setCarForm({...carForm, model: e.target.value})} className="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none focus:border-indigo-500 font-bold" placeholder="np. Yaris" />
                 </div>
                 <div className="space-y-1">
@@ -201,7 +204,7 @@ export default function GaragePage() {
 
             </div>
             <div className="p-4 bg-zinc-50 dark:bg-zinc-900/50 flex gap-3 border-t border-zinc-100 dark:border-zinc-800">
-              <button onClick={() => setIsCarModalOpen(false)} className="flex-1 py-3 px-4 rounded-xl font-bold border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100">Anuluj</button>
+              <button onClick={() => setIsCarModalOpen(false)} className="flex-1 py-3 px-4 rounded-xl font-bold border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100">{t("garage_page.btn_cancel")}</button>
               <button onClick={handleAddCar} className="flex-1 py-3 px-4 rounded-xl font-bold bg-zinc-900 text-white dark:bg-white dark:text-black hover:opacity-90 transition-opacity">Dodaj pojazd</button>
             </div>
           </div>

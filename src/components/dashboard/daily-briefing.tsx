@@ -129,10 +129,10 @@ export function DailyBriefing({ initialData, currency = "PLN" }: { initialData: 
               <div className="flex flex-wrap items-center gap-3 mt-1.5 min-h-[30px]">
                 <p className="text-indigo-200 text-xs font-medium capitalize">{dateString}</p>
                 {isEvening && (
-                  <button onClick={() => setIsMoodModalOpen(true)} className="flex items-center gap-1.5 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/20 px-2.5 py-1 rounded-md transition-all text-[10px] font-bold text-pink-200 shadow-sm hover:scale-105">
+                  <Link href="/health/energy" className="flex items-center gap-1.5 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/20 px-2.5 py-1 rounded-md transition-all text-[10px] font-bold text-pink-200 shadow-sm hover:scale-105">
                     <HeartPulse className="w-3.5 h-3.5 text-pink-400" />
                     {t("dashboard.briefing.how_was_day")}
-                  </button>
+                  </Link>
                 )}
               </div>
             </div>

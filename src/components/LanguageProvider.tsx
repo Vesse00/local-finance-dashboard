@@ -11,7 +11,7 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   // Funkcja zwracająca napis lub string z kropkami np. "common.welcome"
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -36,10 +36,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("app-lang", lang);
   };
 
-  const t = (path: string) => {
+  const t = (path: string, values?: Record<string, string | number>) => {
     const keys = path.split(".");
     let current: any = dictionaries[language];
-    
+
     for (const key of keys) {
       if (current[key] === undefined) {
         console.warn(`Brak tłumaczenia dla klucza: ${path} [${language}]`);
@@ -47,7 +47,15 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       }
       current = current[key];
     }
-    return current as string;
+    
+    let result = current as string;
+    if (values) {
+      Object.entries(values).forEach(([key, value]) => {
+        result = result.replace(new RegExp(`{${key}}`, "g"), String(value));
+      });
+    }
+    
+    return result;
   };
 
   return (

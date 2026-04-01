@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const resolvedParams = await params;
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak usera" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = await prisma.user.findUnique({ where: { id: (session.user as any).id } });
+    if (!user) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
 
     // ----------------------------------------------------
     // JEŚLI WCHODZIMY W KARTĘ "GŁÓWNYCH OSZCZĘDNOŚCI"

@@ -4,8 +4,9 @@ import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { X, TrendingDown, TrendingUp, PiggyBank, Calendar as CalendarIcon, ArrowRightLeft, Trash2, ChevronDown, ChevronUp, Landmark } from "lucide-react";
 import { format, isSameDay } from "date-fns";
-import { pl } from "date-fns/locale";
+import { pl, enUS } from "date-fns/locale";
 import { deleteExpense, deleteIncome } from "@/lib/actions";
+import { useLanguage } from "@/components/LanguageProvider";
 
 interface DayDetailsModalProps {
   isOpen: boolean;
@@ -17,6 +18,9 @@ interface DayDetailsModalProps {
 }
 
 export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes, currency = "PLN" }: DayDetailsModalProps) {
+  const { t, language } = useLanguage();
+  const dateLocale = language === "en" ? enUS : pl;
+
   const [mounted, setMounted] = useState(false);
   const [isPending, startTransition] = useTransition();
   
@@ -80,10 +84,10 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
             </div>
             <div>
               <h3 className="text-lg font-bold text-zinc-900 dark:text-white capitalize">
-                {format(date, 'EEEE', { locale: pl })}
+                {format(date, 'EEEE', { locale: dateLocale })}
               </h3>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                {format(date, 'd MMMM yyyy', { locale: pl })}
+                {format(date, 'd MMMM yyyy', { locale: dateLocale })}
               </p>
             </div>
           </div>
@@ -95,7 +99,7 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
         <div className="p-6 overflow-y-auto space-y-6">
           {!hasAnyTransactions ? (
             <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
-              <p>Brak transakcji w tym dniu.</p>
+              <p>{t("calendar.modals.day_details.empty")}</p>
             </div>
           ) : (
             <>
@@ -103,7 +107,7 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
               {dayIncomes.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm font-semibold text-emerald-600 dark:text-emerald-400 mb-2">
-                    <span className="flex items-center gap-1.5"><TrendingUp className="w-4 h-4" /> Wpływy</span>
+                    <span className="flex items-center gap-1.5"><TrendingUp className="w-4 h-4" /> {t("calendar.modals.day_details.incomes")}</span>
                     <span>+{totalIncomes.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: 'narrowSymbol' })}</span>
                   </div>
                   {dayIncomes.map(income => (
@@ -115,7 +119,7 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
                           {expandedId === income.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4 text-emerald-600/50" />}
-                          {income.source || "Wpływ"}
+                          {income.source || t("calendar.modals.day_details.income_default")}
                         </span>
                         <div className="flex items-center gap-3">
                           <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">+{income.amount.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: 'narrowSymbol' })}</span>
@@ -128,9 +132,9 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
                       {/* ROZWIJANE SZCZEGÓŁY Z BANKU */}
                       {expandedId === income.id && (
                         <div className="mt-3 pt-3 border-t border-emerald-500/20 text-xs text-zinc-600 dark:text-zinc-400 space-y-1.5">
-                          <p><strong className="text-emerald-700 dark:text-emerald-500">Nadawca:</strong> {income.source || "Brak danych"}</p>
-                          <p><strong className="text-emerald-700 dark:text-emerald-500">Opis:</strong> {income.description || "Brak danych"}</p>
-                          <p className="flex items-center gap-1.5"><Landmark className="w-3 h-3"/> <strong className="text-emerald-700 dark:text-emerald-500">Typ operacji:</strong> {income.bankTransactionType || "Wpis ręczny"}</p>
+                          <p><strong className="text-emerald-700 dark:text-emerald-500">{t("calendar.modals.day_details.sender")}</strong> {income.source || t("calendar.modals.day_details.no_data")}</p>
+                          <p><strong className="text-emerald-700 dark:text-emerald-500">{t("calendar.modals.day_details.description")}</strong> {income.description || t("calendar.modals.day_details.no_data")}</p>
+                          <p className="flex items-center gap-1.5"><Landmark className="w-3 h-3"/> <strong className="text-emerald-700 dark:text-emerald-500">{t("calendar.modals.day_details.operation_type")}</strong> {income.bankTransactionType || t("calendar.modals.day_details.manual_entry")}</p>
                         </div>
                       )}
                     </div>
@@ -142,7 +146,7 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
               {dayExpenses.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm font-semibold text-red-600 dark:text-red-400 mb-2">
-                    <span className="flex items-center gap-1.5"><TrendingDown className="w-4 h-4" /> Wydatki</span>
+                    <span className="flex items-center gap-1.5"><TrendingDown className="w-4 h-4" /> {t("calendar.modals.day_details.expenses")}</span>
                     <span>-{totalExpenses.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: 'narrowSymbol' })}</span>
                   </div>
                   {dayExpenses.map(expense => (
@@ -168,9 +172,9 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
                       {/* ROZWIJANE SZCZEGÓŁY Z BANKU */}
                       {expandedId === expense.id && (
                         <div className="mt-3 pt-3 border-t border-red-500/20 text-xs text-zinc-600 dark:text-zinc-400 space-y-1.5">
-                          <p><strong className="text-red-700 dark:text-red-500">Odbiorca:</strong> {expense.recipient || "Brak danych"}</p>
-                          <p><strong className="text-red-700 dark:text-red-500">Opis transakcji:</strong> {expense.description || "Brak danych"}</p>
-                          <p className="flex items-center gap-1.5"><Landmark className="w-3 h-3"/> <strong className="text-red-700 dark:text-red-500">Typ operacji:</strong> {expense.bankTransactionType || "Wpis ręczny"}</p>
+                          <p><strong className="text-red-700 dark:text-red-500">{t("calendar.modals.day_details.recipient")}</strong> {expense.recipient || t("calendar.modals.day_details.no_data")}</p>
+                          <p><strong className="text-red-700 dark:text-red-500">{t("calendar.modals.day_details.transaction_description")}</strong> {expense.description || t("calendar.modals.day_details.no_data")}</p>
+                          <p className="flex items-center gap-1.5"><Landmark className="w-3 h-3"/> <strong className="text-red-700 dark:text-red-500">{t("calendar.modals.day_details.operation_type")}</strong> {expense.bankTransactionType || t("calendar.modals.day_details.manual_entry")}</p>
                         </div>
                       )}
                     </div>
@@ -182,13 +186,13 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
               {daySavings.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm font-semibold text-blue-600 dark:text-blue-400 mb-2">
-                    <span className="flex items-center gap-1.5"><PiggyBank className="w-4 h-4" /> Odłożone</span>
+                    <span className="flex items-center gap-1.5"><PiggyBank className="w-4 h-4" /> {t("calendar.modals.day_details.savings")}</span>
                   </div>
                   {daySavings.map(saving => (
                     <div key={saving.id} className="group flex items-center justify-between p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
                       <div className="flex items-center gap-2">
                         <ArrowRightLeft className="w-4 h-4 text-blue-500" />
-                        <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{saving.description || "Transfer"}</span>
+                        <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{saving.description || t("calendar.modals.day_details.transfer")}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{saving.amount.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: 'narrowSymbol' })}</span>

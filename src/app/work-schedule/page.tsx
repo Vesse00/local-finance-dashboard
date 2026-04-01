@@ -6,7 +6,7 @@ import {
   startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, 
   isToday, setYear, isSameDay, differenceInCalendarWeeks 
 } from "date-fns";
-import { pl } from "date-fns/locale";
+import { pl, enUS } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Clock, Briefcase, Save, X, Wand2, Trash2, Umbrella, Stethoscope } from "lucide-react";
 
 // Funkcje pomocnicze do obliczeń godzin i nadgodzin
@@ -29,7 +29,10 @@ const addHoursToTime = (time: string, hoursToAdd: number) => {
   return `${String(newH).padStart(2, '0')}:${String(newM).padStart(2, '0')}`;
 };
 
+import { useLanguage } from "@/components/LanguageProvider";
+
 export default function WorkSchedulePage() {
+  const { t, language } = useLanguage();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [workDays, setWorkDays] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +84,7 @@ export default function WorkSchedulePage() {
   const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
   const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
   const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
-  const weekDays = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Ndz"];
+  const weekDays = [t("work_schedule.days_short_mon"), t("work_schedule.days_short_tue"), t("work_schedule.days_short_wed"), t("work_schedule.days_short_thu"), t("work_schedule.days_short_fri"), t("work_schedule.days_short_sat"), t("work_schedule.days_short_sun")];
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
@@ -138,12 +141,12 @@ export default function WorkSchedulePage() {
   const handleBulkGenerate = async () => {
     const startD = new Date(bulkData.startDate);
     const endD = new Date(bulkData.endDate);
-    if (endD < startD) return alert("Data zakończenia nie może być mniejsza niż początkowa!");
+    if (endD < startD) return alert(t("work_schedule.alert_date_order"));
 
     const allDays = eachDayOfInterval({ start: startD, end: endD });
     const daysToGenerate = allDays.filter(day => bulkData.selectedWeekDays.includes(day.getDay()));
 
-    if (daysToGenerate.length === 0) return alert("W wybranym przedziale nie ma żadnych pasujących dni pracy.");
+    if (daysToGenerate.length === 0) return alert(t("work_schedule.alert_no_matching_days"));
 
     const payload = daysToGenerate.map(day => {
       // Jeżeli to Urlop lub L4, nie zapisujemy w ogóle logiki godzin
@@ -171,15 +174,15 @@ export default function WorkSchedulePage() {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ days: payload })
       });
-      if (res.ok) { setIsBulkModalOpen(false); fetchWorkDays(); alert(`Wygenerowano wpisy dla ${payload.length} dni.`); }
-    } catch (err) { alert("Błąd podczas generowania."); }
+      if (res.ok) { setIsBulkModalOpen(false); fetchWorkDays(); alert(t("work_schedule.alert_generated").replace("{count}", payload.length.toString())); }
+    } catch (err) { alert(t("work_schedule.alert_gen_error")); }
   };
 
   const handleBulkDelete = async () => {
     const startD = new Date(bulkData.startDate);
     const endD = new Date(bulkData.endDate);
-    if (endD < startD) return alert("Data zakończenia nie może być mniejsza niż początkowa!");
-    if(!confirm("Czy na pewno chcesz usunąć wybrany okres grafiku? Ta akcja jest nieodwracalna!")) return;
+    if (endD < startD) return alert(t("work_schedule.alert_date_order"));
+    if(!confirm(t("work_schedule.alert_delete_confirm"))) return;
 
     try {
       const res = await fetch("/api/work-days/bulk", {
@@ -191,7 +194,7 @@ export default function WorkSchedulePage() {
         })
       });
       if (res.ok) { setIsBulkModalOpen(false); fetchWorkDays(); }
-    } catch (err) { alert("Błąd podczas usuwania."); }
+    } catch (err) { alert(t("work_schedule.alert_del_error")); }
   };
 
   return (
@@ -203,8 +206,8 @@ export default function WorkSchedulePage() {
             <Briefcase className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-xl font-bold">Grafik Pracy</h1>
-            <p className="text-xs text-zinc-500">Zarządzaj czasem pracy, urlopami i L4</p>
+            <h1 className="text-xl font-bold">{t("work_schedule.title")}</h1>
+            <p className="text-xs text-zinc-500">{t("work_schedule.subtitle")}</p>
           </div>
         </div>
 
@@ -214,13 +217,13 @@ export default function WorkSchedulePage() {
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-zinc-800 to-zinc-900 dark:from-zinc-200 dark:to-white text-white dark:text-zinc-900 rounded-xl font-medium text-sm hover:opacity-90 transition-opacity mr-2 shadow-md"
           >
             <Wand2 className="w-4 h-4 text-primary dark:text-primary-dark" />
-            Kreator Grafiku
+            {t("work_schedule.wizard_btn")}
           </button>
 
           <div className="flex items-center gap-2 border-l border-black/10 dark:border-white/10 pl-4">
             <button onClick={prevMonth} className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors"><ChevronLeft className="w-5 h-5" /></button>
             <div className="flex items-center justify-center gap-2 min-w-[140px]">
-              <h2 className="text-xl font-bold capitalize">{format(currentMonth, 'LLLL', { locale: pl })}</h2>
+              <h2 className="text-xl font-bold capitalize">{format(currentMonth, "LLLL", { locale: language === "pl" ? pl : enUS })}</h2>
               <select value={currentMonth.getFullYear()} onChange={handleYearChange} className="bg-transparent text-xl font-bold outline-none cursor-pointer text-zinc-600 dark:text-zinc-400 hover:text-primary transition-colors appearance-none">
                 {years.map(year => <option key={year} value={year} className="text-base bg-white dark:bg-zinc-900">{year}</option>)}
               </select>
@@ -237,7 +240,7 @@ export default function WorkSchedulePage() {
         </div>
         
         <div className="grid grid-cols-7 gap-px bg-black/5 dark:bg-white/10 relative">
-          {loading && <div className="absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-sm z-10 flex items-center justify-center"><span className="font-medium animate-pulse bg-white dark:bg-zinc-900 px-4 py-2 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-800">Wczytywanie...</span></div>}
+          {loading && <div className="absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-sm z-10 flex items-center justify-center"><span className="font-medium animate-pulse bg-white dark:bg-zinc-900 px-4 py-2 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-800">{t("work_schedule.loading")}</span></div>}
 
           {calendarDays.map((date, i) => {
             const isCurrentMonth = isSameMonth(date, currentMonth);
@@ -277,7 +280,7 @@ export default function WorkSchedulePage() {
                     </div>
                     {dayData.isOvertime && (
                       <div className="truncate rounded bg-amber-500/10 px-1.5 py-1 text-[10px] text-amber-600 dark:text-amber-400 font-bold border border-amber-500/20 text-center uppercase tracking-wider">
-                        + {dayData.overtimeHours}h Nadgodzin
+                        + {dayData.overtimeHours}h {t("work_schedule.overtime_badge").replace("+ {hours}h ", "")}
                       </div>
                     )}
                   </div>
@@ -285,13 +288,13 @@ export default function WorkSchedulePage() {
 
                 {isCurrentMonth && dayData && dayType === "VACATION" && (
                   <div className="mt-2 text-center rounded bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 text-[11px] font-bold py-1 border border-purple-200 dark:border-purple-800/50 uppercase tracking-wider flex items-center justify-center gap-1">
-                    <Umbrella className="w-3 h-3" /> Urlop
+                    <Umbrella className="w-3 h-3" /> {t("work_schedule.vacation")}
                   </div>
                 )}
 
                 {isCurrentMonth && dayData && dayType === "SICK" && (
                   <div className="mt-2 text-center rounded bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-[11px] font-bold py-1 border border-amber-200 dark:border-amber-800/50 uppercase tracking-wider flex items-center justify-center gap-1">
-                    <Stethoscope className="w-3 h-3" /> L4
+                    <Stethoscope className="w-3 h-3" /> {t("work_schedule.sick_leave")}
                   </div>
                 )}
               </div>
@@ -309,7 +312,7 @@ export default function WorkSchedulePage() {
             <div className="flex justify-between items-center p-6 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
               <h3 className="font-bold text-xl flex items-center gap-3">
                 <Wand2 className="w-6 h-6 text-primary" />
-                Zarządzanie masowe
+                {t("work_schedule.bulk_modal_title")}
               </h3>
               <button onClick={() => setIsBulkModalOpen(false)} className="text-zinc-400 hover:text-red-500 transition-colors bg-white dark:bg-zinc-800 p-2 rounded-full border border-zinc-200 dark:border-zinc-700"><X className="w-5 h-5" /></button>
             </div>
@@ -318,33 +321,33 @@ export default function WorkSchedulePage() {
               
               <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1.5 rounded-xl">
                 <button onClick={() => setBulkMode("generate")} className={`flex-1 flex justify-center items-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all ${bulkMode === "generate" ? "bg-white dark:bg-zinc-950 shadow-md text-primary" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"}`}>
-                  <Wand2 className="w-4 h-4" /> Dodaj / Nadpisz
+                  <Wand2 className="w-4 h-4" /> {t("work_schedule.tab_add")}
                 </button>
                 <button onClick={() => setBulkMode("delete")} className={`flex-1 flex justify-center items-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all ${bulkMode === "delete" ? "bg-white dark:bg-zinc-950 shadow-md text-red-500" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"}`}>
-                  <Trash2 className="w-4 h-4" /> Wyczyść Okres
+                  <Trash2 className="w-4 h-4" /> {t("work_schedule.tab_clear")}
                 </button>
               </div>
 
               {bulkMode === "generate" && (
                 <div className="space-y-4 animate-in fade-in">
-                  <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">Typ wpisu</h4>
+                  <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">{t("work_schedule.entry_type")}</h4>
                   <div className="grid grid-cols-3 gap-3">
-                    <button onClick={() => setBulkEntryType("REGULAR")} className={`p-3 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 ${bulkEntryType === "REGULAR" ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-blue-500/50"}`}><Briefcase className="w-4 h-4" /> Praca</button>
-                    <button onClick={() => setBulkEntryType("VACATION")} className={`p-3 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 ${bulkEntryType === "VACATION" ? "border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-purple-500/50"}`}><Umbrella className="w-4 h-4" /> Urlop</button>
-                    <button onClick={() => setBulkEntryType("SICK")} className={`p-3 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 ${bulkEntryType === "SICK" ? "border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-amber-500/50"}`}><Stethoscope className="w-4 h-4" /> L4</button>
+                    <button onClick={() => setBulkEntryType("REGULAR")} className={`p-3 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 ${bulkEntryType === "REGULAR" ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-blue-500/50"}`}><Briefcase className="w-4 h-4" /> {t("work_schedule.work")}</button>
+                    <button onClick={() => setBulkEntryType("VACATION")} className={`p-3 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 ${bulkEntryType === "VACATION" ? "border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-purple-500/50"}`}><Umbrella className="w-4 h-4" /> {t("work_schedule.vacation")}</button>
+                    <button onClick={() => setBulkEntryType("SICK")} className={`p-3 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 ${bulkEntryType === "SICK" ? "border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-amber-500/50"}`}><Stethoscope className="w-4 h-4" /> {t("work_schedule.sick_leave")}</button>
                   </div>
                 </div>
               )}
 
               <div className="space-y-4">
-                <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">Okres działania</h4>
+                <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">{t("work_schedule.active_period")}</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Od kiedy?</label>
+                    <label className="text-sm font-medium">{t("work_schedule.from_date")}</label>
                     <input type="date" value={bulkData.startDate} onChange={(e) => setBulkData({...bulkData, startDate: e.target.value})} className="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Do kiedy?</label>
+                    <label className="text-sm font-medium">{t("work_schedule.to_date")}</label>
                     <input type="date" value={bulkData.endDate} onChange={(e) => setBulkData({...bulkData, endDate: e.target.value})} className="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none" />
                   </div>
                 </div>
@@ -353,43 +356,43 @@ export default function WorkSchedulePage() {
               {bulkMode === "generate" && bulkEntryType === "REGULAR" && (
                 <>
                   <div className="space-y-4 animate-in fade-in">
-                    <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">System pracy</h4>
+                    <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">{t("work_schedule.work_system")}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <label className={`cursor-pointer p-3 rounded-xl border-2 transition-all flex items-center justify-center ${bulkData.shiftType === "1" ? "border-primary bg-primary/5" : "border-zinc-200 dark:border-zinc-800 bg-transparent"}`}><input type="radio" name="shiftType" value="1" checked={bulkData.shiftType === "1"} onChange={(e) => setBulkData({...bulkData, shiftType: e.target.value})} className="hidden" /><div className="font-bold text-sm">Stały (1 Zmiana)</div></label>
-                      <label className={`cursor-pointer p-3 rounded-xl border-2 transition-all flex items-center justify-center ${bulkData.shiftType === "2" ? "border-primary bg-primary/5" : "border-zinc-200 dark:border-zinc-800 bg-transparent"}`}><input type="radio" name="shiftType" value="2" checked={bulkData.shiftType === "2"} onChange={(e) => setBulkData({...bulkData, shiftType: e.target.value})} className="hidden" /><div className="font-bold text-sm">Rotacyjny (2 Zmiany)</div></label>
-                      <label className={`cursor-pointer p-3 rounded-xl border-2 transition-all flex items-center justify-center ${bulkData.shiftType === "3" ? "border-primary bg-primary/5" : "border-zinc-200 dark:border-zinc-800 bg-transparent"}`}><input type="radio" name="shiftType" value="3" checked={bulkData.shiftType === "3"} onChange={(e) => setBulkData({...bulkData, shiftType: e.target.value})} className="hidden" /><div className="font-bold text-sm">Rotacyjny (3 Zmiany)</div></label>
+                      <label className={`cursor-pointer p-3 rounded-xl border-2 transition-all flex items-center justify-center ${bulkData.shiftType === "1" ? "border-primary bg-primary/5" : "border-zinc-200 dark:border-zinc-800 bg-transparent"}`}><input type="radio" name="shiftType" value="1" checked={bulkData.shiftType === "1"} onChange={(e) => setBulkData({...bulkData, shiftType: e.target.value})} className="hidden" /><div className="font-bold text-sm">{t("work_schedule.shift_type_1")}</div></label>
+                      <label className={`cursor-pointer p-3 rounded-xl border-2 transition-all flex items-center justify-center ${bulkData.shiftType === "2" ? "border-primary bg-primary/5" : "border-zinc-200 dark:border-zinc-800 bg-transparent"}`}><input type="radio" name="shiftType" value="2" checked={bulkData.shiftType === "2"} onChange={(e) => setBulkData({...bulkData, shiftType: e.target.value})} className="hidden" /><div className="font-bold text-sm">{t("work_schedule.shift_type_2")}</div></label>
+                      <label className={`cursor-pointer p-3 rounded-xl border-2 transition-all flex items-center justify-center ${bulkData.shiftType === "3" ? "border-primary bg-primary/5" : "border-zinc-200 dark:border-zinc-800 bg-transparent"}`}><input type="radio" name="shiftType" value="3" checked={bulkData.shiftType === "3"} onChange={(e) => setBulkData({...bulkData, shiftType: e.target.value})} className="hidden" /><div className="font-bold text-sm">{t("work_schedule.shift_type_3")}</div></label>
                     </div>
                   </div>
 
                   <div className="animate-in fade-in">
                   {bulkData.shiftType === "1" ? (
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2"><label className="text-sm font-medium">Godzina rozpoczęcia</label><input type="time" value={bulkData.shift1Start} onChange={(e) => setBulkData({...bulkData, shift1Start: e.target.value})} className="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none" /></div>
-                      <div className="space-y-2"><label className="text-sm font-medium">Godzina zakończenia</label><input type="time" value={bulkData.shift1End} onChange={(e) => setBulkData({...bulkData, shift1End: e.target.value})} className="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none" /></div>
+                      <div className="space-y-2"><label className="text-sm font-medium">{t("work_schedule.start_time")}</label><input type="time" value={bulkData.shift1Start} onChange={(e) => setBulkData({...bulkData, shift1Start: e.target.value})} className="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none" /></div>
+                      <div className="space-y-2"><label className="text-sm font-medium">{t("work_schedule.end_time")}</label><input type="time" value={bulkData.shift1End} onChange={(e) => setBulkData({...bulkData, shift1End: e.target.value})} className="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none" /></div>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50">
-                        <div className="col-span-2 text-sm font-bold text-blue-800 dark:text-blue-300">Zmiana Pierwsza</div>
+                        <div className="col-span-2 text-sm font-bold text-blue-800 dark:text-blue-300">{t("work_schedule.shift_1")}</div>
                         <input type="time" value={bulkData.shift1Start} onChange={(e) => setBulkData({...bulkData, shift1Start: e.target.value})} className="p-3 rounded-xl border border-blue-200 dark:border-blue-800/50 bg-white dark:bg-zinc-950 outline-none" />
                         <input type="time" value={bulkData.shift1End} onChange={(e) => setBulkData({...bulkData, shift1End: e.target.value})} className="p-3 rounded-xl border border-blue-200 dark:border-blue-800/50 bg-white dark:bg-zinc-950 outline-none" />
                       </div>
                       <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/50">
-                        <div className="col-span-2 text-sm font-bold text-amber-800 dark:text-amber-300">Zmiana Druga</div>
+                        <div className="col-span-2 text-sm font-bold text-amber-800 dark:text-amber-300">{t("work_schedule.shift_2")}</div>
                         <input type="time" value={bulkData.shift2Start} onChange={(e) => setBulkData({...bulkData, shift2Start: e.target.value})} className="p-3 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-white dark:bg-zinc-950 outline-none" />
                         <input type="time" value={bulkData.shift2End} onChange={(e) => setBulkData({...bulkData, shift2End: e.target.value})} className="p-3 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-white dark:bg-zinc-950 outline-none" />
                       </div>
                       {bulkData.shiftType === "3" && (
                         <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/50">
-                          <div className="col-span-2 text-sm font-bold text-purple-800 dark:text-purple-300">Zmiana Trzecia</div>
+                          <div className="col-span-2 text-sm font-bold text-purple-800 dark:text-purple-300">{t("work_schedule.shift_3")}</div>
                           <input type="time" value={bulkData.shift3Start} onChange={(e) => setBulkData({...bulkData, shift3Start: e.target.value})} className="p-3 rounded-xl border border-purple-200 dark:border-purple-800/50 bg-white dark:bg-zinc-950 outline-none" />
                           <input type="time" value={bulkData.shift3End} onChange={(e) => setBulkData({...bulkData, shift3End: e.target.value})} className="p-3 rounded-xl border border-purple-200 dark:border-purple-800/50 bg-white dark:bg-zinc-950 outline-none" />
                         </div>
                       )}
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Od jakiej zmiany zaczynasz (od daty początkowej)?</label>
+                        <label className="text-sm font-medium">{t("work_schedule.start_from_shift")}</label>
                         <select value={bulkData.startingShift} onChange={(e) => setBulkData({...bulkData, startingShift: e.target.value})} className="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none cursor-pointer">
-                          <option value="1">Pierwsza</option><option value="2">Druga</option>{bulkData.shiftType === "3" && <option value="3">Trzecia</option>}
+                          <option value="1">{t("work_schedule.first_shift_opt")}</option><option value="2">{t("work_schedule.second_shift_opt")}</option>{bulkData.shiftType === "3" && <option value="3">{t("work_schedule.third_shift_opt")}</option>}
                         </select>
                       </div>
                     </div>
@@ -399,9 +402,9 @@ export default function WorkSchedulePage() {
               )}
 
               <div className="space-y-3">
-                <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">Dotyczy dni tygodnia</h4>
+                <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">{t("work_schedule.week_days_applied")}</h4>
                 <div className="flex flex-wrap gap-2">
-                  {[{ label: "Pon", val: 1 }, { label: "Wt", val: 2 }, { label: "Śr", val: 3 }, { label: "Czw", val: 4 }, { label: "Pt", val: 5 }, { label: "Sob", val: 6 }, { label: "Ndz", val: 0 }].map(day => {
+                  {[{ label: t("work_schedule.days_short_mon"), val: 1 }, { label: t("work_schedule.days_short_tue"), val: 2 }, { label: t("work_schedule.days_short_wed"), val: 3 }, { label: t("work_schedule.days_short_thu"), val: 4 }, { label: t("work_schedule.days_short_fri"), val: 5 }, { label: t("work_schedule.days_short_sat"), val: 6 }, { label: t("work_schedule.days_short_sun"), val: 0 }].map(day => {
                     const isSelected = bulkData.selectedWeekDays.includes(day.val);
                     return (
                       <button key={day.val} onClick={() => toggleWeekDay(day.val)} className={`flex-1 min-w-[60px] py-2.5 rounded-xl text-sm font-bold transition-all border ${isSelected ? (bulkMode === "generate" ? "bg-primary text-white border-primary shadow-md" : "bg-red-500 text-white border-red-500 shadow-md") : "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-700"}`}>
@@ -414,11 +417,11 @@ export default function WorkSchedulePage() {
             </div>
 
             <div className="p-6 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex gap-4">
-              <button onClick={() => setIsBulkModalOpen(false)} className="flex-1 py-3.5 px-4 rounded-xl font-bold bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">Anuluj</button>
+              <button onClick={() => setIsBulkModalOpen(false)} className="flex-1 py-3.5 px-4 rounded-xl font-bold bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">{t("work_schedule.cancel_btn")}</button>
               {bulkMode === "generate" ? (
-                <button onClick={handleBulkGenerate} className="flex-1 py-3.5 px-4 rounded-xl font-bold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:opacity-90 flex items-center justify-center gap-2 shadow-xl"><Wand2 className="w-5 h-5" /> Zapisz w kalendarzu</button>
+                <button onClick={handleBulkGenerate} className="flex-1 py-3.5 px-4 rounded-xl font-bold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:opacity-90 flex items-center justify-center gap-2 shadow-xl"><Wand2 className="w-5 h-5" /> {t("work_schedule.save_in_calendar")}</button>
               ) : (
-                <button onClick={handleBulkDelete} className="flex-1 py-3.5 px-4 rounded-xl font-bold bg-red-500 text-white hover:bg-red-600 flex items-center justify-center gap-2 shadow-xl shadow-red-500/20"><Trash2 className="w-5 h-5" /> Wyczyść Grafik</button>
+                <button onClick={handleBulkDelete} className="flex-1 py-3.5 px-4 rounded-xl font-bold bg-red-500 text-white hover:bg-red-600 flex items-center justify-center gap-2 shadow-xl shadow-red-500/20"><Trash2 className="w-5 h-5" /> {t("work_schedule.clear_schedule")}</button>
               )}
             </div>
           </div>
@@ -433,7 +436,7 @@ export default function WorkSchedulePage() {
           <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl w-full max-w-md overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center p-6 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
               <h3 className="font-bold text-lg flex items-center gap-2">
-                Grafik na: <span className="text-primary">{format(selectedDay, "dd MMMM yyyy", { locale: pl })}</span>
+                {t("work_schedule.edit_modal_title")} <span className="text-primary">{format(selectedDay, "dd MMMM yyyy", { locale: pl })}</span>
               </h3>
               <button onClick={() => setSelectedDay(null)} className="text-zinc-400 hover:text-red-500 transition-colors"><X className="w-5 h-5" /></button>
             </div>
@@ -441,17 +444,17 @@ export default function WorkSchedulePage() {
             <div className="p-6 space-y-6">
               
               <div className="grid grid-cols-3 gap-2">
-                <button onClick={() => setFormData({...formData, shiftType: "REGULAR"})} className={`py-2 rounded-xl border-2 font-bold text-xs transition-all flex flex-col items-center gap-1 ${formData.shiftType === "REGULAR" ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500"}`}><Briefcase className="w-4 h-4" /> Praca</button>
-                <button onClick={() => setFormData({...formData, shiftType: "VACATION"})} className={`py-2 rounded-xl border-2 font-bold text-xs transition-all flex flex-col items-center gap-1 ${formData.shiftType === "VACATION" ? "border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500"}`}><Umbrella className="w-4 h-4" /> Urlop</button>
-                <button onClick={() => setFormData({...formData, shiftType: "SICK"})} className={`py-2 rounded-xl border-2 font-bold text-xs transition-all flex flex-col items-center gap-1 ${formData.shiftType === "SICK" ? "border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500"}`}><Stethoscope className="w-4 h-4" /> L4</button>
+                <button onClick={() => setFormData({...formData, shiftType: "REGULAR"})} className={`py-2 rounded-xl border-2 font-bold text-xs transition-all flex flex-col items-center gap-1 ${formData.shiftType === "REGULAR" ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500"}`}><Briefcase className="w-4 h-4" /> {t("work_schedule.work")}</button>
+                <button onClick={() => setFormData({...formData, shiftType: "VACATION"})} className={`py-2 rounded-xl border-2 font-bold text-xs transition-all flex flex-col items-center gap-1 ${formData.shiftType === "VACATION" ? "border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500"}`}><Umbrella className="w-4 h-4" /> {t("work_schedule.vacation")}</button>
+                <button onClick={() => setFormData({...formData, shiftType: "SICK"})} className={`py-2 rounded-xl border-2 font-bold text-xs transition-all flex flex-col items-center gap-1 ${formData.shiftType === "SICK" ? "border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500"}`}><Stethoscope className="w-4 h-4" /> {t("work_schedule.sick_leave")}</button>
               </div>
 
               {formData.shiftType === "REGULAR" ? (
                 <div className="space-y-6 animate-in fade-in">
                   <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/50 rounded-xl p-4 flex items-center justify-between">
                     <div>
-                      <div className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Rozliczenie dnia</div>
-                      <div className="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">Łączny czas w pracy</div>
+                      <div className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">{t("work_schedule.checkout_day")}</div>
+                      <div className="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">{t("work_schedule.total_work_time")}</div>
                     </div>
                     <div className="text-3xl font-black text-blue-600 dark:text-blue-400">
                       {formData.isOvertime ? calculateHours(formData.startTime, formData.actualEndTime) : calculateHours(formData.startTime, formData.endTime)}<span className="text-lg">h</span>
@@ -460,24 +463,24 @@ export default function WorkSchedulePage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Standardowy początek</label>
+                      <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{t("work_schedule.std_start")}</label>
                       <input type="time" value={formData.startTime} onChange={(e) => setFormData({...formData, startTime: e.target.value})} className="w-full p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-mono text-lg text-center" />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Standardowy koniec</label>
+                      <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{t("work_schedule.std_end")}</label>
                       <input type="time" value={formData.endTime} onChange={(e) => setFormData({...formData, endTime: e.target.value, actualEndTime: formData.isOvertime ? formData.actualEndTime : e.target.value})} className="w-full p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-mono text-lg text-center" />
                     </div>
                   </div>
 
                   <div className="pt-2">
                     <label className="flex items-center justify-between cursor-pointer p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                      <span className="font-bold">Przedłużyłem zmianę (Nadgodziny)</span>
+                      <span className="font-bold">{t("work_schedule.extended_shift")}</span>
                       <input type="checkbox" checked={formData.isOvertime} onChange={(e) => setFormData({...formData, isOvertime: e.target.checked, actualEndTime: e.target.checked ? formData.endTime : formData.endTime})} className="w-5 h-5 rounded border-zinc-300 text-primary focus:ring-primary" />
                     </label>
 
                     {formData.isOvertime && (
                       <div className="mt-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 animate-in fade-in slide-in-from-top-2">
-                        <label className="text-sm font-bold text-amber-800 dark:text-amber-400">Do której godziny faktycznie byłeś w pracy?</label>
+                        <label className="text-sm font-bold text-amber-800 dark:text-amber-400">{t("work_schedule.actual_end_time")}</label>
                         <input type="time" value={formData.actualEndTime} onChange={(e) => setFormData({...formData, actualEndTime: e.target.value})} className="w-full p-3.5 mt-2 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-white dark:bg-zinc-950 outline-none font-mono text-lg text-center text-amber-700 dark:text-amber-400 focus:ring-1 focus:ring-amber-500" />
                       </div>
                     )}
@@ -486,15 +489,15 @@ export default function WorkSchedulePage() {
               ) : (
                 <div className="p-8 text-center bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-zinc-200 dark:border-zinc-800 animate-in fade-in">
                   <p className="font-bold text-zinc-600 dark:text-zinc-400">
-                    Ten dzień zostanie oznaczony jako wolny od pracy ({formData.shiftType === "VACATION" ? "Urlop" : "L4"}).
+                    {t("work_schedule.free_day_notice").replace("{type}", formData.shiftType === "VACATION" ? t("work_schedule.vacation") : t("work_schedule.sick_leave"))}
                   </p>
                 </div>
               )}
             </div>
 
             <div className="p-6 bg-zinc-50 dark:bg-zinc-900/50 flex gap-3 border-t border-zinc-100 dark:border-zinc-800">
-              <button onClick={() => setSelectedDay(null)} className="flex-1 py-3 px-4 rounded-xl font-bold bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 transition-colors">Anuluj</button>
-              <button onClick={handleSave} className="flex-1 py-3 px-4 rounded-xl font-bold bg-primary text-white hover:bg-primary/90 flex items-center justify-center gap-2 transition-colors shadow-lg shadow-primary/20"><Save className="w-5 h-5" /> Zapisz wpis</button>
+              <button onClick={() => setSelectedDay(null)} className="flex-1 py-3 px-4 rounded-xl font-bold bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 transition-colors">{t("work_schedule.cancel_btn")}</button>
+              <button onClick={handleSave} className="flex-1 py-3 px-4 rounded-xl font-bold bg-primary text-white hover:bg-primary/90 flex items-center justify-center gap-2 transition-colors shadow-lg shadow-primary/20"><Save className="w-5 h-5" /> {t("work_schedule.save_entry")}</button>
             </div>
           </div>
         </div>

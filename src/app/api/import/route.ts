@@ -1,5 +1,7 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { categoryRules } from "@/lib/categoryRules"; 
 import { getOrCreateCategory, ensureDefaultCategories } from "@/lib/services/category.service";
 
@@ -11,7 +13,7 @@ const parseDateStr = (ds: string) => {
 };
 
 const cleanProductName = (val: any) => {
-  if (!val) return "GŁÓWNE";
+  if (!val) return "GĹĂ“WNE";
   return String(val).split('\n')[0].trim();
 };
 
@@ -28,24 +30,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Brak danych" }, { status: 400 });
     }
 
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak użytkownika" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = { id: (session.user as any).id };
     const userId = user.id;
 
     const userCategories = await prisma.category.findMany({ where: { userId } });
-    const defaultCategory = await getOrCreateCategory(userId, "Inne", "❓");
+    const defaultCategory = await getOrCreateCategory(userId, "Inne", "âť“");
     
     let importedCount = 0;
     const hasSavingsProduct = Boolean(savingsProduct);
 
-    // ZMIENNE DO ZŁAPANIA FAKTYCZNEGO SALDA Z PLIKU
+    // ZMIENNE DO ZĹAPANIA FAKTYCZNEGO SALDA Z PLIKU
     let finalMainBalance: number | null = null;
     let finalSavingsBalance: number | null = null;
 
     for (const row of transactions) {
       const currentProduct = cleanProductName(row['Produkt'] || row['Konto']);
       let kwotaStr = row['Kwota'];
-      let saldoStr = row['Saldo po transakcji']; // Łapiemy saldo z banku
+      let saldoStr = row['Saldo po transakcji']; // Ĺapiemy saldo z banku
       
       if (!kwotaStr) continue; 
       
@@ -53,16 +56,16 @@ export async function POST(req: Request) {
       const amount = parseFloat(kwotaStr);
       if (isNaN(amount) || amount === 0) continue;
 
-      // Parsowanie Salda po transakcji (jeśli istnieje)
+      // Parsowanie Salda po transakcji (jeĹ›li istnieje)
       let rowSaldo = NaN;
       if (saldoStr) {
         saldoStr = String(saldoStr).replace(/\s/g, '').replace(',', '.');
         rowSaldo = parseFloat(saldoStr);
       }
 
-      const isMainProduct = mainProducts.includes(currentProduct) || (mainProducts.length === 0 && currentProduct === "GŁÓWNE");
+      const isMainProduct = mainProducts.includes(currentProduct) || (mainProducts.length === 0 && currentProduct === "GĹĂ“WNE");
 
-      // --- ŁAPANIE NAJNOWSZEGO SALDA ---
+      // --- ĹAPANIE NAJNOWSZEGO SALDA ---
       if (isMainProduct && finalMainBalance === null && !isNaN(rowSaldo)) {
         finalMainBalance = rowSaldo;
       }
@@ -76,11 +79,11 @@ export async function POST(req: Request) {
       const odbiorca = cleanText(row['Odbiorca']);
       const typ = cleanText(row['Typ Transakcji'] || row['Typ transakcji']);
       
-      const isInternal = /własny|wewnętrzny|lokacyjn|oszczędno/i.test(typ + opis);
+      const isInternal = /wĹ‚asny|wewnÄ™trzny|lokacyjn|oszczÄ™dno/i.test(typ + opis);
 
       // --- ZAPISYWANIE TRANSAKCJI ---
       if (hasSavingsProduct && currentProduct === savingsProduct) {
-        // Konta oszczędnościowe pomijamy w dodawaniu do bazy
+        // Konta oszczÄ™dnoĹ›ciowe pomijamy w dodawaniu do bazy
         continue; 
       }
 
@@ -89,7 +92,7 @@ export async function POST(req: Request) {
           await prisma.income.create({
             data: {
               amount,
-              source: isInternal ? "Przelew z oszczędności" : (nadawca || opis || "Import"),
+              source: isInternal ? "Przelew z oszczÄ™dnoĹ›ci" : (nadawca || opis || "Import"),
               description: opis,
               bankTransactionType: typ,
               date,
@@ -104,7 +107,7 @@ export async function POST(req: Request) {
           if (isInternal) {
             await prisma.expense.create({
               data: {
-                amount: absAmount, description: opis, recipient: "Własne Oszczędności",
+                amount: absAmount, description: opis, recipient: "WĹ‚asne OszczÄ™dnoĹ›ci",
                 bankTransactionType: typ, date, type: "SAVING", userId
               }
             });
@@ -112,7 +115,7 @@ export async function POST(req: Request) {
             let categoryId = defaultCategory.id;
             const textToSearch = (odbiorca + " " + opis).toLowerCase();
 
-            // SZUKANIE KATEGORII NA PODSTAWIE REGUŁ
+            // SZUKANIE KATEGORII NA PODSTAWIE REGUĹ
             for (const rule of categoryRules) {
               const regex = new RegExp(rule.keywords.join('|'), 'i');
               if (regex.test(textToSearch)) {
@@ -122,7 +125,7 @@ export async function POST(req: Request) {
               }
             }
 
-            // Dodanie wydatku z już poprawną (znalezioną lub nową) kategorią
+            // Dodanie wydatku z juĹĽ poprawnÄ… (znalezionÄ… lub nowÄ…) kategoriÄ…
             await prisma.expense.create({
               data: {
                 amount: absAmount, 
@@ -135,16 +138,16 @@ export async function POST(req: Request) {
               }
             });
           }
-          importedCount++; // Ten licznik musiał tu zostać i to on mógł powodować błędy przy ręcznym kopiowaniu
+          importedCount++; // Ten licznik musiaĹ‚ tu zostaÄ‡ i to on mĂłgĹ‚ powodowaÄ‡ bĹ‚Ä™dy przy rÄ™cznym kopiowaniu
         }
       }
-    } // <-- TUTAJ KOŃCZY SIĘ GŁÓWNA PĘTLA FOR DLA TRANSAKCJI
+    } // <-- TUTAJ KOĹCZY SIÄ GĹĂ“WNA PÄTLA FOR DLA TRANSAKCJI
 
     // =========================================================
-    // ETAP 2: AUTOMATYCZNE WYRÓWNYWANIE SALDA (MAGIA)
+    // ETAP 2: AUTOMATYCZNE WYRĂ“WNYWANIE SALDA (MAGIA)
     // =========================================================
 
-    // 1. Zapisujemy odczytane saldo oszczędności bezwzględnie w bazie
+    // 1. Zapisujemy odczytane saldo oszczÄ™dnoĹ›ci bezwzglÄ™dnie w bazie
     if (finalSavingsBalance !== null) {
       await prisma.user.update({
         where: { id: userId },
@@ -152,7 +155,7 @@ export async function POST(req: Request) {
       });
     }
 
-    // 2. Wyrównujemy konto główne (Kwota Wolna)
+    // 2. WyrĂłwnujemy konto gĹ‚Ăłwne (Kwota Wolna)
     if (finalMainBalance !== null) {
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
@@ -170,24 +173,24 @@ export async function POST(req: Request) {
       const dbBalance = (incomes._sum.amount || 0) - (expenses._sum.amount || 0);
       const difference = finalMainBalance - dbBalance;
 
-      // Jeśli różnica to więcej niż 1 grosz, tworzymy wpis korygujący
+      // JeĹ›li rĂłĹĽnica to wiÄ™cej niĹĽ 1 grosz, tworzymy wpis korygujÄ…cy
       if (Math.abs(difference) > 0.01) {
         if (difference > 0) {
-          // Aplikacja myśli, że masz za mało pieniędzy -> dodajemy ukryty przychód
+          // Aplikacja myĹ›li, ĹĽe masz za maĹ‚o pieniÄ™dzy -> dodajemy ukryty przychĂłd
           await prisma.income.create({
             data: {
               amount: difference,
-              source: "Automatyczne wyrównanie po imporcie",
+              source: "Automatyczne wyrĂłwnanie po imporcie",
               date: new Date(),
               userId
             }
           });
         } else {
-          // Aplikacja myśli, że masz za dużo pieniędzy -> dodajemy ukryty wydatek
+          // Aplikacja myĹ›li, ĹĽe masz za duĹĽo pieniÄ™dzy -> dodajemy ukryty wydatek
           await prisma.expense.create({
             data: {
               amount: Math.abs(difference),
-              description: "Automatyczne wyrównanie po imporcie",
+              description: "Automatyczne wyrĂłwnanie po imporcie",
               categoryId: defaultCategory.id,
               date: new Date(),
               userId
@@ -197,10 +200,10 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({ message: `Pomyślnie zaimportowano ${importedCount} transakcji i zaktualizowano salda na podstawie wyciągu.` }, { status: 200 });
+    return NextResponse.json({ message: `PomyĹ›lnie zaimportowano ${importedCount} transakcji i zaktualizowano salda na podstawie wyciÄ…gu.` }, { status: 200 });
 
   } catch (error: any) {
-    console.error("Błąd importu:", error);
-    return NextResponse.json({ error: "Wystąpił błąd podczas importu." }, { status: 500 });
+    console.error("BĹ‚Ä…d importu:", error);
+    return NextResponse.json({ error: "WystÄ…piĹ‚ bĹ‚Ä…d podczas importu." }, { status: 500 });
   }
 }

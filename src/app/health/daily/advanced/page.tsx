@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import useSWR from "swr";
 import { format, isSameDay, isSameMonth } from "date-fns";
 import { pl } from "date-fns/locale";
 import Link from "next/link";
@@ -8,6 +9,9 @@ import {
   ChevronLeft, Flame, Droplet, Search, Plus, X, ArrowLeft, 
   Beef, Wheat, Activity, Target, Utensils, Settings, Info, Loader2, Trash2, Cpu
 } from "lucide-react";
+
+// Definicja prostego fetchera dla SWR
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 // Przykładowa baza "Fejkowa" - z produktów z których zaraz zbudujemy wyszukiwarkę
 const MOCK_DATABASE = [
@@ -137,40 +141,44 @@ export default function AdvancedHealthPage() {
     fetchCustom();
   }, []);
 
-  const searchFoodApi = async (query: string, setResults: any) => {
-    if (!query) {
-      setResults([]);
-      return;
-    }
-    setIsSearching(true);
-    try {
-      const res = await fetch(`/api/food/search?q=${encodeURIComponent(query)}`);
-      if (res.ok) {
-        const data = await res.json();
-        setResults(data);
-      } else {
-        setResults([]);
-      }
-    } catch {
-      setResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  };
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [debouncedBuilderQuery, setDebouncedBuilderQuery] = useState("");
 
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      searchFoodApi(searchQuery, setSearchResults);
-    }, 500);
-    return () => clearTimeout(delayDebounceFn);
+    const t = setTimeout(() => setDebouncedSearchQuery(searchQuery), 500);
+    return () => clearTimeout(t);
   }, [searchQuery]);
 
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      searchFoodApi(builderQuery, setBuilderResults);
-    }, 500);
-    return () => clearTimeout(delayDebounceFn);
+    const t = setTimeout(() => setDebouncedBuilderQuery(builderQuery), 500);
+    return () => clearTimeout(t);
   }, [builderQuery]);
+
+  const { data: searchResultsData, isValidating: isSearchLoading } = useSWR(
+    debouncedSearchQuery ? `/api/food/search?q=${encodeURIComponent(debouncedSearchQuery)}` : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const { data: builderResultsData, isValidating: isBuilderLoading } = useSWR(
+    debouncedBuilderQuery ? `/api/food/search?q=${encodeURIComponent(debouncedBuilderQuery)}` : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  useEffect(() => {
+    if (debouncedSearchQuery && searchResultsData) setSearchResults(searchResultsData);
+    else if (!debouncedSearchQuery) setSearchResults([]);
+  }, [searchResultsData, debouncedSearchQuery]);
+
+  useEffect(() => {
+    if (debouncedBuilderQuery && builderResultsData) setBuilderResults(builderResultsData);
+    else if (!debouncedBuilderQuery) setBuilderResults([]);
+  }, [builderResultsData, debouncedBuilderQuery]);
+
+  useEffect(() => {
+    setIsSearching(isSearchLoading || isBuilderLoading);
+  }, [isSearchLoading, isBuilderLoading]);
 
   // Aktualizacja danych do LocalStorage na zmianę w interfejsie
   useEffect(() => {

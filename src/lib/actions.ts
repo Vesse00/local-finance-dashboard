@@ -1,6 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { addDays } from "date-fns/addDays";
 import { endOfDay } from "date-fns/endOfDay";
 import { startOfDay } from "date-fns/startOfDay";
@@ -8,9 +10,12 @@ import { revalidatePath } from "next/cache";
 
 // Pobieranie ID użytkownika (Jako String/UUID)
 const getUserId = async (): Promise<string> => {
-  const user = await prisma.user.findFirst();
-  if (!user) throw new Error("Brak użytkownika w bazie. Zarejestruj się najpierw!");
-  return user.id;
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as any)?.id;
+  if (!userId) throw new Error("Brak dostępu lub sesji!");
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new Error("Brak dostępu lub sesji!");
+  return userId;
 };
 
 // PANCERNA TARCZA: Konwertuje wszystko co Prisma wypluje, włączając w to BigInty
@@ -95,7 +100,10 @@ export async function transferToSavings(formData: FormData) {
 }
 
 export async function getDashboardStats() {
-  const user = await prisma.user.findFirst();
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as any)?.id;
+  if (!userId) return null;
+  const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
     return { kwotaWolna: 0, wydano: 0, wplywy: 0, oszczednosci: 0 };
   }
@@ -188,9 +196,12 @@ export async function getDashboardStats() {
 import { ensureDefaultCategories, getOrCreateCategory } from "@/lib/services/category.service";
 
 export async function getCalendarData() {
-  const user = await prisma.user.findFirst();
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as any)?.id;
+  if (!userId) return null;
+  const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User not found");
-  const userId = user.id;
+  
   
   // Zapewniamy stworzenie podstawowych kategorii jeśli ich brakuje
   await ensureDefaultCategories(userId);
@@ -509,9 +520,12 @@ export async function overpayRecurring(formData: FormData) {
 // --- WYRÓWNYWANIE SALDA (UZGODNIENIE) ---
 
 export async function adjustMainBalance(formData: FormData) {
-  const user = await prisma.user.findFirst();
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as any)?.id;
+  if (!userId) return null;
+  const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("Nie znaleziono użytkownika");
-  const userId = user.id;
+  
 
   const targetAmount = parseFloat(formData.get("amount") as string);
 

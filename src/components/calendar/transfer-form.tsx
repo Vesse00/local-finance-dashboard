@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowDown } from "lucide-react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 interface TransferFormProps {
   defaultDate?: Date | null;
@@ -12,6 +13,7 @@ interface TransferFormProps {
 }
 
 export function TransferForm({ defaultDate, onSuccess, defaultFrom = "MAIN", defaultTo = "SAVINGS" }: TransferFormProps) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -44,12 +46,12 @@ export function TransferForm({ defaultDate, onSuccess, defaultFrom = "MAIN", def
           body: JSON.stringify({ amount, fromAccount, toAccount, date })
         });
 
-        if (!res.ok) throw new Error("Błąd podczas transferu");
+        if (!res.ok) throw new Error(t("calendar.modals.transfer_form.error_message"));
 
         router.refresh(); 
         onSuccess();
       } catch (error: any) {
-        alert("Wystąpił błąd. Spróbuj ponownie.");
+        alert(t("calendar.modals.transfer_form.error_message"));
       }
     });
   };
@@ -65,16 +67,16 @@ export function TransferForm({ defaultDate, onSuccess, defaultFrom = "MAIN", def
         
         {/* Z KONTA */}
         <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm focus-within:border-indigo-500 transition-colors relative z-0">
-          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-zinc-500">Z konta</label>
+          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-zinc-500">{t("calendar.modals.transfer_form.from_account")}</label>
           <select 
             value={fromAccount} 
             onChange={(e) => setFromAccount(e.target.value)} 
             className="w-full bg-transparent outline-none font-bold text-zinc-900 dark:text-white cursor-pointer appearance-none"
           >
-            <option value="MAIN" className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900">Portfel Główny (Dostępne środki)</option>
-            <option value="SAVINGS" className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900">Główne Oszczędności</option>
+            <option value="MAIN" className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900">{t("calendar.modals.transfer_form.main_wallet")}</option>
+            <option value="SAVINGS" className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900">{t("calendar.modals.transfer_form.main_savings")}</option>
             {accounts.length > 0 && (
-              <optgroup label="Subkonta oszczędnościowe" className="text-zinc-500 bg-zinc-100 dark:bg-zinc-800 font-semibold">
+              <optgroup label={t("calendar.modals.transfer_form.savings_subaccounts")} className="text-zinc-500 bg-zinc-100 dark:bg-zinc-800 font-semibold">
                 {accounts.map(acc => (
                   <option key={acc.id} value={acc.id} className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900 font-bold">
                     {acc.name} ({acc.type})
@@ -92,16 +94,16 @@ export function TransferForm({ defaultDate, onSuccess, defaultFrom = "MAIN", def
 
         {/* NA KONTO */}
         <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm focus-within:border-indigo-500 transition-colors relative z-0">
-          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-zinc-500">Na konto</label>
+          <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-zinc-500">{t("calendar.modals.transfer_form.to_account")}</label>
           <select 
             value={toAccount} 
             onChange={(e) => setToAccount(e.target.value)} 
             className="w-full bg-transparent outline-none font-bold text-zinc-900 dark:text-white cursor-pointer appearance-none"
           >
-            <option value="MAIN" className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900">Portfel Główny (Dostępne środki)</option>
-            <option value="SAVINGS" className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900">Główne Oszczędności</option>
+            <option value="MAIN" className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900">{t("calendar.modals.transfer_form.main_wallet")}</option>
+            <option value="SAVINGS" className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900">{t("calendar.modals.transfer_form.main_savings")}</option>
             {accounts.length > 0 && (
-              <optgroup label="Subkonta oszczędnościowe" className="text-zinc-500 bg-zinc-100 dark:bg-zinc-800 font-semibold">
+              <optgroup label={t("calendar.modals.transfer_form.savings_subaccounts")} className="text-zinc-500 bg-zinc-100 dark:bg-zinc-800 font-semibold">
                 {accounts.map(acc => (
                   <option key={acc.id} value={acc.id} className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900 font-bold">
                     {acc.name} ({acc.type})
@@ -115,17 +117,17 @@ export function TransferForm({ defaultDate, onSuccess, defaultFrom = "MAIN", def
 
       {/* POLE KWOTY */}
       <div>
-        <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 text-zinc-500 ml-1">Przesuwana kwota</label>
+        <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 text-zinc-500 ml-1">{t("calendar.modals.transfer_form.transfer_amount")}</label>
         <div className="relative">
           <input 
             name="amount" 
             type="number" 
             step="0.01" 
-            placeholder="0.00" 
+            placeholder={t("calendar.modals.transfer_form.amount_placeholder")} 
             className="w-full rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-4 pr-12 outline-none focus:border-indigo-500 transition-all text-zinc-900 dark:text-white text-2xl font-black text-center shadow-sm" 
             required 
           />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">PLN</span>
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">{t("calendar.modals.transfer_form.currency")}</span>
         </div>
       </div>
 
@@ -134,7 +136,7 @@ export function TransferForm({ defaultDate, onSuccess, defaultFrom = "MAIN", def
         disabled={isPending || isSameAccount} 
         className="w-full rounded-2xl py-4 text-white font-bold shadow-lg transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed bg-indigo-500 shadow-indigo-500/20"
       >
-        {isPending ? "Przetwarzanie..." : isSameAccount ? "Wybierz różne konta" : "Wykonaj transfer"}
+        {isPending ? t("calendar.modals.transfer_form.processing") : isSameAccount ? t("calendar.modals.transfer_form.same_account") : t("calendar.modals.transfer_form.submit_transfer")}
       </button>
     </form>
   );

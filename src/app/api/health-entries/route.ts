@@ -1,10 +1,13 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET(req: Request) {
   try {
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak użytkownika" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = { id: (session.user as any).id };
 
     const { searchParams } = new URL(req.url);
     const monthStr = searchParams.get("month");
@@ -24,16 +27,17 @@ export async function GET(req: Request) {
 
     return NextResponse.json(entries);
   } catch (error) {
-    return NextResponse.json({ error: "Wystąpił błąd" }, { status: 500 });
+    return NextResponse.json({ error: "WystÄ…piĹ‚ bĹ‚Ä…d" }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak użytkownika" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = { id: (session.user as any).id };
 
-    // Dodano "details" do odbieranych parametrów
+    // Dodano "details" do odbieranych parametrĂłw
     const { date, type, title, calories, details } = await req.json();
 
     const targetDate = new Date(date);
@@ -46,26 +50,27 @@ export async function POST(req: Request) {
         type,
         title,
         calories: calories ? parseInt(calories) : 0,
-        detasils: details || null // <-- Zapisujemy szczegóły do bazy
+        detasils: details || null // <-- Zapisujemy szczegĂłĹ‚y do bazy
       }
     });
 
-    return NextResponse.json({ message: "Dodano pomyślnie", entry });
+    return NextResponse.json({ message: "Dodano pomyĹ›lnie", entry });
   } catch (error) {
-    return NextResponse.json({ error: "Wystąpił błąd" }, { status: 500 });
+    return NextResponse.json({ error: "WystÄ…piĹ‚ bĹ‚Ä…d" }, { status: 500 });
   }
 }
 
 export async function DELETE(req: Request) {
   try {
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak użytkownika" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = { id: (session.user as any).id };
 
     const { id } = await req.json();
     await prisma.healthEntry.delete({ where: { id } });
 
-    return NextResponse.json({ message: "Usunięto pomyślnie" });
+    return NextResponse.json({ message: "UsuniÄ™to pomyĹ›lnie" });
   } catch (error) {
-    return NextResponse.json({ error: "Wystąpił błąd" }, { status: 500 });
+    return NextResponse.json({ error: "WystÄ…piĹ‚ bĹ‚Ä…d" }, { status: 500 });
   }
 }

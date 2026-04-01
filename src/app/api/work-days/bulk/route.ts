@@ -1,15 +1,18 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(req: Request) {
   try {
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak użytkownika" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = { id: (session.user as any).id };
 
     const body = await req.json();
     const { days } = body;
 
-    if (!days || !Array.isArray(days)) return NextResponse.json({ error: "Nieprawidłowe dane" }, { status: 400 });
+    if (!days || !Array.isArray(days)) return NextResponse.json({ error: "NieprawidĹ‚owe dane" }, { status: 400 });
 
     await prisma.$transaction(
       days.map((day: any) => {
@@ -43,22 +46,23 @@ export async function POST(req: Request) {
       })
     );
 
-    return NextResponse.json({ message: `Pomyślnie wygenerowano grafik.` }, { status: 200 });
+    return NextResponse.json({ message: `PomyĹ›lnie wygenerowano grafik.` }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: "Wystąpił błąd podczas generowania." }, { status: 500 });
+    return NextResponse.json({ error: "WystÄ…piĹ‚ bĹ‚Ä…d podczas generowania." }, { status: 500 });
   }
 }
 
 export async function DELETE(req: Request) {
   try {
-    const user = await prisma.user.findFirst();
-    if (!user) return NextResponse.json({ error: "Brak użytkownika" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any)?.id) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    const user = { id: (session.user as any).id };
 
     const body = await req.json();
     const { startDate, endDate, selectedWeekDays } = body;
 
     if (!startDate || !endDate || !Array.isArray(selectedWeekDays)) {
-      return NextResponse.json({ error: "Nieprawidłowe dane" }, { status: 400 });
+      return NextResponse.json({ error: "NieprawidĹ‚owe dane" }, { status: 400 });
     }
 
     const start = new Date(startDate);
@@ -78,8 +82,8 @@ export async function DELETE(req: Request) {
       await prisma.workDay.deleteMany({ where: { id: { in: idsToDelete } } });
     }
 
-    return NextResponse.json({ message: `Pomyślnie usunięto ${idsToDelete.length} wpisów.` }, { status: 200 });
+    return NextResponse.json({ message: `PomyĹ›lnie usuniÄ™to ${idsToDelete.length} wpisĂłw.` }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: "Wystąpił błąd podczas usuwania." }, { status: 500 });
+    return NextResponse.json({ error: "WystÄ…piĹ‚ bĹ‚Ä…d podczas usuwania." }, { status: 500 });
   }
 }
