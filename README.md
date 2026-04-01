@@ -1,36 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
+  <h1 align="center">MeBase.</h1>
+  <p align="center">
+    <strong>Your private life operating system. Offline by default.</strong>
+  </p>
+  <p align="center">
+    <a href="#vision">Vision</a> •
+    <a href="#features">Features</a> •
+    <a href="#roadmap">Roadmap</a> •
+    <a href="#tech-stack">Tech Stack</a> •
+    <a href="#getting-started">Getting Started</a>
+  </p>
+</div>
 
-## Getting Started
+---
 
-First, run the development server:
+## 👁️ Vision
 
+In an era of endless subscriptions and cloud services analyzing your every move, **MeBase** takes a fundamentally different path. It's a modular, personal "Life OS" where **You** retain 100% control over your data. No hidden servers, no telemetry, no tracking. Your finances, health metrics, and daily routines stay exactly where they belong — on your device.
+
+Pay once. Use forever.
+
+## ✨ Core Modules & Features
+
+MeBase is designed as a collection of deeply integrated, highly specialized modules. Everything is interconnected yet neatly organized.
+
+### 💳 Finance Node
+- **Expense & Income Tracking:** Log transactions manually or bulk-import. Use custom tags for granular categorization.
+- **Subscription Manager:** Never miss a renewal date. Track monthly/yearly recurring costs and identify unused services.
+- **Budgeting Engine:** Set strict limits for specific categories and visualize your monthly "burn rate" in real-time.
+- **Advanced Analytics:** Interactive charts displaying your cash flow, net worth progression, and historical spending habits.
+
+### 🧬 Health & Productivity
+- **Biometrics Dashboard:** Track weight, daily energy levels, sleep duration, and overall mood.
+- **Habit Matrix:** Build routines with streak tracking and visual heatmaps (GitHub-style contribution graphs).
+- **Time Allocation:** Log deep work sessions, track overtime, and calculate your true hourly yield.
+- **Encrypted Journal:** A private, distraction-free space for daily reflections and notes, secured locally.
+
+### 🚗 Garage & Assets
+- **Maintenance Timeline:** A complete service history with mileage logs and attached invoices/receipts.
+- **Cost-per-Distance Analysis:** Automatically calculate how much your vehicle actually costs to run per km/mile.
+- **Document Vault:** Keep your insurance policies, registration details, and upcoming inspection dates in one quick-access tab.
+
+### 🛡️ System & Privacy (The Core)
+- **100% Local-First:** Powered by a local SQLite database. Zero cloud latency, zero external API dependencies.
+- **Data Portability:** Your data is strictly yours. Prevent vendor lock-in with one-click full exports to CSV and JSON.
+- **Bento-style Dashboard:** A highly customizable, beautiful home screen showing vital statistics from all modules at a single glance.
+
+## 🗺️ Roadmap
+
+MeBase is in active development. Our roadmap to building a complete, local-first ecosystem:
+
+- [x] **Phase 1: Web App (Current)**
+  - Building the system core.
+  - Designing initial modules (Finance, Health, Garage).
+  - UI/UX refinement (Smooth animations, minimalist design, Neumorphism/Soft 3D effects).
+- [ ] **Phase 2: Standalone Desktop App (Coming Soon)**
+  - Migrating the web app to a native desktop application (Windows / macOS).
+  - Implementation of a local database (SQLite) for a true Local-First experience.
+- [ ] **Phase 3: Mobile Companion**
+  - Mobile application (iOS / Android) for quick data entry on the go.
+  - Secure, fully encrypted End-to-End synchronization between your PC and phone (e.g., via local Wi-Fi network).
+
+## 🛠️ Tech Stack
+
+Built with cutting-edge technologies to ensure top performance and a stunning, premium look:
+
+- **Framework:** [Next.js](https://nextjs.org/) (React)
+- **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
+- **Animations:** [Framer Motion](https://www.framer.com/motion/)
+- **UI Components:** [shadcn/ui](https://ui.shadcn.com/) (Style: Radix Nova / Lucide Icons)
+- **Database ORM:** [Prisma](https://www.prisma.io/) (Targeting SQLite for Local-First)
+
+## 🚀 Getting Started (For Developers)
+
+If you want to run the current Web version locally on your machine:
+
+### Prerequisites
+- Node.js 18+
+- npm / pnpm / yarn
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/YOUR_USERNAME/mebase.git
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Navigate to the project directory:
+```bash
+cd mebase
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Install dependencies:
+```bash
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Set up the database (copy `.env.example` to `.env` and generate the Prisma client):
+```bash
+npx prisma generate
+npx prisma db push
+```
 
-## Learn More
+5. Start the development server:
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+The application will be available at [http://localhost:3000](http://localhost:3000).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+<div align="center">
+  <sub>Designed with a passion for privacy. MeBase © 2026</sub>
+</div>
