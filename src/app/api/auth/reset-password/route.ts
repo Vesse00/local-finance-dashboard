@@ -10,15 +10,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Brak tokenu lub hasła." }, { status: 400 });
     }
 
-    // 1. Szukamy usera z tym tokenem, który jeszcze nie wygasł
-    const user = await prisma.user.findFirst({
-      where: {
-        resetToken: token,
-        resetTokenExpiry: { gt: new Date() } // Data wygaśnięcia > obecna data
-      }
+    // 1. Szukamy usera z tym tokenem
+    const user = await prisma.user.findUnique({
+      where: { resetToken: token }
     });
 
-    if (!user) {
+    if (!user || !user.resetTokenExpiry || user.resetTokenExpiry < new Date()) {
       return NextResponse.json({ error: "Token jest nieprawidłowy lub wygasł." }, { status: 400 });
     }
 
@@ -36,7 +33,8 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: "Wystąpił błąd serwera." }, { status: 500 });
+  } catch (error: any) {
+    console.error("Błąd resetowania hasła:", error);
+    return NextResponse.json({ error: error.message || "Wystąpił błąd serwera." }, { status: 500 });
   }
 }

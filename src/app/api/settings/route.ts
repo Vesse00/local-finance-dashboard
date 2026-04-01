@@ -11,7 +11,9 @@ export async function GET() {
     return NextResponse.json({ 
       email: user.email, 
       username: user.username, 
-      location: user.location || "" 
+      location: user.location || "",
+      currency: user.currency || "PLN",
+      payday: user.payday ?? 10
     });
   } catch (error) {
     return NextResponse.json({ error: "Błąd serwera" }, { status: 500 });
@@ -23,13 +25,19 @@ export async function PUT(req: Request) {
     const user = await prisma.user.findFirst();
     if (!user) return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
 
-    const { currentPassword, newEmail, newPassword, location } = await req.json();
+    const { currentPassword, newEmail, newPassword, location, currency, payday } = await req.json();
 
     const updateData: any = {};
 
     // 1. ZMIANA PREFERENCJI (Utilities) - Nie wymaga obecnego hasła!
     if (location !== undefined && location !== user.location) {
       updateData.location = location;
+    }
+    if (currency !== undefined && currency !== user.currency) {
+      updateData.currency = currency;
+    }
+    if (payday !== undefined && payday !== user.payday) {
+      updateData.payday = Number(payday);
     }
 
     // 2. ZMIANA ZABEZPIECZEŃ (E-mail / Hasło) - Kategorycznie wymaga obecnego hasła!

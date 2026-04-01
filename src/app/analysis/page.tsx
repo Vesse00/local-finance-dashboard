@@ -86,7 +86,7 @@ export default async function AnalysisPage({ searchParams }: { searchParams: Pro
         </div>
       </div>
 
-      {activeTab === "finances" && <FinanceAnalysis expenses={safeSerialize(expenses)} incomes={safeSerialize(incomes)} baseCurrency="PLN" />}
+      {activeTab === "finances" && <FinanceAnalysis expenses={safeSerialize(expenses)} incomes={safeSerialize(incomes)} baseCurrency={user.currency || "PLN"} />}
       {activeTab === "time" && <TimeAnalysis workDays={safeSerialize(workDays)} />}
       {activeTab === "health" && <HealthAnalysis healthDays={safeSerialize(healthDays)} healthEntries={safeSerialize(healthEntries)} />}
 

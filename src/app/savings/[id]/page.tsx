@@ -78,6 +78,7 @@ export default function SavingsDetailsPage({ params }: { params: Promise<{ id: s
 
   // Obliczanie różnicy w locie dla modala (bezpieczne odwołanie do account.balance)
   const currentBalance = account?.balance || 0;
+  const currency = account?.currency || "PLN";
   const targetBalanceInput = parseFloat(correctionForm.newBalance);
   const diff = isNaN(targetBalanceInput) ? 0 : targetBalanceInput - currentBalance;
   const isDiffPositive = diff > 0;
@@ -104,7 +105,7 @@ export default function SavingsDetailsPage({ params }: { params: Promise<{ id: s
         <div className="text-center md:text-right">
           <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Aktualne Saldo</p>
           <p className="text-5xl font-black text-zinc-900 dark:text-white tracking-tight mb-4">
-            {currentBalance.toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-2xl opacity-50">PLN</span>
+            {currentBalance.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol", minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <button 
             onClick={openCorrectionModal} 
@@ -115,7 +116,7 @@ export default function SavingsDetailsPage({ params }: { params: Promise<{ id: s
         </div>
       </div>
 
-      <div className="bg-white/60 dark:bg-black/40 backdrop-blur-xl border border-black/5 dark:border-white/10 rounded-3xl p-6 md:p-8 shadow-sm">
+      <div className="bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl border border-black/5 dark:border-white/10 rounded-3xl p-6 md:p-8 shadow-sm">
         <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6 flex items-center gap-2">
           <ArrowRightLeft className="w-5 h-5 text-zinc-400" /> Księga Transakcji
         </h3>
@@ -140,9 +141,8 @@ export default function SavingsDetailsPage({ params }: { params: Promise<{ id: s
                 {/* Naprawione ucinanie kwoty: flex-shrink-0 */}
                 <div className="font-black text-lg whitespace-nowrap pl-4 flex-shrink-0 text-zinc-900 dark:text-white">
                   <span className={tx.type === "IN" ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-900 dark:text-white"}>
-                    {tx.type === "IN" ? "+" : "-"}{tx.amount.toLocaleString("pl-PL", { minimumFractionDigits: 2 })}
+                    {tx.type === "IN" ? "+" : "-"}{tx.amount.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol", minimumFractionDigits: 2 })}
                   </span>
-                  <span className="text-xs opacity-50 ml-1">PLN</span>
                 </div>
               </div>
             ))
@@ -163,7 +163,7 @@ export default function SavingsDetailsPage({ params }: { params: Promise<{ id: s
             <div className="p-6 space-y-6">
               <div className="flex flex-col items-center justify-center py-4 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Poprzednie saldo</p>
-                <p className="text-2xl font-black text-zinc-900 dark:text-white">{currentBalance.toLocaleString("pl-PL", { minimumFractionDigits: 2 })} PLN</p>
+                <p className="text-2xl font-black text-zinc-900 dark:text-white">{currentBalance.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol", minimumFractionDigits: 2 })}</p>
               </div>
 
               <div className="space-y-2">
@@ -176,7 +176,7 @@ export default function SavingsDetailsPage({ params }: { params: Promise<{ id: s
                     className="w-full p-4 pr-16 bg-white dark:bg-zinc-950 border-2 border-indigo-200 dark:border-indigo-900/50 rounded-xl outline-none focus:border-indigo-500 font-mono text-2xl font-black shadow-sm" 
                     placeholder="0.00" 
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-zinc-400">PLN</span>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-zinc-400">{currency}</span>
                 </div>
               </div>
 
@@ -185,7 +185,7 @@ export default function SavingsDetailsPage({ params }: { params: Promise<{ id: s
                   <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                   <div className="space-y-2 w-full">
                     <p className="text-sm font-bold leading-snug">
-                      Różnica: <span className="font-black text-lg">{isDiffPositive ? "+" : ""}{diff.toLocaleString("pl-PL", { minimumFractionDigits: 2 })} PLN</span>
+                      Różnica: <span className="font-black text-lg">{isDiffPositive ? "+" : ""}{diff.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol", minimumFractionDigits: 2 })}</span>
                     </p>
                     <div className="space-y-1">
                       <label className="text-[10px] font-bold uppercase tracking-wider opacity-70">Zapisz jako:</label>

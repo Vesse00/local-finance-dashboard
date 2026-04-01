@@ -17,6 +17,7 @@ model User {
   password String    // Zahashowane hasło bcrypt
   currency String    @default("PLN") // Miejsce na przyszłą obsługę walut
   savings  Float     @default(0.0)
+  payday   Int       @default(10)    // Dzień miesiąca, w którym użytkownik otrzymuje wypłatę
 
   location         String?
 
@@ -38,6 +39,7 @@ model User {
   savingsAccounts SavingsAccount[] // Relacja do kont oszczędnościowych
   savingsTransactions SavingsTransaction[] // Relacja do transakcji na kontach oszczędnościowych
   energyEntries   EnergyEntry[] // Relacja do logów  nastrójów
+  customProducts CustomProduct[] // Relacja do własnych posiłków
 }
 
 // Tabela na wpływy
@@ -115,13 +117,14 @@ model RecurringPayment {
 
 // Model Category pozostaje bez zmian (upewnij się tylko, że nie ma błędów)
 model Category {
-  id        String    @id @default(uuid())
-  name      String
-  icon      String
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  expenses  Expense[]
-  recurrings RecurringPayment[] // Relacja wsteczna
+  id          String    @id @default(uuid())
+  name        String
+  icon        String
+  budgetLimit Float?    // NOWOŚĆ: Opcjonalny miesięczny limit przydzielony na wydatki w tej kategorii
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses    Expense[]
+  recurrings  RecurringPayment[] // Relacja wsteczna
 }
 
 model MonthSummary {
@@ -199,6 +202,23 @@ model HealthEntry {
   calories    Int      @default(0) // Ilość kalorii (tylko dla typu CALORIES)
   detasils     String?  // Pole na szczegóły ćwiczeń (zapisane jako JSON)
   
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+}
+
+model CustomProduct {
+  id          String   @id @default(uuid())
+  name        String
+  kcal        Float
+  proteins    Float
+  carbs       Float
+  fats        Float
+  
+  isRecipe    Boolean  @default(false)
+  ingredients String?  // (JSON) Zapisane składniki własnego dania
+
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   

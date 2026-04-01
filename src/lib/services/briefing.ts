@@ -58,13 +58,25 @@ export async function getBriefingData() {
       let nextDate = new Date(now.getFullYear(), now.getMonth(), req.dayOfMonth);
       if (nextDate < todayStart) nextDate = new Date(now.getFullYear(), now.getMonth() + 1, req.dayOfMonth);
       const daysLeft = Math.ceil((nextDate.getTime() - todayStart.getTime()) / (1000 * 60 * 60 * 24));
-      if (daysLeft >= 0 && daysLeft <= 7) upcomingItems.push({ type: "FINANCE", icon: "💸", title: `Płatność ${req.defaultAmount} PLN za "${req.name}" (${daysLeft === 0 ? "DZISIAJ" : daysLeft === 1 ? "JUTRO" : `za ${daysLeft} dni`})`, priority: daysLeft <= 1 ? "high" : "normal", daysLeft });
+      if (daysLeft >= 0 && daysLeft <= 7) upcomingItems.push({
+        type: "FINANCE",
+        icon: "💸", 
+        priority: daysLeft <= 1 ? "high" : "normal",
+        daysLeft,
+        data: { amount: req.defaultAmount, name: req.name }
+      });
     });
 
     drawerItems.forEach(item => {
       if (item.endDate) {
         const daysLeft = Math.ceil((new Date(item.endDate).getTime() - todayStart.getTime()) / (1000 * 60 * 60 * 24));
-        upcomingItems.push({ type: "DRAWER", icon: "📦", title: `${item.type === "WARRANTY" ? "Gwarancja na" : "Umowa na"} "${item.title}" kończy się za ${daysLeft} dni`, priority: daysLeft <= 7 ? "high" : "normal", daysLeft });
+        upcomingItems.push({
+          type: "DRAWER",
+          icon: "📦",
+          priority: daysLeft <= 7 ? "high" : "normal",
+          daysLeft,
+          data: { title: item.title, itemType: item.type }
+        });
       }
     });
 
@@ -74,7 +86,13 @@ export async function getBriefingData() {
         let typeText = "Serwis"; let icon = "🔧";
         if (event.type === "INSURANCE") { typeText = "Ubezpieczenie"; icon = "🛡️"; }
         if (event.type === "INSPECTION") { typeText = "Przegląd"; icon = "🔍"; }
-        upcomingItems.push({ type: "GARAGE", icon, title: `${typeText} ${event.car.make} ${event.car.model} upływa za ${daysLeft} dni`, priority: daysLeft <= 7 ? "high" : "normal", daysLeft });
+        upcomingItems.push({
+          type: "GARAGE",
+          icon,
+          priority: daysLeft <= 7 ? "high" : "normal",
+          daysLeft,
+          data: { carType: event.type, make: event.car.make, model: event.car.model }
+        });
       }
     });
 

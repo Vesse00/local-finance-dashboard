@@ -7,58 +7,65 @@ import { signOut } from "next-auth/react";
 import { 
   LayoutDashboard, ArrowRightLeft, PieChart, 
   LogOut, CalendarDays, PiggyBank, Repeat, ChevronDown, Wallet, LineChart, Settings, 
-  Briefcase, Clock, Activity, Droplet, Dumbbell, Scale, User, Heart, Archive, CarFront, Zap
+  Briefcase, Clock, Activity, Droplet, Dumbbell, Scale, User, Heart, Archive, CarFront, Zap, Calculator
 } from "lucide-react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 // Samodzielne, najważniejsze linki na samej górze
 const topItems = [
-  { name: "Pulpit", href: "/", icon: LayoutDashboard },
-  { name: "Analiza", href: "/analysis", icon: LineChart },
+  { nameKey: "sidebar.top.dashboard", href: "/", icon: LayoutDashboard },
+  { nameKey: "sidebar.top.analysis", href: "/analysis", icon: LineChart },
+  { nameKey: "Planer", href: "/planner", icon: Calculator }, // Dodany Planer
 ];
 
 // Zaktualizowana struktura nawigacji (obsługa podgrup)
 const navGroups = [
   {
-    title: "Personalne",
+    titleKey: "sidebar.groups.personal.title",
+    groupId: "personal",
     icon: User,
     subGroups: [
       {
-        title: "Zdrowie",
+        titleKey: "sidebar.groups.personal.health.title",
+        groupId: "health",
         icon: Heart,
         items: [
-          { name: "Dziennik Aktywności", href: "/health/daily", icon: Dumbbell },
-          { name: "Waga i Wymiary", href: "/health/body", icon: Scale },
-          { name: "Nastrój i Energia", href: "/health/energy", icon: Zap },
+          { nameKey: "sidebar.groups.personal.health.daily", href: "/health/daily", icon: Dumbbell },
+          { nameKey: "sidebar.groups.personal.health.body", href: "/health/body", icon: Scale },
+          { nameKey: "sidebar.groups.personal.health.energy", href: "/health/energy", icon: Zap },
         ]
       }
-      // W przyszłości łatwo dodasz tu np: { title: "Nawyki", items: [...] }
+      // W przyszłości łatwo dodasz tu np: { titleKey: "Nawyki", items: [...] }
     ],
     items: [
-      { name: "Umowy i Gwarancje", href: "/drawer", icon: Archive },
-      { name: "Garaż", href: "/garage", icon: CarFront },
+      { nameKey: "sidebar.groups.personal.drawer", href: "/drawer", icon: Archive },
+      { nameKey: "sidebar.groups.personal.garage", href: "/garage", icon: CarFront },
     ]
   },
   {
-    title: "Finanse",
+    titleKey: "sidebar.groups.finance.title",
+    groupId: "finance",
     icon: Wallet,
     items: [
-      { name: "Kalendarz", href: "/calendar", icon: CalendarDays },
-      { name: "Zlecenia i Raty", href: "/calendar/recurring", icon: Repeat },
-      { name: "Oszczędności", href: "/savings", icon: PiggyBank },
-      { name: "Transakcje", href: "/transactions", icon: ArrowRightLeft },
+      { nameKey: "sidebar.groups.finance.calendar", href: "/calendar", icon: CalendarDays },
+      { nameKey: "sidebar.groups.finance.recurring", href: "/calendar/recurring", icon: Repeat },
+      { nameKey: "sidebar.groups.finance.savings", href: "/savings", icon: PiggyBank },
+      { nameKey: "sidebar.groups.finance.transactions", href: "/transactions", icon: ArrowRightLeft },
     ]
   },
   {
-    title: "Praca i Czas",
+    titleKey: "sidebar.groups.work.title",
+    groupId: "work",
     icon: Briefcase,
     items: [
-      { name: "Grafik pracy", href: "/work-schedule", icon: Clock },
+      { nameKey: "sidebar.groups.work.schedule", href: "/work-schedule", icon: Clock },
     ]
   }
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { t } = useLanguage();
   // Domyślnie otwieramy wszystko, abyś od razu widział nową strukturę
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
@@ -82,7 +89,7 @@ export function AppSidebar() {
             const isActive = pathname === item.href;
             return (
               <Link
-                key={item.name}
+                key={item.nameKey}
                 href={item.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm ${
                   isActive 
@@ -91,7 +98,7 @@ export function AppSidebar() {
                 }`}
               >
                 <item.icon className="w-4 h-4" />
-                {item.name}
+                {t(item.nameKey)}
               </Link>
             );
           })}
@@ -100,44 +107,44 @@ export function AppSidebar() {
         {/* Dynamic Groups */}
         <div className="space-y-4">
           {navGroups.map((group) => (
-            <div key={group.title} className="space-y-1">
+            <div key={group.groupId} className="space-y-1">
               
               {/* Główny Nagłówek Kategorii (np. Personalne, Finanse) */}
               <button
-                onClick={() => toggleGroup(group.title)}
+                onClick={() => toggleGroup(group.groupId)}
                 className="w-full flex items-center justify-between px-3 py-2 text-xs font-bold text-zinc-400 uppercase tracking-wider hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
               >
                 <div className="flex items-center gap-2">
                   <group.icon className="w-4 h-4" />
-                  {group.title}
+                  {t(group.titleKey)}
                 </div>
-                <ChevronDown className={`w-3 h-3 transition-transform ${openGroups[group.title] ? "rotate-180" : ""}`} />
+                <ChevronDown className={`w-3 h-3 transition-transform ${openGroups[group.groupId] ? "rotate-180" : ""}`} />
               </button>
 
-              {openGroups[group.title] && (
+              {openGroups[group.groupId] && (
                 <div className="space-y-1 mt-1 pl-2">
                   
                   {/* --- OBSŁUGA PODWÓJNEGO ZAGNIEŻDŻENIA (np. Zdrowie) --- */}
                   {group.subGroups?.map(subGroup => (
-                    <div key={subGroup.title} className="space-y-1 mb-3 mt-2">
+                    <div key={subGroup.groupId} className="space-y-1 mb-3 mt-2">
                        <button
-                          onClick={() => toggleGroup(subGroup.title)}
+                          onClick={() => toggleGroup(subGroup.groupId)}
                           className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-bold text-zinc-700 dark:text-zinc-300 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                         >
                           <div className="flex items-center gap-2">
                             <subGroup.icon className="w-4 h-4 text-emerald-500" />
-                            {subGroup.title}
+                            {t(subGroup.titleKey)}
                           </div>
-                          <ChevronDown className={`w-3 h-3 transition-transform ${openGroups[subGroup.title] ? "rotate-180" : ""}`} />
+                          <ChevronDown className={`w-3 h-3 transition-transform ${openGroups[subGroup.groupId] ? "rotate-180" : ""}`} />
                         </button>
 
-                        {openGroups[subGroup.title] && (
+                        {openGroups[subGroup.groupId] && (
                           <div className="space-y-1 mt-1 pl-4 border-l-2 border-black/5 dark:border-white/5 ml-4">
                             {subGroup.items.map((item) => {
                               const isActive = pathname === item.href;
                               return (
                                 <Link
-                                  key={item.name}
+                                  key={item.nameKey}
                                   href={item.href}
                                   className={`flex items-center gap-3 px-3 py-2 rounded-xl font-medium transition-all text-sm ${
                                     isActive 
@@ -146,7 +153,7 @@ export function AppSidebar() {
                                   }`}
                                 >
                                   <item.icon className="w-3.5 h-3.5" />
-                                  {item.name}
+                                  {t(item.nameKey)}
                                 </Link>
                               );
                             })}
@@ -160,7 +167,7 @@ export function AppSidebar() {
                     const isActive = pathname === item.href;
                     return (
                       <Link
-                        key={item.name}
+                        key={item.nameKey}
                         href={item.href}
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm ${
                           isActive 
@@ -169,7 +176,7 @@ export function AppSidebar() {
                         }`}
                       >
                         <item.icon className="w-4 h-4" />
-                        {item.name}
+                        {t(item.nameKey)}
                       </Link>
                     );
                   })}
@@ -185,14 +192,14 @@ export function AppSidebar() {
         <div className="p-4 border-t border-black/5 dark:border-white/10">
           <Link href="/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm text-zinc-600 dark:text-zinc-400 hover:bg-black/5 dark:hover:bg-white/5">
             <Settings className="w-4 h-4" />
-            Ustawienia
+            {t("sidebar.footer.settings")}
           </Link>
           <button 
             onClick={() => signOut({ callbackUrl: '/login' })} 
             className="w-full mt-1 flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
           >
             <LogOut className="w-4 h-4" />
-            Wyloguj
+            {t("sidebar.footer.logout")}
           </button>
         </div>
     </aside>

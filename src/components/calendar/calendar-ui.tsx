@@ -18,9 +18,10 @@ interface CalendarUIProps {
   expenses: any[];
   incomes: any[];
   categories: any[];
+  currency?: string;
 }
 
-export function CalendarUI({ expenses, incomes, categories }: CalendarUIProps) {
+export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: CalendarUIProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -59,7 +60,7 @@ export function CalendarUI({ expenses, incomes, categories }: CalendarUIProps) {
 
   return (
     <div className="flex-1 p-6 md:p-8 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 dark:bg-black/40 backdrop-blur-xl p-4 rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl p-4 rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
         
         <div className="flex items-center gap-2">
           <button onClick={prevMonth} className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
@@ -98,7 +99,7 @@ export function CalendarUI({ expenses, incomes, categories }: CalendarUIProps) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-black/5 dark:border-white/10 bg-white/60 dark:bg-black/40 backdrop-blur-xl overflow-hidden shadow-sm">
+      <div className="rounded-2xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl overflow-hidden shadow-sm">
         <div className="grid grid-cols-7 border-b border-black/5 dark:border-white/10 bg-black/5 dark:bg-white/5">
           {weekDays.map(day => (
             <div key={day} className="py-3 text-center text-xs font-semibold uppercase text-zinc-500">{day}</div>
@@ -148,11 +149,11 @@ export function CalendarUI({ expenses, incomes, categories }: CalendarUIProps) {
                   {visibleTransactions.map(tx => (
                     tx.isIncome ? (
                       <div key={`inc-${tx.id}`} title={tx.source} className="truncate rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium border border-emerald-500/20">
-                        + {tx.amount} zł
+                        + {tx.amount.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0 })}
                       </div>
                     ) : (
                       <div key={`exp-${tx.id}`} title={tx.description || tx.category?.name} className={`truncate rounded px-1.5 py-0.5 text-[10px] font-medium border ${tx.type === "EXPENSE" ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20" : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"}`}>
-                        {tx.type === "EXPENSE" ? "-" : ""} {tx.amount} zł {tx.category?.icon}
+                        {tx.type === "EXPENSE" ? "-" : ""} {tx.amount.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0 })} {tx.category?.icon}
                       </div>
                     )
                   ))}
@@ -192,12 +193,13 @@ export function CalendarUI({ expenses, incomes, categories }: CalendarUIProps) {
         date={detailsDate}
         allExpenses={expenses}
         allIncomes={incomes}
+        currency={currency}
       />
 
-      <CategoryManagerModal 
-        isOpen={isCategoryModalOpen} 
-        onClose={() => setIsCategoryModalOpen(false)} 
-        categories={categories} 
+      <CategoryManagerModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        categories={categories}
       />
     </div>
   );

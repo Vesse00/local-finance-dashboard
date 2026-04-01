@@ -16,9 +16,14 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Wprowadź dane logowania.");
         }
 
-        // Szukamy użytkownika używając naszej instancji bazy z lib/db.ts
-        const user = await prisma.user.findUnique({
-          where: { username: credentials.username }
+        // Szukamy użytkownika po nazwie użytkownika LUB e-mailu
+        const user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { username: credentials.username },
+              { email: credentials.username }
+            ]
+          }
         });
 
         if (!user || !user.password) {

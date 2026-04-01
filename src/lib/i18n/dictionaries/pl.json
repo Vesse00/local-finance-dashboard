@@ -1,0 +1,139 @@
+{
+  "common": {
+    "dashboard": "Lokalny Dashboard",
+    "welcome": "Witaj z powrotem 👋"
+  },
+  "sidebar": {
+    "top": {
+      "dashboard": "Pulpit",
+      "analysis": "Analiza"
+    },
+    "groups": {
+      "personal": {
+        "title": "Personalne",
+        "health": {
+          "title": "Zdrowie",
+          "daily": "Dziennik Aktywności",
+          "body": "Waga i Wymiary",
+          "energy": "Nastrój i Energia"
+        },
+        "drawer": "Umowy i Gwarancje",
+        "garage": "Garaż"
+      },
+      "finance": {
+        "title": "Finanse",
+        "calendar": "Kalendarz",
+        "recurring": "Zlecenia i Raty",
+        "savings": "Oszczędności",
+        "transactions": "Transakcje"
+      },
+      "work": {
+        "title": "Praca i Czas",
+        "schedule": "Grafik pracy"
+      }
+    },
+    "footer": {
+      "settings": "Ustawienia",
+      "logout": "Wyloguj"
+    }
+  },
+  "dashboard": {
+    "briefing": {
+      "title": "Daily Briefing",
+      "morning_greeting": "Dzień dobry!",
+      "evening_greeting": "Przygotuj się na jutro!",
+      "how_was_day": "Jak minął dzień?",
+      "setup_city": "Skonfiguruj miasto, by widzieć pogodę",
+      "today_in": "Dziś w:",
+      "tomorrow_in": "Jutro w:",
+      "day": "Dzień",
+      "night": "Noc",
+      "no_forecast": "Brak prognozy dla tej lokalizacji",
+      "all_good": "Wszystko pod kontrolą!",
+      "no_notifications": "Brak pilnych powiadomień na radarze.",
+      "tomorrow": "Jutro",
+      "tomorrow_vacation": "Jutro urlop",
+      "tomorrow_sick": "Jutro L4",
+      "tomorrow_free": "Jutro wolne (brak zmiany)",
+      "work": "Praca",
+      "today": "Dzisiaj",
+      "today_vacation": "Dzisiaj urlop",
+      "today_sick": "Dzisiaj L4",
+      "workout": "Trening",
+      "no_workout": "Brak treningu",
+      "health": "Zdrowie",
+      "weather": {
+        "clear": "Bezchmurnie",
+        "partly_cloudy": "Częściowe zachmurzenie",
+        "foggy": "Mgliście",
+        "rainy": "Deszczowo",
+        "snow": "Śnieg",
+        "showers": "Przelotne ulewy",
+        "stormy": "Burzowo",
+        "cloudy": "Pochmurno"
+      },
+      "upcoming": {
+        "finance": "Płatność {amount} za \"{name}\" ({time})",
+        "drawer_warranty": "Gwarancja na \"{title}\" kończy się za {days} dni",
+        "drawer_contract": "Umowa na \"{title}\" kończy się za {days} dni",
+        "garage": "{type} {make} {model} upływa za {days} dni",
+        "time_today": "DZISIAJ",
+        "time_tomorrow": "JUTRO",
+        "time_in_days": "za {days} dni",
+        "garage_type_insurance": "Ubezpieczenie",
+        "garage_type_inspection": "Przegląd",
+        "garage_type_service": "Serwis"
+      },
+      "mood_modal": {
+        "title": "Podsumowanie dnia",
+        "subtitle": "Jak oceniasz swoje samopoczucie po dzisiejszym dniu?",
+        "save": "Zapisz w dzienniku"
+      }
+    },
+    "main": {
+      "left_to_spend": "Możesz wydać",
+      "history_label": "Miesiąc",
+      "future_label": "Plan",
+      "add_income_start": "Dodaj wpływy, aby zacząć!",
+      "spent": "Wydano:",
+      "no_data": "Brak zapisanych danych z tego miesiąca",
+      "left_this_month": "W tym miesiącu zostało ci",
+      "future_month": "Ten miesiąc dopiero nadejdzie",
+      "savings_now": "Oszczędności",
+      "savings_then": "Oszczędności wtedy",
+      "transfer_rest": "Przenieś resztę",
+      "history_record": "Zapis historyczny",
+      "not_available_yet": "Jeszcze niedostępne",
+      "modal": {
+        "title": "Zanotuj przelew",
+        "subtitle": "Dodaj środki na ten miesiąc",
+        "amount": "Kwota",
+        "amount_placeholder": "np. 4500.00",
+        "source": "Źródło (opcjonalnie)",
+        "source_placeholder": "np. Wypłata z etatu",
+        "submit": "Zapisz wpływ",
+        "submitting": "Dodawanie...",
+        "button": "Dodaj wpływ"
+      }
+    },
+    "work": {
+      "title": "Czas Pracy",
+      "overtime": "Nadgodziny",
+      "vacation": "Urlop",
+      "sick_leave": "L4",
+      "days": "dni"
+    },
+    "health": {
+      "title": "Zdrowie",
+      "workouts": "Treningi",
+      "weight": "Waga",
+      "avg_calories": "Śr. Kalorii",
+      "avg_water": "Śr. Wody",
+      "glasses": "szkl."
+    },
+    "placeholders": {
+      "quick_actions": "Miejsce na przyszły widget<br/>(np. Szybkie Akcje)",
+      "garage_chart": "Miejsce na kolejny moduł<br/>(np. Garaż lub Wykres)"
+    }
+  }
+}

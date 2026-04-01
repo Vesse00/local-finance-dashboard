@@ -45,7 +45,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         name: "Główne Oszczędności", 
         type: "SAVINGS", 
         balance: user.savings, 
-        history: combined 
+        history: combined,
+        currency: user.currency || "PLN"
       });
     }
 
@@ -62,7 +63,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       orderBy: { date: 'desc' }
     });
 
-    return NextResponse.json({ ...account, history });
+    return NextResponse.json({ ...account, history, currency: user.currency || "PLN" });
   } catch (err) { 
     return NextResponse.json({ error: "Błąd serwera" }, { status: 500 }); 
   }

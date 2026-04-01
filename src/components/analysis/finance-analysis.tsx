@@ -101,7 +101,7 @@ export function FinanceAnalysis({ expenses, incomes, baseCurrency }: FinanceAnal
       return (
         <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-black/10 dark:border-white/10 p-3 rounded-xl shadow-xl text-sm font-semibold text-zinc-900 dark:text-white">
           <p className="text-zinc-500 mb-1">{label || payload[0].name}</p>
-          <p className="text-indigo-500">{`${payload[0].value.toLocaleString("pl-PL", { style: "currency", currency: baseCurrency })}`}</p>
+          <p className="text-indigo-500">{`${payload[0].value.toLocaleString("pl-PL", { style: "currency", currency: baseCurrency, currencyDisplay: "narrowSymbol" })}`}</p>
         </div>
       );
     }
@@ -164,18 +164,18 @@ export function FinanceAnalysis({ expenses, incomes, baseCurrency }: FinanceAnal
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="p-6 rounded-3xl bg-white/60 dark:bg-black/40 border border-black/5 dark:border-white/10 shadow-sm">
           <p className="text-sm font-medium text-zinc-500 flex items-center gap-2 mb-2"><TrendingDown className="w-4 h-4 text-red-500" /> Wydatki z filtrów</p>
-          <p className="text-3xl font-extrabold text-zinc-900 dark:text-white">{totalExpense.toLocaleString("pl-PL", { style: "currency", currency: baseCurrency })}</p>
+          <p className="text-3xl font-extrabold text-zinc-900 dark:text-white">{totalExpense.toLocaleString("pl-PL", { style: "currency", currency: baseCurrency, currencyDisplay: "narrowSymbol" })}</p>
         </div>
         
         <div className="p-6 rounded-3xl bg-white/60 dark:bg-black/40 border border-black/5 dark:border-white/10 shadow-sm">
           <p className="text-sm font-medium text-zinc-500 flex items-center gap-2 mb-2"><Repeat className="w-4 h-4 text-indigo-500" /> Koszty Stałe</p>
-          <p className="text-3xl font-extrabold text-zinc-900 dark:text-white">{fixedCosts.toLocaleString("pl-PL", { style: "currency", currency: baseCurrency })}</p>
+          <p className="text-3xl font-extrabold text-zinc-900 dark:text-white">{fixedCosts.toLocaleString("pl-PL", { style: "currency", currency: baseCurrency, currencyDisplay: "narrowSymbol" })}</p>
           <p className="text-xs text-zinc-400 mt-2">{(totalExpense ? (fixedCosts/totalExpense)*100 : 0).toFixed(1)}% wszystkich wydatków</p>
         </div>
 
         <div className="p-6 rounded-3xl bg-white/60 dark:bg-black/40 border border-black/5 dark:border-white/10 shadow-sm">
           <p className="text-sm font-medium text-zinc-500 flex items-center gap-2 mb-2"><ArrowRightLeft className="w-4 h-4 text-orange-500" /> Koszty Zmienne</p>
-          <p className="text-3xl font-extrabold text-zinc-900 dark:text-white">{variableCosts.toLocaleString("pl-PL", { style: "currency", currency: baseCurrency })}</p>
+          <p className="text-3xl font-extrabold text-zinc-900 dark:text-white">{variableCosts.toLocaleString("pl-PL", { style: "currency", currency: baseCurrency, currencyDisplay: "narrowSymbol" })}</p>
           <p className="text-xs text-zinc-400 mt-2">Kawa, zakupy, zachcianki</p>
         </div>
         
@@ -184,7 +184,7 @@ export function FinanceAnalysis({ expenses, incomes, baseCurrency }: FinanceAnal
             {showBalance ? "Wynik netto miesiąca" : "Bilans (Wyłącz filtry)"}
           </p>
           <p className={`text-3xl font-extrabold relative z-10 ${showBalance ? (balance >= 0 ? "text-emerald-600" : "text-red-600") : "text-zinc-500"}`}>
-            {showBalance ? `${balance > 0 ? "+" : ""}${balance.toLocaleString("pl-PL", { style: "currency", currency: baseCurrency })}` : "---"}
+            {showBalance ? `${balance > 0 ? "+" : ""}${balance.toLocaleString("pl-PL", { style: "currency", currency: baseCurrency, currencyDisplay: "narrowSymbol" })}` : "---"}
           </p>
         </div>
       </div>
@@ -212,7 +212,7 @@ export function FinanceAnalysis({ expenses, incomes, baseCurrency }: FinanceAnal
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#88888822" />
                   <XAxis dataKey="day" tick={{ fill: '#888888', fontSize: 12 }} axisLine={false} tickLine={false} minTickGap={20} />
-                  <YAxis tickFormatter={(val) => `${val} zł`} tick={{ fill: '#888888', fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tickFormatter={(val) => `${val} ${baseCurrency}`} tick={{ fill: '#888888', fontSize: 12 }} axisLine={false} tickLine={false} />
                   <RechartsTooltip content={<CustomTooltip />} />
                   <Area type="monotone" dataKey="wydatki" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorWydatki)" />
                 </AreaChart>

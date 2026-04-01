@@ -10,11 +10,14 @@ export default function BodyMeasurementsPage() {
   const [healthData, setHealthData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Wzrost do BMI
+  // Dane w ciele (LS)
   const [userHeight, setUserHeight] = useState<number>(0);
+  const [userAge, setUserAge] = useState<number>(30);
+  const [userGender, setUserGender] = useState<"MALE"|"FEMALE">("MALE");
 
   // Stan Modala
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [formData, setFormData] = useState({
     date: format(new Date(), "yyyy-MM-dd"),
     weight: "", chest: "", waist: "", hips: "", biceps: "", thigh: ""
@@ -36,13 +39,30 @@ export default function BodyMeasurementsPage() {
   useEffect(() => {
     fetchData();
     const savedHeight = localStorage.getItem("userHeight");
+    const savedAge = localStorage.getItem("userAge");
+    const savedGender = localStorage.getItem("userGender") as "MALE"|"FEMALE";
+
     if (savedHeight) setUserHeight(parseInt(savedHeight));
+    if (savedAge) setUserAge(parseInt(savedAge));
+    if (savedGender) setUserGender(savedGender);
   }, []);
 
   const handleHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(e.target.value) || 0;
     setUserHeight(val);
     localStorage.setItem("userHeight", val.toString());
+  };
+  
+  const handleAgeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseInt(e.target.value) || 0;
+    setUserAge(val);
+    localStorage.setItem("userAge", val.toString());
+  };
+  
+  const handleGenderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value as "MALE"|"FEMALE";
+    setUserGender(val);
+    localStorage.setItem("userGender", val);
   };
 
   // --- AKCJE CRUD (Zapis, Edycja, Usuwanie) ---
@@ -149,9 +169,14 @@ export default function BodyMeasurementsPage() {
             <p className="text-sm text-zinc-500">Śledź swój progres i kształtowanie sylwetki</p>
           </div>
         </div>
-        <button onClick={openAddModal} className="px-5 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-bold text-sm transition-colors shadow-lg shadow-indigo-500/20 flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Dodaj pomiar
-        </button>
+        <div className="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto">
+          <button onClick={() => setIsSettingsOpen(true)} className="w-full md:w-auto px-5 py-2.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-xl font-bold text-sm transition-colors shadow-sm flex items-center justify-center">
+            Płeć / Wiek / Wzrost
+          </button>
+          <button onClick={openAddModal} className="w-full md:w-auto px-5 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-bold text-sm transition-colors shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2">
+            <Plus className="w-4 h-4" /> Dodaj pomiar
+          </button>
+        </div>
       </div>
 
       {/* KPI KARTY */}
@@ -299,7 +324,74 @@ export default function BodyMeasurementsPage() {
         </div>
 
       </div>
+       {/* USTAWIENIA CIAŁA (PŁEĆ/WIEK) */}
+      {isSettingsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsSettingsOpen(false)}></div>
+          
+          <div className="bg-white dark:bg-zinc-950 border border-black/10 dark:border-white/10 rounded-[3rem] w-full max-w-sm relative z-10 shadow-2xl overflow-hidden flex flex-col transform transition-all animate-in zoom-in-95">
+            <div className="flex items-center justify-between p-6 border-b border-black/5 dark:border-white/5 bg-zinc-50 dark:bg-zinc-900">
+              <h2 className="text-xl font-black flex items-center gap-2 text-zinc-900 dark:text-white">
+                Parametry Podstawowe
+              </h2>
+              <button onClick={() => setIsSettingsOpen(false)} className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full text-zinc-500 transition">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 flex flex-col gap-6">
+              
+              <div>
+                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 block">Płeć</label>
+                <div className="grid grid-cols-2 gap-2 p-1 bg-zinc-100 dark:bg-zinc-900 rounded-xl">
+                  <button 
+                    onClick={() => { setUserGender("MALE"); localStorage.setItem("userGender", "MALE"); }}
+                    className={`py-3 rounded-lg font-bold text-sm transition-all shadow-sm ${userGender === "MALE" ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-black/5 dark:border-white/10 shadow-md' : 'text-zinc-500 hover:text-zinc-700'}`}
+                  >Mężczyzna</button>
+                  <button 
+                    onClick={() => { setUserGender("FEMALE"); localStorage.setItem("userGender", "FEMALE"); }}
+                    className={`py-3 rounded-lg font-bold text-sm transition-all shadow-sm ${userGender === "FEMALE" ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white border border-black/5 dark:border-white/10 shadow-md' : 'text-zinc-500 hover:text-zinc-700'}`}
+                  >Kobieta</button>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 block">Wiek</label>
+                <input 
+                  type="number" 
+                  value={userAge || ""} 
+                  onChange={handleAgeChange}
+                  className="w-full relative appearance-none bg-zinc-100 dark:bg-zinc-900 border-none outline-none focus:ring-4 ring-indigo-500/20 text-3xl font-black rounded-2xl p-4 text-center"
+                  placeholder="30"
+                />
+              </div>
+              
+              <div>
+                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 block flex items-center justify-between">Wzrost (cm)</label>
+                <input 
+                  type="number" 
+                  value={userHeight || ""} 
+                  onChange={handleHeightChange}
+                  className="w-full relative appearance-none bg-zinc-100 dark:bg-zinc-900 border-none outline-none focus:ring-4 ring-indigo-500/20 text-3xl font-black rounded-2xl p-4 text-center disabled:opacity-50"
+                  placeholder="180"
+                />
+              </div>
 
+              <div className="bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 dark:text-indigo-400 p-4 rounded-xl text-xs font-medium">
+                Te dane zostaną wykorzystane automatycznie w Kalkulatorze Makroskładników.
+              </div>
+
+              <button 
+                onClick={() => setIsSettingsOpen(false)}
+                className="w-full py-4 mt-2 bg-indigo-500 hover:bg-indigo-600 text-white font-black rounded-2xl transition"
+              >
+                Zapisz
+              </button>
+
+            </div>
+          </div>
+        </div>
+      )}
       {/* ==============================================
           MODAL DODAWANIA / EDYCJI POMIARU
       =============================================== */}

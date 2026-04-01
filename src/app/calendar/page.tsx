@@ -8,13 +8,14 @@ const safeSerialize = (data: any) =>
 
 export default async function CalendarPage() {
   // Teraz pobiera też kategorie z bazy!
-  const { expenses, incomes, categories } = await getCalendarData();
+  const { expenses, incomes, categories, currency } = await getCalendarData();
 
   return (
     <CalendarUI
       expenses={safeSerialize(expenses)}
       incomes={safeSerialize(incomes)}
       categories={safeSerialize(categories)}
+      currency={currency}
     />
   );
 }

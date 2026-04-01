@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Shield, Mail, Lock, CheckCircle2, AlertCircle, Save, KeyRound, Pencil, Eye, EyeOff, MapPin, Wrench, Settings } from "lucide-react";
+import { Shield, Mail, Lock, CheckCircle2, AlertCircle, Save, KeyRound, Pencil, Eye, EyeOff, MapPin, Wrench, Settings, Trash2, AlertTriangle } from "lucide-react";
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<"security" | "utilities">("security");
+  const [activeTab, setActiveTab] = useState<"security" | "utilities" | "danger">("security");
   
   const [currentEmail, setCurrentEmail] = useState("");
   const [location, setLocation] = useState("");
+  const [currency, setCurrency] = useState("PLN");
+  const [payday, setPayday] = useState<number>(10);
   const [loading, setLoading] = useState(true);
   
   const [formData, setFormData] = useState({
@@ -21,6 +23,11 @@ export default function SettingsPage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+
+  // USUWANIE KONTA
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
 
   const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -43,6 +50,12 @@ export default function SettingsPage() {
         if (data.location !== undefined) {
           setLocation(data.location);
         }
+        if (data.currency) {
+          setCurrency(data.currency);
+        }
+        if (data.payday !== undefined) {
+          setPayday(data.payday);
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -52,6 +65,38 @@ export default function SettingsPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (status !== "idle") { setStatus("idle"); setMessage(""); }
   };
+
+  // FUNKCJA USUWANIA WSZYSTKICH DANYCH
+  const handleDeleteData = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setStatus("saving"); setMessage("");
+
+  try {
+    const res = await fetch("/api/emergency-reset", {
+      method: "DELETE", // Zwróć uwagę: metoda to DELETE (lub POST, zależnie od Twojej konwencji API)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: deletePassword })
+    });
+    
+    const data = await res.json();
+    if (res.ok) {
+      setStatus("success"); 
+      setMessage("Wszystkie rekordy zostały trwale usunięte. Masz teraz czystą kartę.");
+      setDeletePassword("");
+      setShowDeleteConfirm(false); // Zwijamy formularz potwierdzenia
+      
+      // Opcjonalnie: odświeżenie strony po chwili, aby zresetować wszystkie stany w aplikacji
+      setTimeout(() => {
+        window.location.href = "/"; // Przekierowanie na pusty dashboard
+      }, 3000);
+      
+    } else {
+      setStatus("error"); setMessage(data.error || "Nieprawidłowe hasło lub błąd serwera.");
+    }
+  } catch (err) { 
+    setStatus("error"); setMessage("Błąd serwera przy próbie usunięcia danych."); 
+  }
+};
 
   const handleSecuritySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,7 +135,7 @@ export default function SettingsPage() {
     try {
       const res = await fetch("/api/settings", {
         method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ location })
+        body: JSON.stringify({ location, currency, payday })
       });
       const data = await res.json();
       if (res.ok) {
@@ -148,6 +193,16 @@ export default function SettingsPage() {
           }`}
         >
           <Wrench className="w-4 h-4" /> System & Utilities
+        </button>
+        <button 
+          onClick={() => { setActiveTab("danger"); setStatus("idle"); setMessage(""); }}
+          className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-black text-sm transition-all duration-300 ${
+            activeTab === "danger" 
+              ? "bg-red-500 text-white shadow-lg shadow-red-500/25 scale-100" 
+              : "bg-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-white/50 dark:hover:bg-zinc-800/50"
+          }`}
+        >
+          <AlertTriangle className="w-4 h-4" /> Danger Zone
         </button>
       </div>
 
@@ -266,6 +321,53 @@ export default function SettingsPage() {
                 </div>
               </div>
 
+              <div className="space-y-4 pt-4">
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-white/40 dark:border-zinc-800 pb-2">
+                  <span className="w-5 h-5 flex items-center justify-center font-bold text-purple-500 rounded-full border border-purple-500 text-xs">$</span> Główna Waluta
+                </h2>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl">
+                  Wybierz domyślną walutę, w której aplikacja będzie wyświetlać wprowadzane i statystyczne dane o Twoich finansach.
+                </p>
+                <div className="space-y-2 max-w-md pt-2">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Twoja waluta</label>
+                  <select 
+                    value={currency} 
+                    onChange={(e) => { setCurrency(e.target.value); setStatus("idle"); setMessage(""); }}
+                    className="w-full p-4 bg-white/60 dark:bg-zinc-900 border border-white/40 dark:border-zinc-800 rounded-xl outline-none focus:border-purple-500 font-bold text-zinc-900 dark:text-white transition-colors cursor-pointer"
+                  >
+                    <option value="PLN">PLN - Polski Złoty</option>
+                    <option value="EUR">EUR - Euro</option>
+                    <option value="USD">USD - Dolar amerykański</option>
+                    <option value="GBP">GBP - Funt brytyjski</option>
+                    <option value="NOK">NOK - Korona norweska</option>
+                    <option value="CHF">CHF - Frank szwajcarski</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4">
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-white/40 dark:border-zinc-800 pb-2">
+                  <span className="w-5 h-5 flex items-center justify-center font-bold text-purple-500 rounded-full border border-purple-500 text-xs">D</span> Dzień Wypłaty
+                </h2>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl">
+                  Wybierz dzień miesiąca, w którym najczęściej otrzymujesz wypłatę. Dzięki temu system odpowiednio wcześnie wyśle powiadomienia i uaktualni status budżetu na dany miesiąc.
+                </p>
+                <div className="space-y-2 max-w-md pt-2">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Dzień wypłaty</label>
+                  <select 
+                    value={payday} 
+                    onChange={(e) => { setPayday(Number(e.target.value)); setStatus("idle"); setMessage(""); }}
+                    className="w-full p-4 bg-white/60 dark:bg-zinc-900 border border-white/40 dark:border-zinc-800 rounded-xl outline-none focus:border-purple-500 font-bold text-zinc-900 dark:text-white transition-colors cursor-pointer"
+                  >
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                      <option key={day} value={day}>
+                        {day} dzień miesiąca
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               {status === "error" && <div className="p-4 bg-red-500/10 text-red-500 text-sm font-bold rounded-xl flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {message}</div>}
               {status === "success" && <div className="p-4 bg-emerald-500/10 text-emerald-500 text-sm font-bold rounded-xl flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> {message}</div>}
             </div>
@@ -277,6 +379,98 @@ export default function SettingsPage() {
             </div>
           </form>
         )}
+
+        {/* ======================================= */}
+{/* TAB 3: DANGER ZONE                      */}
+{/* ======================================= */}
+{activeTab === "danger" && (
+  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="p-6 md:p-8 space-y-8">
+      
+      <div className="space-y-4">
+  <h2 className="text-lg font-bold text-red-600 dark:text-red-500 flex items-center gap-2 border-b border-red-500/20 pb-2">
+    <AlertTriangle className="w-5 h-5" /> Strefa Niebezpieczna: Reset Danych
+  </h2>
+  <div className="text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed space-y-2">
+    <p>
+      Z tego miejsca możesz trwale i nieodwracalnie usunąć wszystkie swoje historyczne dane z aplikacji 
+      (transakcje, oszczędności, statystyki zdrowotne, wpisy w kalendarzu, pojazdy). 
+    </p>
+    <div className="p-3 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
+      <p className="font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+        <Shield className="w-4 h-4 text-emerald-500" /> Twoje konto jest bezpieczne
+      </p>
+      <p className="text-xs mt-1">
+        Ta operacja <strong className="text-zinc-900 dark:text-zinc-300">nie usunie</strong> Twojego konta użytkownika, adresu e-mail ani hasła. 
+        Rozpoczniesz po prostu z czystą kartą.
+      </p>
+    </div>
+    <strong className="text-red-600 dark:text-red-400 block mt-4">Uwaga: Tej operacji usuwania rekordów nie można cofnąć!</strong>
+  </div>
+</div>
+
+      {!showDeleteConfirm ? (
+        <button 
+          onClick={() => setShowDeleteConfirm(true)}
+          className="px-6 py-3 rounded-xl font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-500/10 hover:bg-red-200 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 transition-all flex items-center gap-2"
+        >
+          <Trash2 className="w-5 h-5" /> Rozpocznij procedurę usunięcia danych
+        </button>
+      ) : (
+        <form onSubmit={handleDeleteData} className="p-6 bg-red-50/80 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-2xl space-y-6 max-w-2xl animate-in fade-in zoom-in-95 duration-300">
+          <div className="flex items-start gap-3 text-red-700 dark:text-red-400">
+            <AlertCircle className="w-6 h-6 mt-0.5 shrink-0" />
+            <div>
+              <h3 className="text-sm font-black uppercase tracking-wider">Potwierdzenie autoryzacji</h3>
+              <p className="text-xs opacity-90 mt-1">
+                Aby zapobiec przypadkowemu usunięciu danych, musisz potwierdzić tę akcję swoim obecnym hasłem.
+              </p>
+            </div>
+          </div>
+          
+          <div className="relative">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500/70" />
+            <input 
+              type={showDeletePassword ? "text" : "password"} 
+              placeholder="Wprowadź swoje hasło..." 
+              required 
+              value={deletePassword} 
+              onChange={(e) => { setDeletePassword(e.target.value); setStatus("idle"); setMessage(""); }}
+              className="w-full p-4 pl-12 pr-12 bg-white dark:bg-zinc-950 border-2 border-red-200 dark:border-red-500/30 rounded-xl outline-none focus:border-red-500 font-bold text-zinc-900 dark:text-white transition-colors" 
+            />
+            <button 
+              type="button" 
+              onClick={() => setShowDeletePassword(!showDeletePassword)} 
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-red-500 transition-colors"
+            >
+              {showDeletePassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
+
+          <div className="flex gap-3 justify-end pt-2">
+            <button 
+              type="button"
+              onClick={() => { setShowDeleteConfirm(false); setDeletePassword(""); setStatus("idle"); setMessage(""); }}
+              className="px-4 py-2 rounded-lg font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+            >
+              Anuluj
+            </button>
+            <button 
+              type="submit" 
+              disabled={status === "saving" || !deletePassword} 
+              className="px-6 py-2 rounded-lg font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all disabled:opacity-50 flex items-center gap-2"
+            >
+              {status === "saving" ? "Trwa usuwanie..." : "Tak, usuń wszystkie dane"}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {status === "error" && <div className="p-4 bg-red-500/10 text-red-500 text-sm font-bold rounded-xl flex items-center gap-2 max-w-2xl"><AlertCircle className="w-4 h-4" /> {message}</div>}
+      {status === "success" && <div className="p-4 bg-emerald-500/10 text-emerald-500 text-sm font-bold rounded-xl flex items-center gap-2 max-w-2xl"><CheckCircle2 className="w-4 h-4" /> {message}</div>}
+    </div>
+  </div>
+)}
 
       </div>
     </div>

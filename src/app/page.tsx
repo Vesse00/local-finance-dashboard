@@ -47,17 +47,17 @@ export default async function DashboardPage() {
   return (
     <div className="relative flex-1 p-6 md:p-10 pt-6 min-h-screen overflow-hidden">
       
-      {/* MAGIA W TLE: Rozmyte, żyjące gradienty (Mesh Gradient) */}
-      <div className="fixed top-0 left-1/4 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none -z-10 animate-pulse" style={{ animationDuration: '8s' }}></div>
-      <div className="fixed bottom-1/4 right-0 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[150px] pointer-events-none -z-10 animate-pulse" style={{ animationDuration: '12s' }}></div>
-      <div className="fixed top-1/2 left-0 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none -z-10 animate-pulse" style={{ animationDuration: '10s' }}></div>
+      {/* MAGIA W TLE: Zoptymalizowane tło - radial-gradient zamiast CSS blur z animate-pulse ratuje wydajność (FPS) */}
+      <div className="fixed top-0 left-1/4 w-[500px] h-[500px] rounded-full pointer-events-none -z-10 opacity-30 md:opacity-20" style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.5) 0%, rgba(99,102,241,0) 70%)' }}></div>
+      <div className="fixed bottom-1/4 right-0 w-[600px] h-[600px] rounded-full pointer-events-none -z-10 opacity-30 md:opacity-20" style={{ background: 'radial-gradient(circle, rgba(168,85,247,0.5) 0%, rgba(168,85,247,0) 70%)' }}></div>
+      <div className="fixed top-1/2 left-0 w-[400px] h-[400px] rounded-full pointer-events-none -z-10 opacity-30 md:opacity-20" style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.5) 0%, rgba(16,185,129,0) 70%)' }}></div>
 
       {/* GŁÓWNY KONTENER (Rozszerzony na niemal cały ekran) */}
       <div className="max-w-[1920px] mx-auto w-full space-y-6 relative z-10">
         
         {/* 1. ASYSTENT NA SAMEJ GÓRZE */}
         <div className="w-full animate-in fade-in slide-in-from-top-4 duration-700">
-          <DailyBriefing initialData={safeSerialize(briefingData)}/>
+          <DailyBriefing initialData={safeSerialize(briefingData)} currency={user?.currency || "PLN"} />
         </div>
         
         {/* 2. GŁÓWNA SIATKA DASHBOARDU (3 Kolumny) */}
@@ -68,6 +68,8 @@ export default async function DashboardPage() {
             <MainWidget 
               currentStats={safeSerialize(stats)} 
               summaries={safeSerialize(summaries)} 
+              currency={user?.currency || "PLN"}
+              payday={user?.payday ?? 10}
             />
           </div>
 

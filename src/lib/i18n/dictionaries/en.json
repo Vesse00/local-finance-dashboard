@@ -1,0 +1,137 @@
+{
+  "common": {
+    "dashboard": "Local Dashboard",
+    "welcome": "Welcome back 👋"
+  },
+  "sidebar": {
+    "top": {
+      "dashboard": "Dashboard",
+      "analysis": "Analysis"
+    },
+    "groups": {
+      "personal": {
+        "title": "Personal",
+        "health": {
+          "title": "Health",
+          "daily": "Activity Log",
+          "body": "Weight & Measurements",
+          "energy": "Mood & Energy"
+        },
+        "drawer": "Agreements & Guarantees",
+        "garage": "Garage"
+      },
+      "finance": {
+        "title": "Finances",
+        "calendar": "Calendar",
+        "recurring": "Recurring & Installments",
+        "savings": "Savings",
+        "transactions": "Transactions"
+      },
+      "work": {
+        "title": "Work & Time",
+        "schedule": "Work Schedule"
+      }
+    },
+    "footer": {
+      "settings": "Settings",
+      "logout": "Logout"
+    }
+  },
+  "dashboard": {
+    "briefing": {
+      "title": "Daily Briefing",
+      "morning_greeting": "Good morning!",
+      "evening_greeting": "Get ready for tomorrow!",
+      "how_was_day": "How was your day?",
+      "setup_city": "Set up a city to see weather",
+      "today_in": "Today in:",
+      "tomorrow_in": "Tomorrow in:",
+      "day": "Day",
+      "night": "Night",
+      "no_forecast": "No forecast for this location",
+      "all_good": "Everything under control!",
+      "no_notifications": "No urgent notifications on the radar.",
+      "tomorrow": "Tomorrow",
+      "tomorrow_vacation": "Vacation tomorrow",
+      "tomorrow_sick": "Sick leave tomorrow",
+      "tomorrow_free": "Off tomorrow (no shift)",
+      "work": "Work",
+      "today": "Today",
+      "today_vacation": "Vacation today",
+      "today_sick": "Sick leave today",
+      "workout": "Workout",
+      "no_workout": "No workout",
+      "health": "Health",
+      "weather": {
+        "clear": "Clear",
+        "partly_cloudy": "Partly cloudy",
+        "foggy": "Foggy",
+        "rainy": "Rainy",
+        "snow": "Snow",
+        "showers": "Showers",
+        "stormy": "Stormy",
+        "cloudy": "Cloudy"
+      },      "upcoming": {
+        "finance": "Payment {amount} for \"{name}\" ({time})",
+        "drawer_warranty": "Warranty for \"{title}\" ends in {days} days",
+        "drawer_contract": "Contract for \"{title}\" ends in {days} days",
+        "garage": "{type} {make} {model} expires in {days} days",
+        "time_today": "TODAY",
+        "time_tomorrow": "TOMORROW",
+        "time_in_days": "in {days} days",
+        "garage_type_insurance": "Insurance",
+        "garage_type_inspection": "Inspection",
+        "garage_type_service": "Service"
+      },      "mood_modal": {
+        "title": "Day Summary",
+        "subtitle": "How do you rate your mood today?",
+        "save": "Save in journal"
+      }
+    },
+    "main": {
+      "left_to_spend": "Available",
+      "history_label": "Month",
+      "future_label": "Plan",
+      "add_income_start": "Add income to start!",
+      "spent": "Spent:",
+      "no_data": "No saved data from this month",
+      "left_this_month": "Left this month",
+      "future_month": "This month is yet to come",
+      "savings_now": "Savings",
+      "savings_then": "Savings then",
+      "transfer_rest": "Transfer rest",
+      "history_record": "Historical record",
+      "not_available_yet": "Not available yet",
+      "modal": {
+        "title": "Log transfer",
+        "subtitle": "Add funds for this month",
+        "amount": "Amount",
+        "amount_placeholder": "e.g. 4500.00",
+        "source": "Source (optional)",
+        "source_placeholder": "e.g. Salary",
+        "submit": "Save income",
+        "submitting": "Adding...",
+        "button": "Add income"
+      }
+    },
+    "work": {
+      "title": "Work Time",
+      "overtime": "Overtime",
+      "vacation": "Vacation",
+      "sick_leave": "Sick leave",
+      "days": "days"
+    },
+    "health": {
+      "title": "Health",
+      "workouts": "Workouts",
+      "weight": "Weight",
+      "avg_calories": "Avg Calories",
+      "avg_water": "Avg Water",
+      "glasses": "glasses"
+    },
+    "placeholders": {
+      "quick_actions": "Placeholder for future widget<br/>(e.g., Quick Actions)",
+      "garage_chart": "Placeholder for next module<br/>(e.g., Garage or Chart)"
+    }
+  }
+}

@@ -25,5 +25,5 @@ export default async function RecurringPage() {
     orderBy: { name: 'asc' }
   });
 
-  return <RecurringUI recurrings={safeSerialize(recurrings)} categories={safeSerialize(categories)} />;
+  return <RecurringUI recurrings={safeSerialize(recurrings)} categories={safeSerialize(categories)} currency={user.currency || "PLN"} />;
 }

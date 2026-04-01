@@ -9,6 +9,7 @@ export default function SavingsPage() {
   const [mainSavings, setMainSavings] = useState(0);
   const [subAccounts, setSubAccounts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currency, setCurrency] = useState("PLN");
 
   // Modal dodawania subkonta
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -23,6 +24,7 @@ export default function SavingsPage() {
         const data = await res.json();
         setMainSavings(data.mainSavings || 0); 
         setSubAccounts(data.accounts || []);
+        if (data.currency) setCurrency(data.currency);
       }
     } catch (error) {
       console.error(error);
@@ -58,8 +60,8 @@ export default function SavingsPage() {
   };
 
   const handleDeleteAccount = async (id: string, name: string, balance: number) => {
-    const msg = balance > 0 
-      ? `Czy na pewno chcesz usunąć portfel "${name}"?\n\nUWAGA: Znajduje się na nim ${balance.toFixed(2)} PLN. Zostaną one automatycznie przelane do Twojego Głównego Portfela (jako wpływ) i będą dostępne w kalendarzu.`
+          const msg = balance > 0 
+      ? `Czy na pewno chcesz usunąć portfel "${name}"?\n\nUWAGA: Znajduje się na nim ${balance.toFixed(2)} ${currency}. Zostaną one automatycznie przelane do Twojego Głównego Portfela (jako wpływ) i będą dostępne w kalendarzu.`
       : `Czy na pewno chcesz usunąć portfel "${name}"?`;
       
     if (!confirm(msg)) return;
@@ -85,9 +87,9 @@ export default function SavingsPage() {
   };
 
   const getAccountColor = (type: string) => {
-    if (type === "IKE") return "from-blue-500/20 to-blue-500/5 border-blue-500/30";
-    if (type === "IKZE") return "from-purple-500/20 to-purple-500/5 border-purple-500/30";
-    return "from-emerald-500/20 to-emerald-500/5 border-emerald-500/30";
+    if (type === "IKE") return "border-blue-500/30 text-blue-500";
+    if (type === "IKZE") return "border-purple-500/30 text-purple-500";
+    return "border-emerald-500/30 text-emerald-500";
   };
 
   // Logika blokowania przycisków
@@ -114,7 +116,7 @@ export default function SavingsPage() {
 
         <div className="flex flex-col items-center md:items-end gap-4 z-10">
           <div className="text-4xl md:text-5xl font-extrabold tracking-tight text-blue-600 dark:text-blue-400">
-            {totalSavings.toLocaleString("pl-PL", { style: "currency", currency: "PLN" })}
+            {totalSavings.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol" })}
           </div>
           <div className="flex gap-2">
             <button onClick={() => { setErrorMessage(""); setIsAddModalOpen(true); }} className="px-4 py-3 bg-white/50 dark:bg-black/30 hover:bg-white/80 dark:hover:bg-black/50 rounded-xl font-bold text-sm text-zinc-700 dark:text-zinc-300 transition-colors flex items-center gap-2 border border-black/5 dark:border-white/5 shadow-sm">
@@ -137,8 +139,8 @@ export default function SavingsPage() {
           ) : (
             <>
               {/* KAFELEK: GŁÓWNE OSZCZĘDNOŚCI */}
-              <Link href="/savings/main" className="snap-center block min-w-[280px] w-full bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/30 backdrop-blur-xl rounded-3xl p-6 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300 group cursor-pointer">
-                <div className="flex justify-between items-start mb-4">
+            <Link href="/savings/main" className="snap-center block min-w-[280px] w-full bg-white/70 dark:bg-zinc-950/40 border border-blue-500/30 backdrop-blur-xl rounded-3xl p-6 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300 group cursor-pointer">
+              <div className="flex justify-between items-start mb-4">
                   <div className="bg-white/80 dark:bg-black/50 p-3 rounded-2xl backdrop-blur-md shadow-sm">
                     <PiggyBank className="w-8 h-8 text-blue-500" />
                   </div>
@@ -148,13 +150,13 @@ export default function SavingsPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-zinc-600 dark:text-zinc-400 mb-1">Główne Oszczędności</h3>
-                  <p className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{mainSavings.toFixed(2)} <span className="text-lg font-bold opacity-50">PLN</span></p>
+                  <p className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{mainSavings.toFixed(2)} <span className="text-lg font-bold opacity-50">{currency}</span></p>
                 </div>
               </Link>
 
               {/* KAFELKI: POZOSTAŁE SUBKONTA */}
               {subAccounts.map(acc => (
-                <Link href={`/savings/${acc.id}`} key={acc.id} className={`snap-center block min-w-[280px] w-full bg-gradient-to-br ${getAccountColor(acc.type)} backdrop-blur-xl border rounded-3xl p-6 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300 relative group cursor-pointer`}>
+                <Link href={`/savings/${acc.id}`} key={acc.id} className={`snap-center block min-w-[280px] w-full bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl border ${getAccountColor(acc.type)} rounded-3xl p-6 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 duration-300 relative group cursor-pointer`}>
                   
                   <button 
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteAccount(acc.id, acc.name, acc.balance); }}
@@ -176,7 +178,7 @@ export default function SavingsPage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-zinc-600 dark:text-zinc-400 mb-1 pr-8 truncate">{acc.name}</h3>
-                    <p className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{acc.balance.toFixed(2)} <span className="text-lg font-bold opacity-50">PLN</span></p>
+                    <p className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{acc.balance.toFixed(2)} <span className="text-lg font-bold opacity-50">{currency}</span></p>
                   </div>
                 </Link>
               ))}
@@ -239,7 +241,7 @@ export default function SavingsPage() {
                 <input type="text" value={newAccount.name} onChange={e => setNewAccount({...newAccount, name: e.target.value})} className="w-full p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl outline-none focus:border-blue-500 font-medium" placeholder={newAccount.type === "IKE" ? "np. IKE mBank" : newAccount.type === "IKZE" ? "np. IKZE w XTB" : "np. Poduszka Finansowa"} />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-zinc-500 uppercase">Początkowe saldo (PLN)</label>
+                <label className="text-xs font-bold text-zinc-500 uppercase">Początkowe saldo</label>
                 <input type="number" step="0.01" value={newAccount.balance} onChange={e => setNewAccount({...newAccount, balance: e.target.value})} className="w-full p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl outline-none focus:border-blue-500 font-mono text-xl font-bold" placeholder="0.00" />
               </div>
             </div>

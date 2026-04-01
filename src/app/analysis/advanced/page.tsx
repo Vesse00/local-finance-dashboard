@@ -15,6 +15,8 @@ export default async function AdvancedAnalysisPage() {
   const currentDay = now.getDate() === 1 ? 1 : now.getDate() - 1;
   const daysLeft = daysInMonth - now.getDate();
 
+  const currency = user.currency || "PLN";
+
   // --- ZAAWANSOWANE ZAPYTANIA RÓWNOLEGŁE (Naprawiony TypeScript) ---
 // --- ZAAWANSOWANE ZAPYTANIA RÓWNOLEGŁE (Naprawiony TypeScript i Filtrowanie) ---
 // --- ZAAWANSOWANE ZAPYTANIA RÓWNOLEGŁE ---
@@ -173,7 +175,7 @@ export default async function AdvancedAnalysisPage() {
             <div className="relative w-full flex flex-col sm:flex-row items-stretch gap-3 h-auto sm:h-40">
               <div className="w-full sm:w-1/3 h-24 sm:h-full bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex flex-col items-center justify-center text-emerald-700 dark:text-emerald-400 relative z-10 transition-transform hover:scale-[1.02]">
                 <p className="text-[9px] font-black uppercase tracking-wider opacity-70 mb-1">Całkowity Wpływ</p>
-                <p className="text-2xl font-black">{totalIncome.toLocaleString('pl-PL', { maximumFractionDigits: 0 })}</p>
+                <p className="text-2xl font-black">{totalIncome.toLocaleString('pl-PL', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0 })}</p>
               </div>
 
               <div className="hidden sm:flex w-8 h-full flex-col justify-center gap-3 relative z-0">
@@ -186,7 +188,7 @@ export default async function AdvancedAnalysisPage() {
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500"></div>
                   <div>
                     <p className="text-[10px] font-bold text-zinc-500 uppercase">Wydatki</p>
-                    <p className="text-lg font-black text-red-500">-{totalExpense.toLocaleString('pl-PL', { maximumFractionDigits: 0 })}</p>
+                    <p className="text-lg font-black text-red-500">-{totalExpense.toLocaleString('pl-PL', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0 })}</p>
                   </div>
                   <div className="flex flex-col items-end w-1/3">
                     <p className="text-xs font-black text-zinc-900 dark:text-white mb-1">{expensePercent.toFixed(1)}%</p>
@@ -198,7 +200,7 @@ export default async function AdvancedAnalysisPage() {
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500"></div>
                   <div>
                     <p className="text-[10px] font-bold text-zinc-500 uppercase">Wolne Środki</p>
-                    <p className="text-lg font-black text-indigo-500">{balance.toLocaleString('pl-PL', { maximumFractionDigits: 0 })}</p>
+                    <p className="text-lg font-black text-indigo-500">{balance.toLocaleString('pl-PL', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0 })}</p>
                   </div>
                   <div className="flex flex-col items-end w-1/3">
                     <p className="text-xs font-black text-zinc-900 dark:text-white mb-1">{savingsPercent.toFixed(1)}%</p>
@@ -222,14 +224,14 @@ export default async function AdvancedAnalysisPage() {
                   <div className="bg-zinc-100/50 dark:bg-zinc-800/50 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700/50 flex-1">
                     <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider mb-0.5">Roboczogodzina</p>
                     <p className="text-xl font-black text-zinc-900 dark:text-white">
-                      {realHourlyRate.toFixed(1)} <span className="text-[10px] font-medium text-zinc-400">zł/h</span>
+                      {realHourlyRate.toLocaleString('pl-PL', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 1 })} <span className="text-[10px] font-medium text-zinc-400">/h</span>
                     </p>
                   </div>
                   
                   <div className="bg-indigo-50 dark:bg-indigo-500/10 p-3 rounded-xl border border-indigo-100 dark:border-indigo-500/20 flex-1 text-right">
                     <p className="text-[9px] text-indigo-500 font-bold uppercase tracking-wider mb-0.5">Godzina Życia</p>
                     <p className="text-xl font-black text-indigo-600 dark:text-indigo-400">
-                      {lifeHourlyRate.toFixed(2)} <span className="text-[10px] font-medium opacity-60">zł/h</span>
+                      {lifeHourlyRate.toLocaleString('pl-PL', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 2 })} <span className="text-[10px] font-medium opacity-60">/h</span>
                     </p>
                   </div>
                 </div>
@@ -240,7 +242,7 @@ export default async function AdvancedAnalysisPage() {
                     Po odliczeniu wydatków, nawet podczas snu Twoje saldo rośnie o:
                   </p>
                   <p className={`text-2xl font-black tracking-tight ${wealthVelocity >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                    {wealthVelocity > 0 ? '+' : ''}{wealthVelocity.toFixed(2)} <span className="text-xs font-bold opacity-70">zł / każdą godzinę</span>
+                    {wealthVelocity > 0 ? '+' : ''}{Math.abs(wealthVelocity).toLocaleString('pl-PL', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 2 })} <span className="text-xs font-bold opacity-70"> / każdą godzinę</span>
                   </p>
                 </div>
               </div>
@@ -257,13 +259,13 @@ export default async function AdvancedAnalysisPage() {
               </div>
               <div className="mb-4">
                 <p className="text-[10px] text-zinc-400 mb-1">Dzienne spalanie gotówki</p>
-                <p className="text-2xl font-black text-white">{dailyBurnRate.toFixed(1)} zł <span className="text-[10px] text-zinc-500 font-medium">/ dzień</span></p>
+                <p className="text-2xl font-black text-white">{dailyBurnRate.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 1 })} <span className="text-[10px] text-zinc-500 font-medium">/ dzień</span></p>
               </div>
             </div>
             <div className={`relative z-10 p-3 rounded-xl border ${isDangerZone ? "bg-red-500/10 border-red-500/20" : "bg-emerald-500/10 border-emerald-500/20"}`}>
               <p className="text-[9px] font-bold uppercase opacity-80 mb-1 text-white">Prognoza na koniec m-ca</p>
               <p className={`text-xl font-black ${isDangerZone ? "text-red-400" : "text-emerald-400"}`}>
-                {predictedLeftover.toLocaleString('pl-PL', { maximumFractionDigits: 0 })} zł
+                {predictedLeftover.toLocaleString('pl-PL', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0 })}
               </p>
             </div>
           </div>
@@ -283,7 +285,7 @@ export default async function AdvancedAnalysisPage() {
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
                     <span className="text-zinc-600 dark:text-zinc-300">Sztywne (Rachunki)</span>
-                    <span className="text-zinc-900 dark:text-white">{fixedCosts.toLocaleString('pl-PL')} zł</span>
+                    <span className="text-zinc-900 dark:text-white">{fixedCosts.toLocaleString('pl-PL', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0 })}</span>
                   </div>
                   <div className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                     <div className="h-full bg-zinc-500" style={{ width: `${Math.min(fixedPercent, 100)}%` }}></div>
@@ -292,7 +294,7 @@ export default async function AdvancedAnalysisPage() {
                 <div>
                   <div className="flex justify-between text-xs font-bold mb-1">
                     <span className="text-orange-600 dark:text-orange-400">Zmienne (Życie)</span>
-                    <span className="text-zinc-900 dark:text-white">{variableCosts.toLocaleString('pl-PL')} zł</span>
+                    <span className="text-zinc-900 dark:text-white">{variableCosts.toLocaleString('pl-PL', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0 })}</span>
                   </div>
                   <div className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                     <div className="h-full bg-orange-400" style={{ width: `${Math.min(variablePercent, 100)}%` }}></div>
@@ -326,7 +328,7 @@ export default async function AdvancedAnalysisPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-center mb-1">
                           <span className="text-[10px] font-bold text-zinc-800 dark:text-zinc-200 capitalize truncate pr-2">{expenseName}</span>
-                          <span className="text-[10px] font-black whitespace-nowrap">{expense.amount.toLocaleString('pl-PL')} zł</span>
+                          <span className="text-[10px] font-black whitespace-nowrap">{expense.amount.toLocaleString('pl-PL', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0 })}</span>
                         </div>
                         <div className="w-full h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                           <div className="h-full bg-indigo-500/70" style={{ width: `${percent}%` }}></div>
@@ -351,7 +353,7 @@ export default async function AdvancedAnalysisPage() {
                   <p className="text-[10px] font-bold uppercase">Zobowiązania (Kolejne 12 m-cy)</p>
                 </div>
                 <p className="text-lg font-black text-red-700 dark:text-red-300">
-                  {annualRecurringBurden.toLocaleString('pl-PL', { maximumFractionDigits: 0 })} zł <span className="text-[10px] text-red-500/70 font-medium">/ rok</span>
+                  {annualRecurringBurden.toLocaleString('pl-PL', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0 })} <span className="text-[10px] text-red-500/70 font-medium">/ rok</span>
                 </p>
               </div>
 
@@ -379,7 +381,7 @@ export default async function AdvancedAnalysisPage() {
                 </p>
                 <div className="bg-white/60 dark:bg-black/20 p-3 rounded-lg border border-amber-200/50 dark:border-amber-500/10">
                   <p className="text-xs font-black text-zinc-900 dark:text-white truncate">{largestExpense.description || largestExpense.recipient || "Nieznany wydatek"}</p>
-                  <p className="text-xs text-amber-600 dark:text-amber-500 font-bold mt-0.5">{largestExpense.amount.toLocaleString('pl-PL')} zł</p>
+                  <p className="text-xs text-amber-600 dark:text-amber-500 font-bold mt-0.5">{largestExpense.amount.toLocaleString('pl-PL', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0 })}</p>
                 </div>
               </div>
             ) : (

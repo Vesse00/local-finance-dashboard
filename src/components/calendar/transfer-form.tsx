@@ -115,7 +115,7 @@ export function TransferForm({ defaultDate, onSuccess, defaultFrom = "MAIN", def
 
       {/* POLE KWOTY */}
       <div>
-        <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 text-zinc-500 ml-1">Przesuwana kwota (PLN)</label>
+        <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 text-zinc-500 ml-1">Przesuwana kwota</label>
         <div className="relative">
           <input 
             name="amount" 

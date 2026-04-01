@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { categoryRules } from "@/lib/categoryRules"; // <-- Nasz nowy import
+import { categoryRules } from "@/lib/categoryRules"; 
+import { getOrCreateCategory, ensureDefaultCategories } from "@/lib/services/category.service";
 
 const parseDateStr = (ds: string) => {
   if (!ds) return new Date();
@@ -32,12 +33,8 @@ export async function POST(req: Request) {
     const userId = user.id;
 
     const userCategories = await prisma.category.findMany({ where: { userId } });
-    let defaultCategory = userCategories.find(c => c.name.toLowerCase() === "inne");
-    if (!defaultCategory) {
-      defaultCategory = await prisma.category.create({ data: { name: "Inne", icon: "❓", userId } });
-      userCategories.push(defaultCategory); // Zabezpieczenie, by tablica była aktualna
-    }
-
+    const defaultCategory = await getOrCreateCategory(userId, "Inne", "❓");
+    
     let importedCount = 0;
     const hasSavingsProduct = Boolean(savingsProduct);
 
@@ -115,21 +112,12 @@ export async function POST(req: Request) {
             let categoryId = defaultCategory.id;
             const textToSearch = (odbiorca + " " + opis).toLowerCase();
 
-            // Funkcja pomocnicza tworząca kategorię, jeśli nie istnieje
-            const getOrCreateCategory = async (name: string, icon: string) => {
-              let cat = userCategories.find(c => c.name.toLowerCase() === name.toLowerCase());
-              if (!cat) {
-                cat = await prisma.category.create({ data: { name, icon, userId } });
-                userCategories.push(cat); 
-              }
-              return cat.id;
-            };
-            
             // SZUKANIE KATEGORII NA PODSTAWIE REGUŁ
             for (const rule of categoryRules) {
               const regex = new RegExp(rule.keywords.join('|'), 'i');
               if (regex.test(textToSearch)) {
-                categoryId = await getOrCreateCategory(rule.name, rule.icon);
+                const cat = await getOrCreateCategory(userId, rule.name, rule.icon);
+                categoryId = cat.id;
                 break; 
               }
             }

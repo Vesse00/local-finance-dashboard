@@ -8,9 +8,10 @@ import { RecurringForm } from "./recurring-form";
 interface RecurringUIProps {
   recurrings: any[];
   categories: any[];
+  currency: string;
 }
 
-export function RecurringUI({ recurrings, categories }: RecurringUIProps) {
+export function RecurringUI({ recurrings, categories, currency }: RecurringUIProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<any>(null);
   const [overpayModalId, setOverpayModalId] = useState<string | null>(null);
@@ -48,7 +49,7 @@ return (
     <div className="flex-1 p-6 md:p-8 space-y-6">
       
       {/* NAGŁÓWEK */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 dark:bg-black/40 backdrop-blur-xl p-6 rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl p-6 rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2 text-zinc-900 dark:text-white">
             <Repeat className="w-6 h-6 text-indigo-500" />
@@ -79,7 +80,7 @@ return (
             const isFullyPaid = isLoan && (rec.remainingAmount || 0) <= 0;
 
             return (
-              <div key={rec.id} className="relative p-5 rounded-2xl bg-white/60 dark:bg-zinc-900/50 backdrop-blur-md border border-black/5 dark:border-white/5 shadow-sm group hover:border-indigo-500/30 transition-all flex flex-col">
+              <div key={rec.id} className="relative p-5 rounded-2xl bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-sm group hover:border-indigo-500/30 transition-all flex flex-col">
                 
                 {/* NOWE: Ołówek do edycji */}
                 <button 
@@ -112,7 +113,7 @@ return (
                 </div>
 
                 <div className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-4">
-                  {rec.defaultAmount.toLocaleString("pl-PL", { style: "currency", currency: "PLN" })}
+                  {rec.defaultAmount.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol" })}
                   <span className="text-sm font-normal text-zinc-500"> / m-c</span>
                 </div>
 
@@ -122,7 +123,7 @@ return (
                       <div className="flex justify-between text-xs font-medium">
                         <span className="text-zinc-500">Spłacono: {Math.min(100, progress).toFixed(0)}%</span>
                         <span className={`font-bold ${isFullyPaid ? "text-emerald-500" : "text-zinc-900 dark:text-white"}`}>
-                          {isFullyPaid ? "Spłacone!" : `Zostało: ${(rec.remainingAmount || 0).toLocaleString("pl-PL", { style: "currency", currency: "PLN" })}`}
+                          {isFullyPaid ? "Spłacone!" : `Zostało: ${(rec.remainingAmount || 0).toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol" })}`}
                         </span>
                       </div>
                       
@@ -181,7 +182,7 @@ return (
               <input type="hidden" name="id" value={overpayModalId} />
               
               <div>
-                <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Kwota nadpłaty (PLN)</label>
+                <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Kwota nadpłaty ({currency})</label>
                 <input 
                   name="amount" 
                   type="number" 

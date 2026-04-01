@@ -141,6 +141,43 @@ export async function getDashboardStats() {
   // Kwota wolna to wpływy MINUS to co wydałeś MINUS to co schowałeś do skarbonki
   const kwotaWolna = (wplywy as number) - (wydano as number) - (odlozonoWTymMiesiacu as number);
 
+  // --- AUTOMATYCZNE GENEROWANIE PODSUMOWANIA ZA POPRZEDNI MIESIĄC ---
+  try {
+    const prevMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const monthsPl = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
+    const expectedPrevMonthName = `${monthsPl[prevMonthDate.getMonth()]} ${prevMonthDate.getFullYear()}`;
+
+    // Sprawdzamy czy istnieje
+    const existingSummary = await prisma.monthSummary.findFirst({
+      where: { userId: user.id, monthYear: expectedPrevMonthName }
+    });
+
+    if (!existingSummary) {
+      const pmStart = new Date(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), 1);
+      const pmEnd = new Date(prevMonthDate.getFullYear(), prevMonthDate.getMonth() + 1, 0, 23, 59, 59, 999);
+
+      const pmExpenses = await prisma.expense.aggregate({ _sum: { amount: true }, where: { userId: user.id, date: { gte: pmStart, lte: pmEnd }, type: "EXPENSE" } });
+      const pmSavings = await prisma.expense.aggregate({ _sum: { amount: true }, where: { userId: user.id, date: { gte: pmStart, lte: pmEnd }, type: "SAVING" } });
+      const pmIncomes = await prisma.income.aggregate({ _sum: { amount: true }, where: { userId: user.id, date: { gte: pmStart, lte: pmEnd } } });
+      
+      const pmWydano = pmExpenses._sum.amount || 0;
+      const pmOdlozono = pmSavings._sum.amount || 0;
+      const pmWplywy = pmIncomes._sum.amount || 0;
+      const pmKwotaWolna = pmWplywy - pmWydano - pmOdlozono;
+
+      await prisma.monthSummary.create({
+        data: {
+          userId: user.id,
+          monthYear: expectedPrevMonthName,
+          leftToSpend: pmKwotaWolna,
+          savingsTotal: user.savings // Przybliżony stan na koniec miesiąca - bierzemy dzisiejszy
+        }
+      });
+    }
+  } catch(error) {
+    console.error("Backfill error:", error);
+  }
+
   return safeSerialize({
     kwotaWolna,
     wydano, // Tutaj widnieją JUŻ TYLKO realne wydatki!
@@ -148,9 +185,16 @@ export async function getDashboardStats() {
     oszczednosci: user.savings // Całkowity stan skarbonki (z bazy)
   });
 }
+import { ensureDefaultCategories, getOrCreateCategory } from "@/lib/services/category.service";
+
 export async function getCalendarData() {
-  const userId = await getUserId();
+  const user = await prisma.user.findFirst();
+  if (!user) throw new Error("User not found");
+  const userId = user.id;
   
+  // Zapewniamy stworzenie podstawowych kategorii jeśli ich brakuje
+  await ensureDefaultCategories(userId);
+
   const expenses = await prisma.expense.findMany({
     where: { userId },
     include: { category: true },
@@ -168,7 +212,7 @@ export async function getCalendarData() {
     orderBy: { name: 'asc' }
   });
   
-  return safeSerialize({ expenses, incomes, categories });
+  return safeSerialize({ expenses, incomes, categories, currency: user.currency || "PLN" });
 }
 // Tworzenie nowej kategorii
 export async function createCategory(formData: FormData) {
@@ -200,6 +244,15 @@ export async function deleteCategory(formData: FormData) {
   });
 
   revalidatePath("/calendar");
+}
+
+export async function updateCategoryBudget(categoryId: string, budgetLimit: number | null) {
+  const userId = await getUserId();
+  await prisma.category.update({
+    where: { id: categoryId, userId },
+    data: { budgetLimit }
+  });
+  revalidatePath("/planner");
 }
 
 // --- USUWANIE WYDATKU / TRANSFERU ---
@@ -485,8 +538,7 @@ export async function adjustMainBalance(formData: FormData) {
   } else {
     // Apka ma za dużo - dodajemy wydatek korygujący
     const userCategories = await prisma.category.findMany({ where: { userId } });
-    let cat = userCategories.find(c => c.name.toLowerCase() === "inne");
-    if (!cat) cat = await prisma.category.create({ data: { name: "Inne", icon: "❓", userId } });
+    let cat = await getOrCreateCategory(userId, "Inne", "❓");
 
     await prisma.expense.create({
       data: {

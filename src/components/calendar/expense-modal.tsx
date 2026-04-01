@@ -92,7 +92,7 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories }: Expe
           <form className="space-y-4 animate-in slide-in-from-left-4 duration-300" onSubmit={handleOnetimeSubmit}>
             <input type="hidden" name="date" value={selectedDate?.toISOString() || new Date().toISOString()} />
             <div>
-              <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Kwota (PLN)</label>
+              <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Kwota</label>
               <input name="amount" type="number" step="0.01" placeholder="0.00" className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary text-zinc-900 dark:text-white" required />
             </div>
             <div>

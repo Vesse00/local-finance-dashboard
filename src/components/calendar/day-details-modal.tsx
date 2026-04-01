@@ -13,9 +13,10 @@ interface DayDetailsModalProps {
   date: Date | null;
   allExpenses: any[];
   allIncomes: any[];
+  currency?: string;
 }
 
-export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes }: DayDetailsModalProps) {
+export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes, currency = "PLN" }: DayDetailsModalProps) {
   const [mounted, setMounted] = useState(false);
   const [isPending, startTransition] = useTransition();
   
@@ -103,7 +104,7 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm font-semibold text-emerald-600 dark:text-emerald-400 mb-2">
                     <span className="flex items-center gap-1.5"><TrendingUp className="w-4 h-4" /> Wpływy</span>
-                    <span>+{totalIncomes.toLocaleString("pl-PL", { style: "currency", currency: "PLN" })}</span>
+                    <span>+{totalIncomes.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: 'narrowSymbol' })}</span>
                   </div>
                   {dayIncomes.map(income => (
                     <div 
@@ -117,7 +118,7 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
                           {income.source || "Wpływ"}
                         </span>
                         <div className="flex items-center gap-3">
-                          <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">+{income.amount} zł</span>
+                          <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">+{income.amount.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: 'narrowSymbol' })}</span>
                           <button onClick={(e) => handleDeleteIncome(e, income.id)} disabled={isPending} className="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all disabled:opacity-50">
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -142,7 +143,7 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm font-semibold text-red-600 dark:text-red-400 mb-2">
                     <span className="flex items-center gap-1.5"><TrendingDown className="w-4 h-4" /> Wydatki</span>
-                    <span>-{totalExpenses.toLocaleString("pl-PL", { style: "currency", currency: "PLN" })}</span>
+                    <span>-{totalExpenses.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: 'narrowSymbol' })}</span>
                   </div>
                   {dayExpenses.map(expense => (
                     <div 
@@ -157,7 +158,7 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
                           <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{expense.category?.name}</span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="text-sm font-bold text-red-600 dark:text-red-400">-{expense.amount} zł</span>
+                          <span className="text-sm font-bold text-red-600 dark:text-red-400">-{expense.amount.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: 'narrowSymbol' })}</span>
                           <button onClick={(e) => handleDeleteExpense(e, expense.id)} disabled={isPending} className="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all disabled:opacity-50">
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -190,7 +191,7 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
                         <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{saving.description || "Transfer"}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{saving.amount} zł</span>
+                        <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{saving.amount.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: 'narrowSymbol' })}</span>
                         <button onClick={(e) => handleDeleteExpense(e, saving.id)} disabled={isPending} className="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all disabled:opacity-50">
                           <Trash2 className="w-4 h-4" />
                         </button>

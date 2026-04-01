@@ -366,7 +366,7 @@ export default function DigitalDrawerPage() {
               {formData.type !== "CERTIFICATE" && (
                 <>
                   <div className="space-y-2 pt-2">
-                    <label className="text-xs font-bold text-zinc-500 uppercase">Koszt (PLN)</label>
+                    <label className="text-xs font-bold text-zinc-500 uppercase">Koszt</label>
                     <input type="number" step="0.01" value={formData.cost} onChange={(e) => setFormData({...formData, cost: e.target.value})} className="w-full p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none focus:border-blue-500 transition-all font-mono text-xl font-bold" placeholder="np. 1500" />
                   </div>
 

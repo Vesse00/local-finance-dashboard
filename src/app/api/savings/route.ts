@@ -13,7 +13,8 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       mainSavings: user.savings,
-      accounts: accounts
+      accounts: accounts,
+      currency: user.currency || "PLN"
     });
   } catch (err) {
     return NextResponse.json({ error: "Błąd" }, { status: 500 });

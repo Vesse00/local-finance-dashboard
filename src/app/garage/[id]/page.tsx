@@ -457,7 +457,7 @@ export default function CarDetailsPage({ params }: { params: Promise<{ id: strin
               </div>
 
               <div className="space-y-1 pt-2">
-                <label className="text-xs font-bold text-zinc-500 uppercase">Koszt całkowity (PLN)</label>
+                <label className="text-xs font-bold text-zinc-500 uppercase">Koszt całkowity</label>
                 <input type="number" step="0.01" value={eventForm.cost} onChange={e => handleFuelCalc('cost', e.target.value)} className="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none focus:border-indigo-500 font-mono text-xl font-black" placeholder="0.00" />
               </div>
 

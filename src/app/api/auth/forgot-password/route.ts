@@ -5,9 +5,11 @@ import crypto from "crypto";
 
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json(); // Zakładamy, że username to e-mail, lub w systemie masz e-maile. Zastosujemy tu wyszukanie po username.
+    const { username } = await req.json(); // Zakładamy, że username to e-mail, lub w systemie masz e-maile. Zastosujemy tu wyszukanie po username.
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    // Używamy zmiennej 'username' (ponieważ tak nazywa się pole formularza wysyłane z frontendu) 
+    // i szukamy użytkownika po 'email' (lub 'username', w zależności od struktury Twojej bazy, zazwyczaj email=username)
+    const user = await prisma.user.findUnique({ where: { email: username } });
     
     if (!user) {
       // Ze względów bezpieczeństwa nie informujemy, czy użytkownik istnieje
@@ -35,7 +37,7 @@ export async function POST(req: Request) {
 
     // 4. Tworzenie linku resetującego
     // Zmienisz "localhost:3000" na swoją domenę, gdy wrzucisz to do internetu
-    const resetUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/reset-password?token=${resetToken}`;
+    const resetUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3003"}/reset-password?token=${resetToken}`;
 
     // 5. Wysyłka E-maila
     const mailOptions = {
