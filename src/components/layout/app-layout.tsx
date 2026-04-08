@@ -5,6 +5,7 @@ import { AppSidebar } from "./app-sidebar";
 import { Navbar } from "./navbar";
 import { OmniBar } from "./omni-bar";
 import { AppBackground } from "./app-background";
+import { UpdateNotifier } from "./update-notifier";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -20,6 +21,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-zinc-950 relative selection:bg-indigo-500/30">
       
       <AppBackground />
+      <UpdateNotifier />
 
       <AppSidebar />
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">

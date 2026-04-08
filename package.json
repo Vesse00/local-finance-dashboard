@@ -6,7 +6,8 @@
     "dev": "next dev -p 3003",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "update": "node auto-update.js"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.4.2",
