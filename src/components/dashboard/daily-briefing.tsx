@@ -76,8 +76,7 @@ export function DailyBriefing({ initialData, currency = "PLN" }: { initialData: 
     if (data.workTomorrow) {
       if (data.workTomorrow.shiftType === "REGULAR") displayItems.push({ icon: "💼", title: `${t("dashboard.briefing.tomorrow")} ${data.workTomorrow.startTime} - ${data.workTomorrow.endTime}`, priority: "normal", type: t("dashboard.briefing.work") });
       else if (data.workTomorrow.shiftType === "VACATION") displayItems.push({ icon: "🌴", title: t("dashboard.briefing.tomorrow_vacation"), priority: "low", type: t("dashboard.briefing.work") });
-      else if (data.workTomorrow.shiftType === "SICK") displayItems.push({ icon: "🩺", title: t("dashboard.briefing.tomorrow_sick"), priority: "low", type: t("dashboard.briefing.work") });
-    } else {
+      else if (data.workTomorrow.shiftType === "SICK") displayItems.push({ icon: "🩺", title: t("dashboard.briefing.tomorrow_sick"), priority: "low", type: t("dashboard.briefing.work") });        else if (data.workTomorrow.shiftType === "DAY_OFF") displayItems.push({ icon: "☕", title: t("dashboard.briefing.tomorrow_free"), priority: "low", type: t("dashboard.briefing.work") });    } else {
       displayItems.push({ icon: "🌙", title: t("dashboard.briefing.tomorrow_free"), priority: "low", type: t("dashboard.briefing.work") });
     }
     if (data.healthToday?.calories > 0 || (data.healthToday?.workouts && data.healthToday.workouts.length > 0)) {
@@ -92,6 +91,7 @@ export function DailyBriefing({ initialData, currency = "PLN" }: { initialData: 
       if (data.workToday.shiftType === "REGULAR") displayItems.push({ icon: "💼", title: `${t("dashboard.briefing.today")} ${data.workToday.startTime} - ${data.workToday.endTime}`, priority: "normal", type: t("dashboard.briefing.work") });
       else if (data.workToday.shiftType === "VACATION") displayItems.push({ icon: "🌴", title: t("dashboard.briefing.today_vacation"), priority: "low", type: t("dashboard.briefing.work") });
       else if (data.workToday.shiftType === "SICK") displayItems.push({ icon: "🩺", title: t("dashboard.briefing.today_sick"), priority: "low", type: t("dashboard.briefing.work") });
+      else if (data.workToday.shiftType === "DAY_OFF") displayItems.push({ icon: "☕", title: t("dashboard.briefing.today_free") || "Dzisiaj wolne", priority: "low", type: t("dashboard.briefing.work") });
     }
     if (data.upcomingItems) {
       data.upcomingItems.forEach((item: any) => displayItems.push(processUpcomingItem(item)));

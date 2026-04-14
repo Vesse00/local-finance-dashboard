@@ -20,7 +20,7 @@ export async function POST(req: Request) {
         targetDate.setHours(12, 0, 0, 0);
         
         const sType = day.shiftType || "REGULAR";
-        const noteText = sType === "VACATION" ? "Urlop Wypoczynkowy" : sType === "SICK" ? "Zwolnienie Lekarskie" : "Wygenerowano automatycznie";
+        const noteText = sType === "VACATION" ? "Urlop Wypoczynkowy" : sType === "SICK" ? "Zwolnienie Lekarskie" : sType === "DAY_OFF" ? "Dzień Wolny" : "Wygenerowano automatycznie";
 
         return prisma.workDay.upsert({
           where: { userId_date: { userId: user.id, date: targetDate } },

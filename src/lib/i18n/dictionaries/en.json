@@ -14,6 +14,7 @@
     "overtime_badge": "+ {hours}h Overtime",
     "vacation": "Vacation",
     "sick_leave": "Sick Leave",
+    "day_off": "Day Off",
     "work": "Work",
     "bulk_modal_title": "Bulk Management",
     "tab_add": "Add / Overwrite",

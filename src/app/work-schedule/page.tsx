@@ -7,7 +7,7 @@ import {
   isToday, setYear, isSameDay, differenceInCalendarWeeks 
 } from "date-fns";
 import { pl, enUS } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Clock, Briefcase, Save, X, Wand2, Trash2, Umbrella, Stethoscope } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Briefcase, Save, X, Wand2, Trash2, Umbrella, Stethoscope, Coffee } from "lucide-react";
 
 // Funkcje pomocnicze do obliczeń godzin i nadgodzin
 const calculateHours = (start: string, end: string) => {
@@ -51,7 +51,7 @@ export default function WorkSchedulePage() {
   // Modal Kreatora (Bulk)
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [bulkMode, setBulkMode] = useState<"generate" | "delete">("generate"); 
-  const [bulkEntryType, setBulkEntryType] = useState<"REGULAR" | "VACATION" | "SICK">("REGULAR");
+  const [bulkEntryType, setBulkEntryType] = useState<"REGULAR" | "VACATION" | "SICK" | "DAY_OFF">("REGULAR");
   const [bulkData, setBulkData] = useState({
     startDate: format(new Date(), 'yyyy-MM-dd'),
     endDate: format(endOfMonth(addMonths(new Date(), 3)), 'yyyy-MM-dd'),
@@ -149,9 +149,8 @@ export default function WorkSchedulePage() {
     if (daysToGenerate.length === 0) return alert(t("work_schedule.alert_no_matching_days"));
 
     const payload = daysToGenerate.map(day => {
-      // Jeżeli to Urlop lub L4, nie zapisujemy w ogóle logiki godzin
-      if (bulkEntryType === "VACATION" || bulkEntryType === "SICK") {
-        return { date: day.toISOString(), startTime: null, endTime: null, shiftType: bulkEntryType };
+      // Jeżeli to Urlop, L4 lub Dzień Wolny, nie zapisujemy w ogóle logiki godzin
+      if (bulkEntryType === "VACATION" || bulkEntryType === "SICK" || bulkEntryType === "DAY_OFF") {
       }
 
       // Logika dla zwykłej Pracy
@@ -256,6 +255,7 @@ export default function WorkSchedulePage() {
             if (isCurrentMonth) {
               if (dayType === "VACATION") bgClass = "!bg-purple-50/80 dark:!bg-purple-900/20 hover:!bg-purple-100 dark:hover:!bg-purple-900/40 !border-purple-200 dark:!border-purple-800/50";
               else if (dayType === "SICK") bgClass = "!bg-amber-50/80 dark:!bg-amber-900/20 hover:!bg-amber-100 dark:hover:!bg-amber-900/40 !border-amber-200 dark:!border-amber-800/50";
+              else if (dayType === "DAY_OFF") bgClass = "!bg-slate-50/80 dark:!bg-slate-900/20 hover:!bg-slate-100 dark:hover:!bg-slate-900/40 !border-slate-200 dark:!border-slate-800/50";
               else if (isWeekend) bgClass += " !bg-red-50/20 dark:!bg-red-950/10 hover:!bg-red-50/50 dark:hover:!bg-red-950/20";
             }
 
@@ -297,6 +297,12 @@ export default function WorkSchedulePage() {
                     <Stethoscope className="w-3 h-3" /> {t("work_schedule.sick_leave")}
                   </div>
                 )}
+
+                {isCurrentMonth && dayData && dayType === "DAY_OFF" && (
+                  <div className="mt-2 text-center rounded bg-slate-100 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 text-[11px] font-bold py-1 border border-slate-200 dark:border-slate-800/50 uppercase tracking-wider flex items-center justify-center gap-1">
+                    <Coffee className="w-3 h-3" /> {t("work_schedule.day_off")}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -331,10 +337,11 @@ export default function WorkSchedulePage() {
               {bulkMode === "generate" && (
                 <div className="space-y-4 animate-in fade-in">
                   <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">{t("work_schedule.entry_type")}</h4>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <button onClick={() => setBulkEntryType("REGULAR")} className={`p-3 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 ${bulkEntryType === "REGULAR" ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-blue-500/50"}`}><Briefcase className="w-4 h-4" /> {t("work_schedule.work")}</button>
                     <button onClick={() => setBulkEntryType("VACATION")} className={`p-3 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 ${bulkEntryType === "VACATION" ? "border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-purple-500/50"}`}><Umbrella className="w-4 h-4" /> {t("work_schedule.vacation")}</button>
                     <button onClick={() => setBulkEntryType("SICK")} className={`p-3 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 ${bulkEntryType === "SICK" ? "border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-amber-500/50"}`}><Stethoscope className="w-4 h-4" /> {t("work_schedule.sick_leave")}</button>
+                    <button onClick={() => setBulkEntryType("DAY_OFF")} className={`p-3 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 ${bulkEntryType === "DAY_OFF" ? "border-slate-500 bg-slate-50 text-slate-700 dark:bg-slate-800/40 dark:text-slate-300" : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-slate-500/50"}`}><Coffee className="w-4 h-4" /> {t("work_schedule.day_off")}</button>
                   </div>
                 </div>
               )}
@@ -443,10 +450,11 @@ export default function WorkSchedulePage() {
             
             <div className="p-6 space-y-6">
               
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <button onClick={() => setFormData({...formData, shiftType: "REGULAR"})} className={`py-2 rounded-xl border-2 font-bold text-xs transition-all flex flex-col items-center gap-1 ${formData.shiftType === "REGULAR" ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500"}`}><Briefcase className="w-4 h-4" /> {t("work_schedule.work")}</button>
                 <button onClick={() => setFormData({...formData, shiftType: "VACATION"})} className={`py-2 rounded-xl border-2 font-bold text-xs transition-all flex flex-col items-center gap-1 ${formData.shiftType === "VACATION" ? "border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500"}`}><Umbrella className="w-4 h-4" /> {t("work_schedule.vacation")}</button>
                 <button onClick={() => setFormData({...formData, shiftType: "SICK"})} className={`py-2 rounded-xl border-2 font-bold text-xs transition-all flex flex-col items-center gap-1 ${formData.shiftType === "SICK" ? "border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500"}`}><Stethoscope className="w-4 h-4" /> {t("work_schedule.sick_leave")}</button>
+                <button onClick={() => setFormData({...formData, shiftType: "DAY_OFF"})} className={`py-2 rounded-xl border-2 font-bold text-xs transition-all flex flex-col items-center gap-1 ${formData.shiftType === "DAY_OFF" ? "border-slate-500 bg-slate-50 text-slate-700 dark:bg-slate-800/40 dark:text-slate-300" : "border-zinc-200 dark:border-zinc-800 text-zinc-500"}`}><Coffee className="w-4 h-4" /> {t("work_schedule.day_off")}</button>
               </div>
 
               {formData.shiftType === "REGULAR" ? (
@@ -489,7 +497,7 @@ export default function WorkSchedulePage() {
               ) : (
                 <div className="p-8 text-center bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-zinc-200 dark:border-zinc-800 animate-in fade-in">
                   <p className="font-bold text-zinc-600 dark:text-zinc-400">
-                    {t("work_schedule.free_day_notice").replace("{type}", formData.shiftType === "VACATION" ? t("work_schedule.vacation") : t("work_schedule.sick_leave"))}
+                    {t("work_schedule.free_day_notice").replace("{type}", formData.shiftType === "VACATION" ? t("work_schedule.vacation") : formData.shiftType === "DAY_OFF" ? t("work_schedule.day_off") : t("work_schedule.sick_leave"))}
                   </p>
                 </div>
               )}
