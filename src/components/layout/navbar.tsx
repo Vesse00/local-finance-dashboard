@@ -1,18 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Moon, Sun, Bell } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "./mobile-nav";
 import { useLanguage } from "@/components/LanguageProvider";
 
 export function Navbar() {
-  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const { language: lang, setLanguage: setLang } = useLanguage();
 
-  // Zapobiega błędom hydratacji
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -37,50 +34,25 @@ export function Navbar() {
           {/* Przełącznik języka i motywu (Pigułka zbiorcza) */}
           {mounted && (
             <div className="flex items-center gap-1 p-1 border border-green-900/40 bg-black/40 backdrop-blur-md">
-              <div className="flex items-center">
-                <button
-                  onClick={() => setLang("pl")}
-                  className={`px-2 py-1 text-[10px] font-mono font-bold tracking-wider transition-all duration-300 ${
-                    lang === "pl"
-                      ? "bg-green-400/10 text-green-400"
-                      : "text-zinc-600 hover:text-green-500"
-                  }`}
-                >
-                  PL
-                </button>
-                <button
-                  onClick={() => setLang("en")}
-                  className={`px-2 py-1 text-[10px] font-mono font-bold tracking-wider transition-all duration-300 ${
-                    lang === "en"
-                      ? "bg-green-400/10 text-green-400"
-                      : "text-zinc-600 hover:text-green-500"
-                  }`}
-                >
-                  EN
-                </button>
-              </div>
-
-              <div className="w-px h-4 bg-green-900/40 mx-1"></div>
-
               <button
-                onClick={() => setTheme("light")}
-                className={`p-1.5 transition-all duration-300 ${
-                  theme === "light"
-                    ? "text-green-400"
+                onClick={() => setLang("pl")}
+                className={`px-2 py-1 text-[10px] font-mono font-bold tracking-wider transition-all duration-300 ${
+                  lang === "pl"
+                    ? "bg-green-400/10 text-green-400"
                     : "text-zinc-600 hover:text-green-500"
                 }`}
               >
-                <Sun className="h-4 w-4" />
+                PL
               </button>
               <button
-                onClick={() => setTheme("dark")}
-                className={`p-1.5 transition-all duration-300 ${
-                  theme === "dark"
-                    ? "text-green-400"
-                    : "text-zinc-500 hover:text-green-500"
+                onClick={() => setLang("en")}
+                className={`px-2 py-1 text-[10px] font-mono font-bold tracking-wider transition-all duration-300 ${
+                  lang === "en"
+                    ? "bg-green-400/10 text-green-400"
+                    : "text-zinc-600 hover:text-green-500"
                 }`}
               >
-                <Moon className="h-4 w-4" />
+                EN
               </button>
             </div>
           )}

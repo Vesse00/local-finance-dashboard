@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { TrendingDown, TrendingUp, PiggyBank, AlertCircle, ArrowRightLeft, ChevronLeft, ChevronRight, CalendarClock, Calendar, Sparkles } from "lucide-react";
+import { TrendingDown, TrendingUp, AlertCircle, ArrowRightLeft, ChevronLeft, ChevronRight, CalendarClock, Calendar, Sparkles } from "lucide-react";
+import { PixelChart } from "@/components/ui/pixel-icons";
 import { transferToSavings } from "@/lib/actions";
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -261,7 +262,7 @@ export function MainWidget({ currentStats, summaries, currency, payday }: MainWi
             
             <div className="flex flex-col gap-1 items-center md:items-start text-center md:text-left">
               <div className="flex flex-row items-center gap-2 mb-2">
-                <PiggyBank className="w-4 h-4 text-green-800" />
+                <PixelChart className="w-5 h-5 text-green-800" />
                 <p className="text-[10px] font-mono text-green-700 uppercase tracking-widest">
                   {activeData.type === "HISTORY" ? t("dashboard.main.savings_then") : t("dashboard.main.savings_now")}
                 </p>

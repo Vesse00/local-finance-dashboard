@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { CheckCircle2, AlertTriangle, Moon, Sun, X, HeartPulse, MapPin, ThermometerSun, CloudRain } from "lucide-react";
+import { PixelMonitor } from "@/components/ui/pixel-icons";
 import { format } from "date-fns";
 import { pl, enUS } from "date-fns/locale";
 import Link from "next/link";
@@ -115,9 +116,12 @@ export function DailyBriefing({ initialData, currency = "PLN" }: { initialData: 
           
           <div className="space-y-4 lg:w-5/12 flex flex-col justify-between">
             <div className={`transition-opacity duration-500 ${mounted ? "opacity-100" : "opacity-0"}`}>
-              <div className="flex items-center gap-1.5 text-green-700 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">
-                {isEvening ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
-                {t("dashboard.briefing.title")}
+              <div className="flex items-center gap-3 mb-2">
+                <PixelMonitor className="w-8 h-8 text-green-600 shrink-0" />
+                <div className="flex items-center gap-1.5 text-green-700 text-[10px] font-mono font-bold uppercase tracking-wider">
+                  {isEvening ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
+                  {t("dashboard.briefing.title")}
+                </div>
               </div>
               <h1 className="text-2xl md:text-3xl font-mono font-black tracking-tight leading-tight text-white">
                 {isEvening ? t("dashboard.briefing.evening_greeting") : t("dashboard.briefing.morning_greeting")}

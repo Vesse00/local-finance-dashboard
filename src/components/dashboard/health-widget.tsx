@@ -1,6 +1,7 @@
 "use client";
 
 import { Dumbbell, Flame, Droplet, Scale, ArrowRight } from "lucide-react";
+import { PixelHeart } from "@/components/ui/pixel-icons";
 import Link from "next/link";
 import { format } from "date-fns";
 import { pl, enUS } from "date-fns/locale";
@@ -53,10 +54,13 @@ export function HealthWidget({ healthDays, healthEntries }: HealthWidgetProps) {
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <p className="text-[10px] font-mono text-green-700 tracking-widest mb-0.5">{`>`} STATUS</p>
-            <h2 className="text-xs font-mono font-black text-green-500 uppercase tracking-widest">{t("dashboard.health.title")}</h2>
-            <p className="text-sm font-mono uppercase tracking-wider text-zinc-400 mt-0.5">{currentMonthName}</p>
+          <div className="flex items-center gap-3">
+            <PixelHeart className="w-8 h-8 text-green-600 shrink-0" />
+            <div>
+              <p className="text-[10px] font-mono text-green-700 tracking-widest mb-0.5">{`>`} STATUS</p>
+              <h2 className="text-xs font-mono font-black text-green-500 uppercase tracking-widest">{t("dashboard.health.title")}</h2>
+              <p className="text-sm font-mono uppercase tracking-wider text-zinc-400 mt-0.5">{currentMonthName}</p>
+            </div>
           </div>
           <Link href="/health/daily" className="p-2 border border-green-900/40 hover:border-green-700 hover:text-green-400 text-zinc-600 transition-all">
             <ArrowRight className="w-4 h-4" />
