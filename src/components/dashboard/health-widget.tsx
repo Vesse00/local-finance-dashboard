@@ -48,21 +48,21 @@ export function HealthWidget({ healthDays, healthEntries }: HealthWidgetProps) {
   const currentMonthName = format(new Date(), "LLLL", { locale: language === 'pl' ? pl : enUS });
 
   return (
-    <div className="border border-green-900/30 bg-black/40 p-6 md:p-8 flex flex-col justify-between relative overflow-hidden h-full transition-all">
+    <div className="border border-health-muted/30 bg-black/40 p-6 md:p-8 flex flex-col justify-between relative overflow-hidden h-full transition-all">
 
       <div className="flex flex-col h-full">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <PixelHeart className="w-8 h-8 text-green-600 shrink-0" />
+            <PixelHeart className="w-8 h-8 text-health shrink-0" />
             <div>
-              <p className="text-[10px] font-mono text-green-700 tracking-widest mb-0.5">{`>`} STATUS</p>
-              <h2 className="text-xs font-mono font-black text-green-500 uppercase tracking-widest">{t("dashboard.health.title")}</h2>
+              <p className="text-[10px] font-mono text-health-dim tracking-widest mb-0.5">{`>`} STATUS</p>
+              <h2 className="text-xs font-mono font-black text-health uppercase tracking-widest">{t("dashboard.health.title")}</h2>
               <p className="text-sm font-mono uppercase tracking-wider text-zinc-400 mt-0.5">{currentMonthName}</p>
             </div>
           </div>
-          <Link href="/health/daily" className="p-2 border border-green-900/40 hover:border-green-700 hover:text-green-400 text-zinc-600 transition-all">
+          <Link href="/health/daily" className="p-2 border border-health-muted/40 hover:border-health-dim hover:text-health text-zinc-600 transition-all">
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -70,40 +70,40 @@ export function HealthWidget({ healthDays, healthEntries }: HealthWidgetProps) {
         {/* Stats grid (2x2) */}
         <div className="grid grid-cols-2 gap-3 flex-1">
 
-          <div className="border border-green-900/20 bg-green-400/3 p-4 flex flex-col justify-center hover:bg-green-400/5 transition-colors">
-            <div className="flex items-center gap-1.5 text-[10px] font-mono text-green-700 mb-1.5 uppercase tracking-widest">
+          <div className="border border-health-muted/20 bg-health/3 p-4 flex flex-col justify-center hover:bg-health/5 transition-colors">
+            <div className="flex items-center gap-1.5 text-[10px] font-mono text-health-dim mb-1.5 uppercase tracking-widest">
               <Dumbbell className="w-3.5 h-3.5" /> {t("dashboard.health.workouts")}
             </div>
-            <div className="text-2xl font-mono font-black text-green-400">{workouts}</div>
+            <div className="text-2xl font-mono font-black text-health">{workouts}</div>
           </div>
 
-          <div className="border border-green-900/20 bg-green-400/3 p-4 flex flex-col justify-center hover:bg-green-400/5 transition-colors">
-            <div className="flex items-center gap-1.5 text-[10px] font-mono text-green-700 mb-1.5 uppercase tracking-widest">
+          <div className="border border-health-muted/20 bg-health/3 p-4 flex flex-col justify-center hover:bg-health/5 transition-colors">
+            <div className="flex items-center gap-1.5 text-[10px] font-mono text-health-dim mb-1.5 uppercase tracking-widest">
               <Scale className="w-3.5 h-3.5" /> {t("dashboard.health.weight")}
             </div>
             <div className="flex items-baseline gap-1">
-              <div className="text-2xl font-mono font-black text-green-400">{latestWeight > 0 ? latestWeight : "--"}</div>
-              {latestWeight > 0 && <span className="text-[10px] font-mono text-green-800">kg</span>}
+              <div className="text-2xl font-mono font-black text-health">{latestWeight > 0 ? latestWeight : "--"}</div>
+              {latestWeight > 0 && <span className="text-[10px] font-mono text-health-muted">kg</span>}
             </div>
           </div>
 
-          <div className="border border-green-900/20 bg-green-400/3 p-4 flex flex-col justify-center hover:bg-green-400/5 transition-colors">
-            <div className="flex items-center gap-1.5 text-[10px] font-mono text-green-700 mb-1.5 uppercase tracking-widest">
+          <div className="border border-health-muted/20 bg-health/3 p-4 flex flex-col justify-center hover:bg-health/5 transition-colors">
+            <div className="flex items-center gap-1.5 text-[10px] font-mono text-health-dim mb-1.5 uppercase tracking-widest">
               <Flame className="w-3.5 h-3.5" /> {t("dashboard.health.avg_calories")}
             </div>
             <div className="flex items-baseline gap-1">
-              <div className="text-2xl font-mono font-black text-green-400">{avgCalories}</div>
-              <span className="text-[10px] font-mono text-green-800 uppercase">kcal</span>
+              <div className="text-2xl font-mono font-black text-health">{avgCalories}</div>
+              <span className="text-[10px] font-mono text-health-muted uppercase">kcal</span>
             </div>
           </div>
 
-          <div className="border border-green-900/20 bg-green-400/3 p-4 flex flex-col justify-center hover:bg-green-400/5 transition-colors">
-            <div className="flex items-center gap-1.5 text-[10px] font-mono text-green-700 mb-1.5 uppercase tracking-widest">
+          <div className="border border-health-muted/20 bg-health/3 p-4 flex flex-col justify-center hover:bg-health/5 transition-colors">
+            <div className="flex items-center gap-1.5 text-[10px] font-mono text-health-dim mb-1.5 uppercase tracking-widest">
               <Droplet className="w-3.5 h-3.5" /> {t("dashboard.health.avg_water")}
             </div>
             <div className="flex items-baseline gap-1">
-              <div className="text-2xl font-mono font-black text-green-400">{avgWater}</div>
-              <span className="text-[10px] font-mono text-green-800 uppercase">{t("dashboard.health.glasses")}</span>
+              <div className="text-2xl font-mono font-black text-health">{avgWater}</div>
+              <span className="text-[10px] font-mono text-health-muted uppercase">{t("dashboard.health.glasses")}</span>
             </div>
           </div>
 

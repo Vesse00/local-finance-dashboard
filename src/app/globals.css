@@ -29,6 +29,23 @@
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+
+  /* ── Widget semantic color tokens ───────────────────────────
+     Change a single line here to retheme an entire widget.
+     All Tailwind opacity modifiers (/30, /5, etc.) work automatically. */
+  --color-health:    var(--color-cyan-400);
+  --color-health-dim:   var(--color-cyan-700);
+  --color-health-muted: var(--color-cyan-900);
+
+  --color-work:    var(--color-amber-400);
+  --color-work-dim:   var(--color-amber-700);
+  --color-work-muted: var(--color-amber-900);
+
+  --color-briefing:    var(--color-violet-400);
+  --color-briefing-dim:   var(--color-violet-700);
+  --color-briefing-muted: var(--color-violet-900);
+
+  /* Finance widget stays green (uses default green-* palette) */
 }
 
 @layer base {

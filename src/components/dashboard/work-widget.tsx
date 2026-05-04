@@ -78,54 +78,54 @@ export function WorkWidget({ workDays }: WorkWidgetProps) {
   const currentMonthName = format(now, "LLLL", { locale: language === 'pl' ? pl : enUS });
 
   return (
-    <div className="border border-green-900/30 bg-black/40 p-6 md:p-8 flex flex-col justify-between relative overflow-hidden h-full transition-all">
+    <div className="border border-work-muted/30 bg-black/40 p-6 md:p-8 flex flex-col justify-between relative overflow-hidden h-full transition-all">
       
       <div className="relative flex flex-col h-full">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <PixelClock className="w-8 h-8 text-green-600 shrink-0" />
+            <PixelClock className="w-8 h-8 text-work-dim shrink-0" />
             <div>
-              <p className="text-[10px] font-mono text-green-700 tracking-widest mb-0.5">{`>`} STATUS</p>
-              <h2 className="text-xs font-mono font-black text-green-500 uppercase tracking-widest">{t("dashboard.work.title")}</h2>
+              <p className="text-[10px] font-mono text-work-dim tracking-widest mb-0.5">{`>`} STATUS</p>
+              <h2 className="text-xs font-mono font-black text-work uppercase tracking-widest">{t("dashboard.work.title")}</h2>
               <p className="text-sm font-mono uppercase tracking-wider text-zinc-400 mt-0.5">{currentMonthName}</p>
             </div>
           </div>
-          <Link href="/work-schedule" className="p-2 border border-green-900/40 hover:border-green-700 hover:text-green-400 text-zinc-600 transition-all">
+          <Link href="/work-schedule" className="p-2 border border-work-muted/40 hover:border-work-dim hover:text-work text-zinc-600 transition-all">
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
         {/* Hours counter */}
         <div className="flex items-end gap-2 mb-6 flex-1">
-          <div className={`text-6xl font-mono font-black tracking-tighter transition-colors ${isGoalReached ? "text-green-400" : "text-green-600"}`}>
+          <div className={`text-6xl font-mono font-black tracking-tighter transition-colors ${isGoalReached ? "text-work" : "text-work-dim"}`}>
             {workedHoursUpToToday % 1 !== 0 ? workedHoursUpToToday.toFixed(1) : workedHoursUpToToday}
           </div>
-          <div className="text-lg font-mono text-green-900 mb-1.5">/ {totalMonthlyGoal}h</div>
+          <div className="text-lg font-mono text-work-muted mb-1.5">/ {totalMonthlyGoal}h</div>
         </div>
 
         {/* Progress bar */}
-        <div className="w-full h-1.5 bg-green-900/20 overflow-hidden mb-6">
+        <div className="w-full h-1.5 bg-work-muted/20 overflow-hidden mb-6">
           <div
-            className={`h-full transition-all duration-1000 ease-out ${isGoalReached ? "bg-green-400" : "bg-green-700"}`}
+            className={`h-full transition-all duration-1000 ease-out ${isGoalReached ? "bg-work" : "bg-work-dim"}`}
             style={{ width: `${progressPercent}%` }}
           />
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 border-t border-green-900/20 pt-5 mt-auto">
+        <div className="grid grid-cols-3 gap-2 border-t border-work-muted/20 pt-5 mt-auto">
           <div className="flex flex-col">
-            <span className="text-[10px] font-mono text-green-700 uppercase tracking-wider flex items-center gap-1.5 mb-1.5"><Zap className="w-3.5 h-3.5" /> {t("dashboard.work.overtime")}</span>
-            <span className="text-lg font-mono font-black text-green-400">{overtimeHours}h</span>
+            <span className="text-[10px] font-mono text-work-dim uppercase tracking-wider flex items-center gap-1.5 mb-1.5"><Zap className="w-3.5 h-3.5" /> {t("dashboard.work.overtime")}</span>
+            <span className="text-lg font-mono font-black text-work">{overtimeHours}h</span>
           </div>
-          <div className="flex flex-col border-l border-green-900/20 pl-3">
-            <span className="text-[10px] font-mono text-green-700 uppercase tracking-wider flex items-center gap-1.5 mb-1.5"><Umbrella className="w-3.5 h-3.5" /> {t("dashboard.work.vacation")}</span>
-            <span className="text-lg font-mono font-black text-green-400">{vacationDays} <span className="text-xs font-mono text-green-900 lowercase">{t("dashboard.work.days")}</span></span>
+          <div className="flex flex-col border-l border-work-muted/20 pl-3">
+            <span className="text-[10px] font-mono text-work-dim uppercase tracking-wider flex items-center gap-1.5 mb-1.5"><Umbrella className="w-3.5 h-3.5" /> {t("dashboard.work.vacation")}</span>
+            <span className="text-lg font-mono font-black text-work">{vacationDays} <span className="text-xs font-mono text-work-muted lowercase">{t("dashboard.work.days")}</span></span>
           </div>
-          <div className="flex flex-col border-l border-green-900/20 pl-3">
-            <span className="text-[10px] font-mono text-green-700 uppercase tracking-wider flex items-center gap-1.5 mb-1.5"><Stethoscope className="w-3.5 h-3.5" /> {t("dashboard.work.sick_leave")}</span>
-            <span className="text-lg font-mono font-black text-green-400">{sickDays} <span className="text-xs font-mono text-green-900 lowercase">{t("dashboard.work.days")}</span></span>
+          <div className="flex flex-col border-l border-work-muted/20 pl-3">
+            <span className="text-[10px] font-mono text-work-dim uppercase tracking-wider flex items-center gap-1.5 mb-1.5"><Stethoscope className="w-3.5 h-3.5" /> {t("dashboard.work.sick_leave")}</span>
+            <span className="text-lg font-mono font-black text-work">{sickDays} <span className="text-xs font-mono text-work-muted lowercase">{t("dashboard.work.days")}</span></span>
           </div>
         </div>
       </div>

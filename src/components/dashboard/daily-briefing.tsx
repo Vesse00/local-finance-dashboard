@@ -110,15 +110,15 @@ export function DailyBriefing({ initialData, currency = "PLN" }: { initialData: 
 
   return (
     <>
-      <div className="border border-green-900/30 bg-black/60 p-6 md:p-8 relative overflow-hidden mb-6">
+      <div className="border border-briefing-muted/30 bg-black/60 p-6 md:p-8 relative overflow-hidden mb-6">
 
         <div className="relative z-10 flex flex-col lg:flex-row justify-between gap-8">
           
           <div className="space-y-4 lg:w-5/12 flex flex-col justify-between">
             <div className={`transition-opacity duration-500 ${mounted ? "opacity-100" : "opacity-0"}`}>
               <div className="flex items-center gap-3 mb-2">
-                <PixelMonitor className="w-8 h-8 text-green-600 shrink-0" />
-                <div className="flex items-center gap-1.5 text-green-700 text-[10px] font-mono font-bold uppercase tracking-wider">
+                <PixelMonitor className="w-8 h-8 text-briefing-dim shrink-0" />
+                <div className="flex items-center gap-1.5 text-briefing-dim text-[10px] font-mono font-bold uppercase tracking-wider">
                   {isEvening ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
                   {t("dashboard.briefing.title")}
                 </div>
@@ -127,9 +127,9 @@ export function DailyBriefing({ initialData, currency = "PLN" }: { initialData: 
                 {isEvening ? t("dashboard.briefing.evening_greeting") : t("dashboard.briefing.morning_greeting")}
               </h1>
               <div className="flex flex-wrap items-center gap-3 mt-1.5 min-h-[30px]">
-                <p className="text-green-700 text-xs font-mono capitalize">{dateString}</p>
+                <p className="text-briefing-dim text-xs font-mono capitalize">{dateString}</p>
                 {isEvening && (
-                  <Link href="/health/energy" className="flex items-center gap-1.5 border border-green-900/50 hover:border-green-700 bg-green-400/5 hover:bg-green-400/10 px-2.5 py-1 transition-all text-[10px] font-mono text-green-600 hover:text-green-400">
+                  <Link href="/health/energy" className="flex items-center gap-1.5 border border-briefing-muted/50 hover:border-briefing-dim bg-briefing/5 hover:bg-briefing/10 px-2.5 py-1 transition-all text-[10px] font-mono text-briefing-dim hover:text-briefing">
                     <HeartPulse className="w-3.5 h-3.5" />
                     {t("dashboard.briefing.how_was_day")}
                   </Link>
@@ -139,37 +139,37 @@ export function DailyBriefing({ initialData, currency = "PLN" }: { initialData: 
 
             <div className="pt-2">
               {!data.userLocation ? (
-                <Link href="/settings?tab=utilities" className="inline-flex items-center gap-2 border border-green-900/40 hover:border-green-700 bg-black/20 hover:bg-green-400/5 px-4 py-2.5 transition-all text-xs font-mono text-green-700 hover:text-green-500">
+                <Link href="/settings?tab=utilities" className="inline-flex items-center gap-2 border border-briefing-muted/40 hover:border-briefing-dim bg-black/20 hover:bg-briefing/5 px-4 py-2.5 transition-all text-xs font-mono text-briefing-dim hover:text-briefing">
                   <MapPin className="w-4 h-4" /> {t("dashboard.briefing.setup_city")}
                 </Link>
               ) : activeWeather && weatherDetails ? (
                 <div className="flex flex-col gap-2">
-                  <span className={`text-[10px] font-mono text-green-800 uppercase tracking-widest pl-1 transition-opacity duration-500 ${mounted ? "opacity-100" : "opacity-0"}`}>
-                    {isEvening ? t("dashboard.briefing.tomorrow_in") : t("dashboard.briefing.today_in")} <span className="text-green-600">{data.weather.city}</span>
+                  <span className={`text-[10px] font-mono text-briefing-muted uppercase tracking-widest pl-1 transition-opacity duration-500 ${mounted ? "opacity-100" : "opacity-0"}`}>
+                    {isEvening ? t("dashboard.briefing.tomorrow_in") : t("dashboard.briefing.today_in")} <span className="text-briefing-dim">{data.weather.city}</span>
                   </span>
                   <div className="flex flex-wrap items-stretch gap-3">
-                    <div className="flex items-center gap-3 border border-green-900/30 bg-black/30 px-4 py-2.5 h-full">
-                      <ThermometerSun className="w-5 h-5 text-green-700" />
+                    <div className="flex items-center gap-3 border border-briefing-muted/30 bg-black/30 px-4 py-2.5 h-full">
+                      <ThermometerSun className="w-5 h-5 text-briefing-dim" />
                       <div className="flex items-center gap-3">
                         <div className="flex flex-col items-center leading-none">
                           <span className="text-sm font-mono font-black text-white">{activeWeather.maxTemp}°C</span>
-                          <span className="text-[9px] text-green-800 font-mono uppercase tracking-wider mt-0.5">{t("dashboard.briefing.day")}</span>
+                          <span className="text-[9px] text-briefing-muted font-mono uppercase tracking-wider mt-0.5">{t("dashboard.briefing.day")}</span>
                         </div>
-                        <div className="w-px h-6 bg-green-900/50"></div>
+                        <div className="w-px h-6 bg-briefing-muted/50"></div>
                         <div className="flex flex-col items-center leading-none">
-                          <span className="text-sm font-mono font-black text-green-600">{activeWeather.minTemp}°C</span>
-                          <span className="text-[9px] text-green-900 font-mono uppercase tracking-wider mt-0.5">{t("dashboard.briefing.night")}</span>
+                          <span className="text-sm font-mono font-black text-briefing-dim">{activeWeather.minTemp}°C</span>
+                          <span className="text-[9px] text-briefing-muted font-mono uppercase tracking-wider mt-0.5">{t("dashboard.briefing.night")}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2.5 border border-green-900/30 bg-black/30 px-4 py-2.5 h-full">
+                    <div className="flex items-center gap-2.5 border border-briefing-muted/30 bg-black/30 px-4 py-2.5 h-full">
                       <span className="text-2xl leading-none">{weatherDetails.icon}</span>
-                      <span className="text-xs font-mono text-green-500">{weatherDetails.text}</span>
+                      <span className="text-xs font-mono text-briefing">{weatherDetails.text}</span>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="text-xs text-green-800 font-mono flex items-center gap-2 border border-green-900/30 bg-black/20 px-4 py-2 w-fit">
+                <div className="text-xs text-briefing-muted font-mono flex items-center gap-2 border border-briefing-muted/30 bg-black/20 px-4 py-2 w-fit">
                   <CloudRain className="w-4 h-4" /> {t("dashboard.briefing.no_forecast")}
                 </div>
               )}
@@ -179,16 +179,16 @@ export function DailyBriefing({ initialData, currency = "PLN" }: { initialData: 
 
           <div className="lg:w-7/12 flex flex-col gap-2.5 justify-center">
             {displayItems.length === 0 ? (
-              <div className="border border-green-900/30 bg-black/20 py-3 px-4 flex items-center gap-3">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
+              <div className="border border-briefing-muted/30 bg-black/20 py-3 px-4 flex items-center gap-3">
+                <CheckCircle2 className="w-5 h-5 text-briefing-dim" />
                 <div>
                   <p className="text-sm font-mono text-white">{t("dashboard.briefing.all_good")}</p>
-                  <p className="text-xs font-mono text-green-800">{t("dashboard.briefing.no_notifications")}</p>
+                  <p className="text-xs font-mono text-briefing-muted">{t("dashboard.briefing.no_notifications")}</p>
                 </div>
               </div>
             ) : (
               displayItems.slice(0, 4).map((item, idx) => (
-                <div key={idx} className={`border py-2.5 px-4 flex items-center justify-between transition-all hover:bg-green-400/5 ${item.priority === "high" ? "border-red-900/50 bg-red-900/10" : "border-green-900/20 bg-black/20"}`}>
+                <div key={idx} className={`border py-2.5 px-4 flex items-center justify-between transition-all hover:bg-briefing/5 ${item.priority === "high" ? "border-red-900/50 bg-red-900/10" : "border-briefing-muted/20 bg-black/20"}`}>
                   <div className="flex items-center gap-3 truncate pr-2">
                     <div className="text-xl flex-shrink-0">{item.icon}</div>
                     <p className={`font-mono text-sm truncate ${item.priority === "high" ? "text-red-400" : "text-zinc-300"}`}>
