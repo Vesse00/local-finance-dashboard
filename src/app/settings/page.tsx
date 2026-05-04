@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Shield, Mail, Lock, CheckCircle2, AlertCircle, Save, KeyRound, Pencil, Eye, EyeOff, MapPin, Wrench, Settings, Trash2, AlertTriangle } from "lucide-react";
+import { Shield, Mail, Lock, CheckCircle2, AlertCircle, KeyRound, Pencil, Eye, EyeOff, MapPin, Wrench, Settings, Trash2, AlertTriangle } from "lucide-react";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<"security" | "utilities" | "danger">("security");
@@ -152,62 +152,52 @@ export default function SettingsPage() {
   return (
     <div className="flex-1 p-6 md:p-8 max-w-4xl mx-auto w-full space-y-8 relative z-10">
       
-      {/* NAGŁÓWEK */}
-      <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-zinc-800 dark:to-zinc-900 border border-zinc-200 dark:border-zinc-800/50 rounded-3xl p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
-        <div className="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
-          <Settings className="w-64 h-64 text-white" />
+      {/* HEADER */}
+      <div className="border border-green-900/30 bg-black/40 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden">
+        <div>
+          <p className="text-[10px] font-mono text-green-700 tracking-widest mb-1">{`>`} SYSTEM_CONFIG</p>
+          <h1 className="text-2xl font-mono font-black text-white">Ustawienia Aplikacji</h1>
+          <p className="text-green-800 font-mono text-xs mt-1">{'// Zarządzaj bezpieczeństwem i preferencjami systemu'}</p>
         </div>
-        
-        <div className="flex items-center gap-6 z-10">
-          <div className="bg-white/10 p-4 rounded-2xl shadow-sm backdrop-blur-md">
-            <Settings className="w-10 h-10 text-white" />
-          </div>
-          <div>
-            <span className="px-3 py-1 bg-white/10 rounded-lg text-xs font-bold uppercase tracking-wider mb-2 inline-block text-zinc-300">
-              Konfiguracja
-            </span>
-            <h1 className="text-3xl font-black text-white">Ustawienia Aplikacji</h1>
-            <p className="text-zinc-400 mt-1 text-sm max-w-md">Zarządzaj swoimi danymi, bezpieczeństwem i preferencjami Asystenta.</p>
-          </div>
-        </div>
+        <Settings className="w-8 h-8 text-green-900/50" />
       </div>
 
-      {/* BARDZIEJ ZAUWAŻALNE ZAKŁADKI (TABS) */}
-      <div className="flex flex-col sm:flex-row p-2 bg-zinc-200/50 dark:bg-zinc-900/80 border border-zinc-300/50 dark:border-zinc-800/50 rounded-2xl w-full sm:w-fit backdrop-blur-xl shadow-inner gap-2">
-        <button 
+      {/* TABS */}
+      <div className="flex flex-col sm:flex-row border border-green-900/30 bg-black/20 w-full sm:w-fit">
+        <button
           onClick={() => { setActiveTab("security"); setStatus("idle"); setMessage(""); }}
-          className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-black text-sm transition-all duration-300 ${
-            activeTab === "security" 
-              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/25 scale-100" 
-              : "bg-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-white/50 dark:hover:bg-zinc-800/50"
+          className={`flex items-center justify-center gap-2 px-6 py-3 font-mono text-sm transition-all ${
+            activeTab === "security"
+              ? "bg-green-400/10 text-green-400 border-b-2 sm:border-b-0 sm:border-l-2 border-green-500"
+              : "text-zinc-600 hover:text-green-600 hover:bg-green-400/5"
           }`}
         >
-          <Shield className="w-4 h-4" /> Zabezpieczenia Konta
+          <Shield className="w-4 h-4" /> [SECURITY]
         </button>
-        <button 
+        <button
           onClick={() => { setActiveTab("utilities"); setStatus("idle"); setMessage(""); }}
-          className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-black text-sm transition-all duration-300 ${
-            activeTab === "utilities" 
-              ? "bg-purple-500 text-white shadow-lg shadow-purple-500/25 scale-100" 
-              : "bg-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-white/50 dark:hover:bg-zinc-800/50"
+          className={`flex items-center justify-center gap-2 px-6 py-3 font-mono text-sm transition-all ${
+            activeTab === "utilities"
+              ? "bg-green-400/10 text-green-400 border-b-2 sm:border-b-0 sm:border-l-2 border-green-500"
+              : "text-zinc-600 hover:text-green-600 hover:bg-green-400/5"
           }`}
         >
-          <Wrench className="w-4 h-4" /> System & Utilities
+          <Wrench className="w-4 h-4" /> [UTILITIES]
         </button>
-        <button 
+        <button
           onClick={() => { setActiveTab("danger"); setStatus("idle"); setMessage(""); }}
-          className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-black text-sm transition-all duration-300 ${
-            activeTab === "danger" 
-              ? "bg-red-500 text-white shadow-lg shadow-red-500/25 scale-100" 
-              : "bg-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-white/50 dark:hover:bg-zinc-800/50"
+          className={`flex items-center justify-center gap-2 px-6 py-3 font-mono text-sm transition-all ${
+            activeTab === "danger"
+              ? "bg-red-900/20 text-red-500 border-b-2 sm:border-b-0 sm:border-l-2 border-red-600"
+              : "text-zinc-600 hover:text-red-600 hover:bg-red-900/10"
           }`}
         >
-          <AlertTriangle className="w-4 h-4" /> Danger Zone
+          <AlertTriangle className="w-4 h-4" /> [DANGER]
         </button>
       </div>
 
-      {/* GŁÓWNY KONTENER */}
-      <div className="bg-white/40 dark:bg-black/20 backdrop-blur-lg border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] overflow-hidden transition-all duration-500">
+      {/* MAIN CONTAINER */}
+      <div className="border border-green-900/30 bg-black/20 overflow-hidden transition-all duration-500">
         
         {/* ======================================= */}
         {/* TAB 1: ZABEZPIECZENIA                   */}
@@ -217,25 +207,25 @@ export default function SettingsPage() {
             <div className="p-6 md:p-8 space-y-8">
               
               <div className="space-y-4">
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-white/40 dark:border-zinc-800 pb-2">
-                  <Mail className="w-5 h-5 text-indigo-500" /> Adres E-mail
+                <h2 className="text-xs font-mono font-black text-green-600 uppercase tracking-widest flex items-center gap-2 border-b border-green-900/30 pb-2">
+                  <Mail className="w-4 h-4" /> {'// ADRES_EMAIL'}
                 </h2>
                 <div className="space-y-2 group max-w-md">
                   <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center justify-between">
                     <span>Twój E-mail</span>
-                    {isEditingEmail && <span className="text-indigo-500 text-[10px]">Tryb edycji</span>}
+                    {isEditingEmail && <span className="text-green-600 text-[10px] font-mono">EDITING_MODE</span>}
                   </label>
                   <div className="relative flex items-center">
                     <input 
                       type="email" name="newEmail" value={formData.newEmail} onChange={handleChange} readOnly={!isEditingEmail}
-                      className={`w-full p-4 pr-12 rounded-xl outline-none font-bold transition-all ${
-                        isEditingEmail 
-                          ? "bg-white dark:bg-zinc-900 border-2 border-indigo-500 text-zinc-900 dark:text-white shadow-sm" 
-                          : "bg-white/50 dark:bg-zinc-900/50 border-2 border-transparent text-zinc-500"
+                      className={`w-full p-4 pr-12 font-mono outline-none transition-all ${
+                        isEditingEmail
+                          ? "bg-black/40 border-2 border-green-600 text-white"
+                          : "bg-black/20 border border-green-900/30 text-zinc-600"
                       }`} 
                     />
                     {!isEditingEmail && (
-                      <button type="button" onClick={() => setIsEditingEmail(true)} className="absolute right-4 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-indigo-500">
+                      <button type="button" onClick={() => setIsEditingEmail(true)} className="absolute right-4 text-zinc-600 opacity-0 group-hover:opacity-100 transition-opacity hover:text-green-500">
                         <Pencil className="w-5 h-5" />
                       </button>
                     )}
@@ -244,30 +234,30 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-4 pt-4">
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-white/40 dark:border-zinc-800 pb-2">
-                  <KeyRound className="w-5 h-5 text-emerald-500" /> Zmiana Hasła
+                <h2 className="text-xs font-mono font-black text-green-600 uppercase tracking-widest flex items-center gap-2 border-b border-green-900/30 pb-2">
+                  <KeyRound className="w-4 h-4" /> {'// ZMIANA_HASLA'}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Nowe hasło</label>
                     <div className="relative flex items-center">
                       {/* PRZYWRÓCONY PLACEHOLDER */}
-                      <input type={showNewPassword ? "text" : "password"} name="newPassword" placeholder="Minimum 6 znaków" value={formData.newPassword} onChange={handleChange} className="w-full p-4 pr-12 bg-white/60 dark:bg-zinc-900 border border-white/40 dark:border-zinc-800 rounded-xl outline-none focus:border-emerald-500 font-bold text-zinc-900 dark:text-white transition-colors" />
-                      <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-4 text-zinc-400 hover:text-emerald-500"><Eye className="w-5 h-5" /></button>
+                      <input type={showNewPassword ? "text" : "password"} name="newPassword" placeholder="Minimum 6 znaków" value={formData.newPassword} onChange={handleChange} className="w-full p-4 pr-12 bg-black/30 border border-green-900/40 font-mono outline-none focus:border-green-600 text-white transition-colors" />
+                      <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-4 text-zinc-600 hover:text-green-500"><Eye className="w-5 h-5" /></button>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Powtórz nowe hasło</label>
                     <div className="relative flex items-center">
                       {/* PRZYWRÓCONY PLACEHOLDER */}
-                      <input type={showConfirmPassword ? "text" : "password"} name="confirmPassword" placeholder="Powtórz nowe hasło" value={formData.confirmPassword} onChange={handleChange} className="w-full p-4 pr-12 bg-white/60 dark:bg-zinc-900 border border-white/40 dark:border-zinc-800 rounded-xl outline-none focus:border-emerald-500 font-bold text-zinc-900 dark:text-white transition-colors" />
-                      <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-4 text-zinc-400 hover:text-emerald-500"><Eye className="w-5 h-5" /></button>
+                      <input type={showConfirmPassword ? "text" : "password"} name="confirmPassword" placeholder="Powtórz nowe hasło" value={formData.confirmPassword} onChange={handleChange} className="w-full p-4 pr-12 bg-black/30 border border-green-900/40 font-mono outline-none focus:border-green-600 text-white transition-colors" />
+                      <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-4 text-zinc-600 hover:text-green-500"><Eye className="w-5 h-5" /></button>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="p-6 bg-red-50/80 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl space-y-4 max-w-2xl">
+              <div className="p-5 border border-red-900/40 bg-red-900/10 space-y-4 max-w-2xl">
                 <div className="flex items-start gap-3 text-red-600 dark:text-red-400">
                   <AlertCircle className="w-5 h-5 mt-0.5" />
                   <div>
@@ -278,17 +268,17 @@ export default function SettingsPage() {
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-red-400" />
                   {/* PRZYWRÓCONY PLACEHOLDER */}
-                  <input type={showCurrentPassword ? "text" : "password"} name="currentPassword" placeholder="Wpisz obecne hasło..." required value={formData.currentPassword} onChange={handleChange} className="w-full p-4 pl-12 pr-12 bg-white dark:bg-zinc-950 border border-red-200 dark:border-red-500/30 rounded-xl outline-none focus:border-red-500 font-bold text-zinc-900 dark:text-white transition-colors" />
+                  <input type={showCurrentPassword ? "text" : "password"} name="currentPassword" placeholder="Wpisz obecne hasło..." required value={formData.currentPassword} onChange={handleChange} className="w-full p-4 pl-12 pr-12 bg-black/30 border border-red-900/40 font-mono outline-none focus:border-red-600 text-white transition-colors" />
                 </div>
               </div>
 
-              {status === "error" && <div className="p-4 bg-red-500/10 text-red-500 text-sm font-bold rounded-xl flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {message}</div>}
-              {status === "success" && <div className="p-4 bg-emerald-500/10 text-emerald-500 text-sm font-bold rounded-xl flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> {message}</div>}
+              {status === "error" && <div className="p-4 border border-red-900/50 bg-red-900/10 text-red-500 text-xs font-mono flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {message}</div>}
+              {status === "success" && <div className="p-4 border border-green-900/50 bg-green-900/10 text-green-500 text-xs font-mono flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> {message}</div>}
             </div>
 
-            <div className="p-6 bg-white/50 dark:bg-zinc-900/30 border-t border-white/40 dark:border-zinc-800 flex justify-end">
-              <button type="submit" disabled={status === "saving" || !formData.currentPassword} className="px-8 py-3.5 rounded-xl font-bold text-white bg-indigo-500 hover:bg-indigo-600 shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-50">
-                {status === "saving" ? "Zapisywanie..." : "Zapisz zabezpieczenia"}
+            <div className="p-6 bg-black/20 border-t border-green-900/20 flex justify-end">
+              <button type="submit" disabled={status === "saving" || !formData.currentPassword} className="px-8 py-3 font-mono text-xs uppercase tracking-wider text-green-400 border border-green-700 bg-green-400/10 hover:bg-green-400/20 transition-all disabled:opacity-40">
+                {status === "saving" ? "SAVING..." : "> SAVE_SECURITY"}
               </button>
             </div>
           </form>
@@ -302,8 +292,8 @@ export default function SettingsPage() {
             <div className="p-6 md:p-8 space-y-8">
               
               <div className="space-y-4">
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-white/40 dark:border-zinc-800 pb-2">
-                  <MapPin className="w-5 h-5 text-purple-500" /> Lokalizacja i Pogoda
+                <h2 className="text-xs font-mono font-black text-green-600 uppercase tracking-widest flex items-center gap-2 border-b border-green-900/30 pb-2">
+                  <MapPin className="w-4 h-4" /> {'// LOKALIZACJA_POGODA'}
                 </h2>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl">
                   Podaj swoją miejscowość, aby Asystent w Daily Briefingu mógł rano i wieczorem informować Cię o prognozie pogody (korzystamy z darmowego API, nie potrzebujesz klucza!).
@@ -311,29 +301,29 @@ export default function SettingsPage() {
                 
                 <div className="space-y-2 max-w-md pt-2">
                   <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Miasto (np. Poznań, Warszawa)</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Wpisz miasto..."
-                    value={location} 
+                    value={location}
                     onChange={(e) => { setLocation(e.target.value); setStatus("idle"); setMessage(""); }}
-                    className="w-full p-4 bg-white/60 dark:bg-zinc-900 border border-white/40 dark:border-zinc-800 rounded-xl outline-none focus:border-purple-500 font-bold text-zinc-900 dark:text-white transition-colors" 
+                    className="w-full p-4 bg-black/30 border border-green-900/40 font-mono outline-none focus:border-green-600 text-white transition-colors"
                   />
                 </div>
               </div>
 
               <div className="space-y-4 pt-4">
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-white/40 dark:border-zinc-800 pb-2">
-                  <span className="w-5 h-5 flex items-center justify-center font-bold text-purple-500 rounded-full border border-purple-500 text-xs">$</span> Główna Waluta
+                <h2 className="text-xs font-mono font-black text-green-600 uppercase tracking-widest flex items-center gap-2 border-b border-green-900/30 pb-2">
+                  <span className="font-mono text-green-700">$</span> {'// WALUTA'}
                 </h2>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl">
                   Wybierz domyślną walutę, w której aplikacja będzie wyświetlać wprowadzane i statystyczne dane o Twoich finansach.
                 </p>
                 <div className="space-y-2 max-w-md pt-2">
                   <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Twoja waluta</label>
-                  <select 
-                    value={currency} 
+                  <select
+                    value={currency}
                     onChange={(e) => { setCurrency(e.target.value); setStatus("idle"); setMessage(""); }}
-                    className="w-full p-4 bg-white/60 dark:bg-zinc-900 border border-white/40 dark:border-zinc-800 rounded-xl outline-none focus:border-purple-500 font-bold text-zinc-900 dark:text-white transition-colors cursor-pointer"
+                    className="w-full p-4 bg-black/30 border border-green-900/40 font-mono outline-none focus:border-green-600 text-white transition-colors cursor-pointer"
                   >
                     <option value="PLN">PLN - Polski Złoty</option>
                     <option value="EUR">EUR - Euro</option>
@@ -346,18 +336,18 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-4 pt-4">
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-white/40 dark:border-zinc-800 pb-2">
-                  <span className="w-5 h-5 flex items-center justify-center font-bold text-purple-500 rounded-full border border-purple-500 text-xs">D</span> Dzień Wypłaty
+                <h2 className="text-xs font-mono font-black text-green-600 uppercase tracking-widest flex items-center gap-2 border-b border-green-900/30 pb-2">
+                  <span className="font-mono text-green-700">D</span> {'// DZIEN_WYPLATY'}
                 </h2>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl">
                   Wybierz dzień miesiąca, w którym najczęściej otrzymujesz wypłatę. Dzięki temu system odpowiednio wcześnie wyśle powiadomienia i uaktualni status budżetu na dany miesiąc.
                 </p>
                 <div className="space-y-2 max-w-md pt-2">
                   <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Dzień wypłaty</label>
-                  <select 
-                    value={payday} 
+                  <select
+                    value={payday}
                     onChange={(e) => { setPayday(Number(e.target.value)); setStatus("idle"); setMessage(""); }}
-                    className="w-full p-4 bg-white/60 dark:bg-zinc-900 border border-white/40 dark:border-zinc-800 rounded-xl outline-none focus:border-purple-500 font-bold text-zinc-900 dark:text-white transition-colors cursor-pointer"
+                    className="w-full p-4 bg-black/30 border border-green-900/40 font-mono outline-none focus:border-green-600 text-white transition-colors cursor-pointer"
                   >
                     {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
                       <option key={day} value={day}>
@@ -368,13 +358,13 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {status === "error" && <div className="p-4 bg-red-500/10 text-red-500 text-sm font-bold rounded-xl flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {message}</div>}
-              {status === "success" && <div className="p-4 bg-emerald-500/10 text-emerald-500 text-sm font-bold rounded-xl flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> {message}</div>}
+              {status === "error" && <div className="p-4 border border-red-900/50 bg-red-900/10 text-red-500 text-xs font-mono flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {message}</div>}
+              {status === "success" && <div className="p-4 border border-green-900/50 bg-green-900/10 text-green-500 text-xs font-mono flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> {message}</div>}
             </div>
 
-            <div className="p-6 bg-white/50 dark:bg-zinc-900/30 border-t border-white/40 dark:border-zinc-800 flex justify-end">
-              <button type="submit" disabled={status === "saving"} className="px-8 py-3.5 rounded-xl font-bold text-white bg-purple-500 hover:bg-purple-600 shadow-lg shadow-purple-500/20 transition-all disabled:opacity-50">
-                {status === "saving" ? "Zapisywanie..." : "Zapisz preferencje"}
+            <div className="p-6 bg-black/20 border-t border-green-900/20 flex justify-end">
+              <button type="submit" disabled={status === "saving"} className="px-8 py-3 font-mono text-xs uppercase tracking-wider text-green-400 border border-green-700 bg-green-400/10 hover:bg-green-400/20 transition-all disabled:opacity-40">
+                {status === "saving" ? "SAVING..." : "> SAVE_UTILITIES"}
               </button>
             </div>
           </form>
@@ -388,36 +378,35 @@ export default function SettingsPage() {
     <div className="p-6 md:p-8 space-y-8">
       
       <div className="space-y-4">
-  <h2 className="text-lg font-bold text-red-600 dark:text-red-500 flex items-center gap-2 border-b border-red-500/20 pb-2">
-    <AlertTriangle className="w-5 h-5" /> Strefa Niebezpieczna: Reset Danych
+  <h2 className="text-xs font-mono font-black text-red-500 uppercase tracking-widest flex items-center gap-2 border-b border-red-900/40 pb-2">
+    <AlertTriangle className="w-4 h-4" /> {'// DANGER_ZONE: RESET_DATA'}
   </h2>
-  <div className="text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed space-y-2">
+  <div className="text-xs font-mono text-zinc-600 max-w-2xl leading-relaxed space-y-2">
     <p>
-      Z tego miejsca możesz trwale i nieodwracalnie usunąć wszystkie swoje historyczne dane z aplikacji 
-      (transakcje, oszczędności, statystyki zdrowotne, wpisy w kalendarzu, pojazdy). 
+      Z tego miejsca możesz trwale i nieodwracalnie usunąć wszystkie swoje historyczne dane z aplikacji
+      (transakcje, oszczędności, statystyki zdrowotne, wpisy w kalendarzu, pojazdy).
     </p>
-    <div className="p-3 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
-      <p className="font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-        <Shield className="w-4 h-4 text-emerald-500" /> Twoje konto jest bezpieczne
+    <div className="p-3 border border-green-900/30 bg-black/20">
+      <p className="font-mono text-green-600 flex items-center gap-2">
+        <Shield className="w-4 h-4" /> {'>'} KONTO_BEZPIECZNE: true
       </p>
-      <p className="text-xs mt-1">
-        Ta operacja <strong className="text-zinc-900 dark:text-zinc-300">nie usunie</strong> Twojego konta użytkownika, adresu e-mail ani hasła. 
-        Rozpoczniesz po prostu z czystą kartą.
+      <p className="text-xs font-mono text-zinc-600 mt-1">
+        Ta operacja <strong className="text-zinc-400">nie usunie</strong> Twojego konta użytkownika ani hasła.
       </p>
     </div>
-    <strong className="text-red-600 dark:text-red-400 block mt-4">Uwaga: Tej operacji usuwania rekordów nie można cofnąć!</strong>
+    <strong className="text-red-500 block mt-4 font-mono">{`>`} WARN: Tej operacji nie można cofnąć!</strong>
   </div>
 </div>
 
       {!showDeleteConfirm ? (
-        <button 
+        <button
           onClick={() => setShowDeleteConfirm(true)}
-          className="px-6 py-3 rounded-xl font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-500/10 hover:bg-red-200 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 transition-all flex items-center gap-2"
+          className="px-6 py-3 font-mono text-xs uppercase tracking-wider text-red-500 border border-red-900/50 hover:bg-red-900/10 transition-all flex items-center gap-2"
         >
-          <Trash2 className="w-5 h-5" /> Rozpocznij procedurę usunięcia danych
+          <Trash2 className="w-4 h-4" /> {`>`} INIT_DELETE_PROCEDURE
         </button>
       ) : (
-        <form onSubmit={handleDeleteData} className="p-6 bg-red-50/80 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-2xl space-y-6 max-w-2xl animate-in fade-in zoom-in-95 duration-300">
+        <form onSubmit={handleDeleteData} className="p-5 border border-red-900/50 bg-red-900/10 space-y-5 max-w-2xl animate-in fade-in zoom-in-95 duration-300">
           <div className="flex items-start gap-3 text-red-700 dark:text-red-400">
             <AlertCircle className="w-6 h-6 mt-0.5 shrink-0" />
             <div>
@@ -436,7 +425,7 @@ export default function SettingsPage() {
               required 
               value={deletePassword} 
               onChange={(e) => { setDeletePassword(e.target.value); setStatus("idle"); setMessage(""); }}
-              className="w-full p-4 pl-12 pr-12 bg-white dark:bg-zinc-950 border-2 border-red-200 dark:border-red-500/30 rounded-xl outline-none focus:border-red-500 font-bold text-zinc-900 dark:text-white transition-colors" 
+              className="w-full p-4 pl-12 pr-12 bg-black/40 border border-red-900/50 font-mono outline-none focus:border-red-600 text-white transition-colors" 
             />
             <button 
               type="button" 
@@ -448,26 +437,26 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex gap-3 justify-end pt-2">
-            <button 
+            <button
               type="button"
               onClick={() => { setShowDeleteConfirm(false); setDeletePassword(""); setStatus("idle"); setMessage(""); }}
-              className="px-4 py-2 rounded-lg font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+              className="px-4 py-2 font-mono text-xs text-zinc-600 hover:text-zinc-400 border border-green-900/30 hover:border-green-900/50 transition-colors"
             >
-              Anuluj
+              CANCEL
             </button>
-            <button 
-              type="submit" 
-              disabled={status === "saving" || !deletePassword} 
-              className="px-6 py-2 rounded-lg font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all disabled:opacity-50 flex items-center gap-2"
+            <button
+              type="submit"
+              disabled={status === "saving" || !deletePassword}
+              className="px-6 py-2 font-mono text-xs uppercase text-red-400 border border-red-900/50 bg-red-900/10 hover:bg-red-900/20 transition-all disabled:opacity-40 flex items-center gap-2"
             >
-              {status === "saving" ? "Trwa usuwanie..." : "Tak, usuń wszystkie dane"}
+              {status === "saving" ? "DELETING..." : "> CONFIRM_DELETE"}
             </button>
           </div>
         </form>
       )}
 
-      {status === "error" && <div className="p-4 bg-red-500/10 text-red-500 text-sm font-bold rounded-xl flex items-center gap-2 max-w-2xl"><AlertCircle className="w-4 h-4" /> {message}</div>}
-      {status === "success" && <div className="p-4 bg-emerald-500/10 text-emerald-500 text-sm font-bold rounded-xl flex items-center gap-2 max-w-2xl"><CheckCircle2 className="w-4 h-4" /> {message}</div>}
+      {status === "error" && <div className="p-4 border border-red-900/50 bg-red-900/10 text-red-500 text-xs font-mono flex items-center gap-2 max-w-2xl"><AlertCircle className="w-4 h-4" /> {message}</div>}
+      {status === "success" && <div className="p-4 border border-green-900/50 bg-green-900/10 text-green-500 text-xs font-mono flex items-center gap-2 max-w-2xl"><CheckCircle2 className="w-4 h-4" /> {message}</div>}
     </div>
   </div>
 )}

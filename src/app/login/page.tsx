@@ -4,11 +4,8 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Wallet, ArrowRight, Lock, User, Eye, EyeOff } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { ArrowRight, Lock, User, Eye, EyeOff } from "lucide-react";
+import { MeBaseIconAnimated } from "@/components/ui/mebase-icon-animated";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -41,83 +38,109 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex items-center justify-center min-h-screen bg-background overflow-hidden px-4">
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
+    <div className="relative flex items-center justify-center min-h-screen overflow-hidden px-4 z-10">
+      <div className="w-full max-w-sm animate-in fade-in slide-in-from-bottom-8 duration-700">
 
-      <Card className="w-full max-w-[400px] border-white/10 bg-white/[0.03] backdrop-blur-xl shadow-2xl relative z-10 overflow-hidden">
-        <CardHeader className="space-y-2 flex flex-col items-center pt-8">
-          <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 shadow-[0_0_20px_rgba(168,85,247,0.15)]">
-            <Wallet className="w-8 h-8 text-primary" />
+        {/* Terminal window */}
+        <div className="border border-green-900/50 bg-black/70 backdrop-blur-sm">
+
+          {/* Title bar */}
+          <div className="border-b border-green-900/50 px-4 py-2.5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <MeBaseIconAnimated size={20} />
+              <span className="text-[10px] font-mono text-green-700 tracking-widest uppercase">mebase://auth</span>
+            </div>
+            <span className="text-[10px] font-mono text-green-900">v1.0</span>
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight text-white">Witaj ponownie</CardTitle>
-          <CardDescription className="text-zinc-400">Zaloguj się do portfela</CardDescription>
-        </CardHeader>
-        
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4 px-8 pb-6 bg-transparent">
-            
-            <div className="space-y-2">
-              <Label htmlFor="username" className="text-zinc-300 ml-1">E-mail lub Użytkownik</Label>
-              <div className="relative flex items-center">
-                <User className="absolute left-3 h-4 w-4 text-zinc-500 pointer-events-none" />
-                <Input 
-                  id="username" 
-                  name="username" 
-                  placeholder="admin" 
-                  className="pl-10 h-11 bg-white/[0.05] border-white/10 text-white placeholder:text-zinc-600 focus:border-primary/50 focus:ring-0 transition-all rounded-xl" 
-                  required 
-                />
+
+          {/* Header */}
+          <div className="px-8 pt-7 pb-5 border-b border-green-900/20">
+            <p className="text-[10px] font-mono text-green-700 tracking-widest mb-1">{`>`} INIT_SESSION</p>
+            <h1 className="text-xl font-mono font-black text-white">Autoryzacja</h1>
+            <p className="text-xs font-mono text-zinc-600 mt-1">Podaj dane dostępowe, aby kontynuować.</p>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <div className="px-8 py-6 space-y-5">
+
+              <div className="space-y-1.5">
+                <label htmlFor="username" className="text-[10px] font-mono text-green-700 uppercase tracking-widest block">
+                  {`>`} USER_ID
+                </label>
+                <div className="relative flex items-center">
+                  <User className="absolute left-3 h-4 w-4 text-green-900 pointer-events-none" />
+                  <input
+                    id="username"
+                    name="username"
+                    placeholder="admin"
+                    className="w-full pl-10 pr-4 py-3 bg-black/40 border border-green-900/50 text-white font-mono text-sm placeholder:text-zinc-700 focus:border-green-600 focus:outline-none transition-colors"
+                    required
+                  />
+                </div>
               </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="password" className="text-[10px] font-mono text-green-700 uppercase tracking-widest">
+                    {`>`} PASSWORD
+                  </label>
+                  <Link href="/forgot-password" className="text-[10px] font-mono text-zinc-600 hover:text-green-600 transition-colors tracking-wider">
+                    RESET_PWD →
+                  </Link>
+                </div>
+                <div className="relative flex items-center">
+                  <Lock className="absolute left-3 h-4 w-4 text-green-900 pointer-events-none" />
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    className="w-full pl-10 pr-10 py-3 bg-black/40 border border-green-900/50 text-white font-mono text-sm placeholder:text-zinc-700 focus:border-green-600 focus:outline-none transition-colors"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 text-zinc-600 hover:text-green-500 transition-colors focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <div className="border border-red-900/50 bg-red-900/10 px-4 py-3 text-red-500 text-xs font-mono">
+                  {`>`} ERR: {error}
+                </div>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between ml-1">
-                <Label htmlFor="password" className="text-zinc-300">Hasło</Label>
-                {/* MAGICZNY GUZIK ODZYSKIWANIA HASŁA */}
-                <Link href="/forgot-password" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors">
-                  Zapomniałeś hasła?
+            <div className="px-8 pb-8 space-y-3">
+              <button
+                type="submit"
+                className="w-full flex items-center justify-center gap-2 bg-green-400/10 hover:bg-green-400/20 border border-green-700 text-green-400 py-3 text-xs font-mono uppercase tracking-widest transition-all disabled:opacity-50"
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="animate-pulse">{`>`} AUTHENTICATING...</span>
+                ) : (
+                  <>{`>`} EXECUTE_LOGIN <ArrowRight className="h-4 w-4" /></>
+                )}
+              </button>
+              <p className="text-center text-[10px] font-mono text-zinc-700">
+                NO_ACCOUNT?{" "}
+                <Link href="/register" className="text-green-900 hover:text-green-600 transition-colors">
+                  REGISTER →
                 </Link>
-              </div>
-              
-              <div className="relative flex items-center">
-                <Lock className="absolute left-3 h-4 w-4 text-zinc-500 pointer-events-none" />
-                <Input 
-                  id="password" 
-                  name="password" 
-                  type={showPassword ? "text" : "password"} 
-                  placeholder="••••••••"
-                  className="pl-10 pr-10 h-11 bg-white/[0.05] border-white/10 text-white placeholder:text-zinc-600 focus:border-primary/50 focus:ring-0 transition-all rounded-xl" 
-                  required 
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 text-zinc-500 hover:text-zinc-300 transition-colors focus:outline-none"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
+              </p>
             </div>
+          </form>
+        </div>
 
-            {error && (
-              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center">
-                {error}
-              </div>
-            )}
-          </CardContent>
-
-          <CardFooter className="flex flex-col space-y-4 px-8 pb-10 bg-transparent">
-            <Button type="submit" className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl shadow-lg shadow-primary/20 group" disabled={loading}>
-              {loading ? "Logowanie..." : "Zaloguj się"}
-              {!loading && <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />}
-            </Button>
-            <div className="text-sm text-zinc-500 text-center">
-              Nie masz profilu? <Link href="/register" className="text-primary hover:text-primary/80 font-medium transition-colors">Stwórz konto</Link>
-            </div>
-          </CardFooter>
-        </form>
-      </Card>
+        <p className="text-center text-[10px] font-mono text-green-900/40 mt-3 tracking-wider">
+          MeBase // secure_channel_established
+        </p>
+      </div>
     </div>
   );
 }

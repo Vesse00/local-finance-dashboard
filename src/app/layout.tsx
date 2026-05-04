@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { AppLayout } from "@/components/layout/app-layout";
 
-const inter = Inter({ subsets: ["latin", "latin-ext"] });
+const jetbrainsMono = JetBrains_Mono({ subsets: ["latin", "latin-ext"] });
 
 export const metadata: Metadata = {
-  title: "Mój Lokalny Dashboard",
-  description: "Prywatne zarządzanie finansami",
+  title: "MeBase",
+  description: "Prywatne centrum dowodzenia",
 };
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pl" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={jetbrainsMono.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

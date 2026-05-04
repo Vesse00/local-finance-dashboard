@@ -46,13 +46,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="relative flex-1 p-6 md:p-10 pt-6 min-h-screen overflow-hidden">
-      
-      {/* MAGIA W TLE: Zoptymalizowane tło - radial-gradient zamiast CSS blur z animate-pulse ratuje wydajność (FPS) */}
-      <div className="fixed top-0 left-1/4 w-[500px] h-[500px] rounded-full pointer-events-none -z-10 opacity-30 md:opacity-20" style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.5) 0%, rgba(99,102,241,0) 70%)' }}></div>
-      <div className="fixed bottom-1/4 right-0 w-[600px] h-[600px] rounded-full pointer-events-none -z-10 opacity-30 md:opacity-20" style={{ background: 'radial-gradient(circle, rgba(168,85,247,0.5) 0%, rgba(168,85,247,0) 70%)' }}></div>
-      <div className="fixed top-1/2 left-0 w-[400px] h-[400px] rounded-full pointer-events-none -z-10 opacity-30 md:opacity-20" style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.5) 0%, rgba(16,185,129,0) 70%)' }}></div>
 
-      {/* GŁÓWNY KONTENER (Rozszerzony na niemal cały ekran) */}
+      {/* GŁÓWNY KONTENER */}
       <div className="max-w-[1920px] mx-auto w-full space-y-6 relative z-10">
         
         {/* 1. ASYSTENT NA SAMEJ GÓRZE */}
@@ -73,9 +68,9 @@ export default async function DashboardPage() {
             />
           </div>
 
-          {/* PIERWSZY RZĄD: Puste pole obok (1/3 ekranu) - idealne na coś szybkiego */}
-          <div className="lg:col-span-1 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-lg border border-zinc-200/50 dark:border-zinc-800/50 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] flex items-center justify-center min-h-[160px] h-full text-zinc-500 text-sm font-medium text-center transition-all duration-500 hover:shadow-xl hover:border-indigo-500/30 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 fill-mode-both">
-            Miejsce na przyszły widget<br/>(np. Szybkie Akcje)
+          {/* PIERWSZY RZĄD: Puste pole obok (1/3 ekranu) */}
+          <div className="lg:col-span-1 border border-green-900/30 border-dashed bg-black/20 p-6 flex items-center justify-center min-h-[160px] h-full animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 fill-mode-both">
+            <span className="text-xs font-mono text-green-800 text-center">{'// '} FUTURE_WIDGET<br/>quick_actions.mod</span>
           </div>
 
           {/* DRUGI RZĄD: Czas Pracy (1/3 ekranu) */}
@@ -92,8 +87,8 @@ export default async function DashboardPage() {
           </div>
 
           {/* DRUGI RZĄD: Puste pole dopełniające (1/3 ekranu) */}
-          <div className="lg:col-span-1 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-lg border border-dashed border-zinc-300 dark:border-zinc-800/50 rounded-3xl p-6 flex items-center justify-center min-h-[300px] text-zinc-500 text-sm font-medium text-center animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both">
-            Miejsce na kolejny moduł<br/>(np. Garaż lub Wykres)
+          <div className="lg:col-span-1 border border-dashed border-green-900/30 bg-black/20 p-6 flex items-center justify-center min-h-[300px] animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both">
+            <span className="text-xs font-mono text-green-800 text-center">{'// '} FUTURE_WIDGET<br/>garage_or_chart.mod</span>
           </div>
 
         </div>
