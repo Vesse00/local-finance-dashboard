@@ -199,7 +199,7 @@ export function AppSidebar() {
             {t("sidebar.footer.settings")}
           </Link>
           <button 
-            onClick={() => signOut({ callbackUrl: '/login' })} 
+            onClick={() => signOut({ callbackUrl: `${window.location.origin}/login` })} 
             className="w-full mt-1 flex items-center gap-2 px-3 py-2 text-xs font-mono uppercase tracking-wider text-red-700 hover:text-red-400 transition-colors border-l-2 border-transparent hover:border-red-800 pl-2.5"
           >
             <LogOut className="w-3.5 h-3.5" />
