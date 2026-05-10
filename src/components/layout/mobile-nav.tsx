@@ -169,7 +169,7 @@ export function MobileNav() {
             <Settings className="w-5 h-5" /> Ustawienia
           </Link>
           <button 
-            onClick={() => signOut({ callbackUrl: '/login' })} 
+            onClick={() => signOut({ callbackUrl: `${window.location.origin}/login` })} 
             className="w-full mt-1 flex items-center gap-3 px-3 py-3 rounded-xl font-bold transition-all text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
           >
             <LogOut className="w-5 h-5" /> Wyloguj
