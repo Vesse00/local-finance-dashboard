@@ -1,0 +1,42 @@
+name: Task
+description: Track a technical or product task
+title: "[Task]: "
+labels:
+  - task
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Task summary
+      description: Describe the task to be completed.
+      placeholder: Summarize the task.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is included in this task?
+      placeholder: Describe what should be done.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Define when this task is considered complete.
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+    validations:
+      required: true
+  - type: input
+    id: priority
+    attributes:
+      label: Priority
+      description: Optional priority label.
+      placeholder: low / medium / high
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Add any relevant context, references, or dependencies.
+      placeholder: Add notes here.
