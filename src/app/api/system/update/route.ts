@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import pkg from '../../../../../package.json';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export async function GET() {
   try {
@@ -38,6 +40,11 @@ export async function GET() {
 
 export async function POST() {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as { id?: string } | undefined)?.id) {
+      return NextResponse.json({ error: 'Brak autoryzacji' }, { status: 401 });
+    }
+
     // Odpalamy skrypt auto-update.js w tle, niezależnie od procesu node, by uniknąć zabicia serwera podczas next build.
     // Zwracamy od razu odpowiedź, reszta dzieje się w tle.
     exec('node auto-update.js', (err, stdout, stderr) => {
