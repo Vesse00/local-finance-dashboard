@@ -1,0 +1,46 @@
+name: Page request
+description: Request creation or improvement of a page/route
+title: "[Page]: "
+labels:
+  - enhancement
+  - ui
+body:
+  - type: textarea
+    id: route
+    attributes:
+      label: Route / page
+      description: Which route or page is requested?
+      placeholder: /transactions
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should this page do?
+      placeholder: Describe the purpose of the page.
+    validations:
+      required: true
+  - type: textarea
+    id: content
+    attributes:
+      label: Expected content or components
+      description: What should be shown on the page?
+      placeholder: Tables, charts, filters, forms, summaries, etc.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Define when this page is ready.
+      placeholder: |
+        - [ ] Route exists and does not return 404
+        - [ ] Matches dashboard styling
+        - [ ] Displays initial content
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Add links, mockups, screenshots, or related issues.
+      placeholder: Add references here.
