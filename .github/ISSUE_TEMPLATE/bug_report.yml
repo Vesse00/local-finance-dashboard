@@ -1,0 +1,67 @@
+name: Bug report
+description: Report a bug or unexpected behavior
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A clear and concise description of the bug.
+      placeholder: Describe what happened.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide clear steps so we can reproduce the issue.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+      placeholder: Describe the expected behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened?
+      placeholder: Describe the actual behavior.
+    validations:
+      required: true
+  - type: input
+    id: page
+    attributes:
+      label: Affected page or route
+      description: Which page or route is affected?
+      placeholder: /transactions
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or logs
+      description: Add screenshots, console output, or relevant logs if available.
+      placeholder: Paste screenshots or logs here.
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Add details about your environment.
+      placeholder: |
+        - OS: macOS / Windows / Linux
+        - Browser: Chrome / Firefox / Safari
+        - App version / commit: ...
