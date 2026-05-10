@@ -2,13 +2,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";
-// Upewnij się, że importujesz poprawną konfigurację autoryzacji z NextAuth:
-// (Jeśli u Ciebie ścieżka do authOptions to np. '@/app/api/auth/[...nextauth]/route', dostosuj ten import)
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function DELETE(req: Request) {
   try {
     // 1. Sprawdzamy, czy użytkownik jest zalogowany
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Brak autoryzacji. Zaloguj się ponownie." }, { status: 401 });
