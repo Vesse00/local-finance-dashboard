@@ -41,7 +41,8 @@ export async function GET() {
 export async function POST() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !(session.user as { id?: string } | undefined)?.id) {
+    const userId = (session?.user as { id?: string } | undefined)?.id;
+    if (!userId) {
       return NextResponse.json({ error: 'Brak autoryzacji' }, { status: 401 });
     }
 
