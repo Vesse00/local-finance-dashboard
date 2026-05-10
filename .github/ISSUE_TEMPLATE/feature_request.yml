@@ -1,0 +1,44 @@
+name: Feature request
+description: Suggest an improvement or new feature
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What problem does this feature solve?
+      placeholder: Describe the problem or pain point.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the feature you would like to see.
+      placeholder: Describe your proposed solution.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe any alternative solutions or workarounds you considered.
+      placeholder: List any alternatives.
+  - type: input
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the dashboard does this affect?
+      placeholder: transactions, charts, settings, auth
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Add any other context, references, or screenshots.
+      placeholder: Add extra details here.
