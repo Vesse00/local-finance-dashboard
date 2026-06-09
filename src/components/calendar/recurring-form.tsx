@@ -122,7 +122,33 @@ export function RecurringForm({ categories, defaultDate = 1, onSuccess, initialD
         </div>
       )}
 
-      <button type="submit" disabled={isPending} className="w-full mt-4 rounded-xl bg-indigo-500 py-3 text-white font-semibold shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-600 disabled:opacity-50">
+      {/* Sekcja dopasowania importu - zawsze widoczna */}
+      <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-black/5 dark:border-white/5 space-y-3">
+        <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wide">Dopasowanie przy imporcie z banku</p>
+        <div>
+          <label className="block text-xs font-medium mb-1 text-zinc-500">Numer konta odbiorcy (IBAN)</label>
+          <input
+            name="recipientAccountNo"
+            type="text"
+            defaultValue={initialData?.recipientAccountNo || ""}
+            placeholder="np. 82160014621815538750000002"
+            className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 p-2.5 text-xs outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-zinc-900 dark:text-white font-mono"
+          />
+          <p className="text-[10px] text-zinc-400 mt-1">Import automatycznie scali transakcję z tym zleceniem i użyje faktycznej zapłaconej kwoty.</p>
+        </div>
+        <div>
+          <label className="block text-xs font-medium mb-1 text-zinc-500">Fraza w opisie (fallback dla kart bez IBAN)</label>
+          <input
+            name="matchPhrase"
+            type="text"
+            defaultValue={initialData?.matchPhrase || ""}
+            placeholder="np. Orange, Netflix, Allegro Pay"
+            className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 p-2.5 text-xs outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-zinc-900 dark:text-white"
+          />
+        </div>
+      </div>
+
+      <button type="submit" disabled={isPending} className="w-full rounded-xl bg-indigo-500 py-3 text-white font-semibold shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-600 disabled:opacity-50">
         {isPending ? t("calendar.modals.recurring_form.saving") : initialData ? t("calendar.modals.recurring_form.save_changes") : t("calendar.modals.recurring_form.add_recurring")}
       </button>
     </form>

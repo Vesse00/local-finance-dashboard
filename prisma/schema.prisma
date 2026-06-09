@@ -84,6 +84,9 @@ model Expense {
   // Relacja z zleceniem stałym
   recurringId         String?
   recurring           RecurringPayment? @relation(fields: [recurringId], references: [id], onDelete: Cascade)
+
+  // Deduplication przy imporcie: hash z (data+kwota+iban_odbiorcy+userId)
+  bankTxHash          String?  @unique
   
   createdAt           DateTime @default(now())
 
@@ -107,6 +110,10 @@ model RecurringPayment {
   endDate         DateTime? // Kiedy kończy się subskrypcja lub kredyt (null = bezterminowo)
   
   isActive        Boolean  @default(true) // Czy zlecenie jest nadal aktywne?
+
+  // Dopasowanie do transakcji przy imporcie bankowym
+  recipientAccountNo  String?  // IBAN odbiorcy np. "82160014621815538750000002"
+  matchPhrase         String?  // Fallback: fraza w opisie/odbiorcy (dla płatności kartą bez IBAN)
   
   userId          String
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -301,6 +308,7 @@ model SavingsAccount {
   name      String   // np. "Poduszka finansowa", "IKE mBank"
   balance   Float    @default(0.0)
   type      String   @default("SAVINGS") // "SAVINGS", "IKE", "IKZE"
+  currency  String   @default("PLN")    // np. "PLN", "EUR", "USD"
 
   
   userId    String

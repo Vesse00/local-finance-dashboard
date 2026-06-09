@@ -15,7 +15,7 @@ export default function SavingsPage() {
 
   // Modal dodawania subkonta
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newAccount, setNewAccount] = useState({ name: "", balance: "", type: "SAVINGS" });
+  const [newAccount, setNewAccount] = useState({ name: "", balance: "", type: "SAVINGS", currency: "PLN" });
   const [errorMessage, setErrorMessage] = useState("");
 
   const fetchData = async () => {
@@ -44,13 +44,14 @@ export default function SavingsPage() {
         body: JSON.stringify({
           name: newAccount.name || (newAccount.type === "IKE" ? t("savings_page.default_ike") : newAccount.type === "IKZE" ? t("savings_page.default_ikze") : t("savings_page.default_savings")),
           balance: newAccount.balance || "0",
-          type: newAccount.type
+          type: newAccount.type,
+          currency: newAccount.currency || "PLN"
         })
       });
       
       if (res.ok) {
         setIsAddModalOpen(false);
-        setNewAccount({ name: "", balance: "", type: "SAVINGS" });
+        setNewAccount({ name: "", balance: "", type: "SAVINGS", currency: "PLN" });
         fetchData();
       } else {
         const err = await res.json();
@@ -180,7 +181,7 @@ export default function SavingsPage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-zinc-600 dark:text-zinc-400 mb-1 pr-8 truncate">{acc.name}</h3>
-                    <p className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{acc.balance.toFixed(2)} <span className="text-lg font-bold opacity-50">{currency}</span></p>
+                    <p className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{acc.balance.toFixed(2)} <span className="text-lg font-bold opacity-50">{acc.currency || currency}</span></p>
                   </div>
                 </Link>
               ))}
@@ -245,6 +246,25 @@ export default function SavingsPage() {
               <div className="space-y-2">
                 <label className="text-xs font-bold text-zinc-500 uppercase">{t("savings_page.initial_balance")}</label>
                 <input type="number" step="0.01" value={newAccount.balance} onChange={e => setNewAccount({...newAccount, balance: e.target.value})} className="w-full p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl outline-none focus:border-blue-500 font-mono text-xl font-bold" placeholder="0.00" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-zinc-500 uppercase">Waluta</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {["PLN", "EUR", "USD", "GBP"].map(cur => (
+                    <button
+                      key={cur}
+                      type="button"
+                      onClick={() => setNewAccount({...newAccount, currency: cur})}
+                      className={`p-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
+                        newAccount.currency === cur
+                          ? "border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                          : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                      }`}
+                    >
+                      {cur}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="p-4 bg-zinc-50 dark:bg-zinc-900/50 flex gap-3 border-t border-zinc-100 dark:border-zinc-900">

@@ -321,6 +321,8 @@ export async function addRecurringPayment(formData: FormData) {
   
   const totalAmountStr = formData.get("totalAmount") as string;
   const remainingAmountStr = formData.get("remainingAmount") as string;
+  const recipientAccountNo = (formData.get("recipientAccountNo") as string | null)?.replace(/\s/g, "").trim() || null;
+  const matchPhrase = (formData.get("matchPhrase") as string | null)?.trim() || null;
 
   const totalAmount = totalAmountStr ? parseFloat(totalAmountStr) : null;
   const initialRemaining = remainingAmountStr ? parseFloat(remainingAmountStr) : totalAmount;
@@ -342,7 +344,9 @@ export async function addRecurringPayment(formData: FormData) {
   const newRecurring = await prisma.recurringPayment.create({
     data: {
       name, defaultAmount, dayOfMonth, categoryId, endDate,
-      totalAmount, remainingAmount: initialRemaining, userId
+      totalAmount, remainingAmount: initialRemaining,
+      recipientAccountNo, matchPhrase,
+      userId
     }
   });
 
@@ -605,6 +609,8 @@ export async function updateRecurringPayment(formData: FormData) {
   
   const totalAmountStr = formData.get("totalAmount") as string;
   const remainingAmountStr = formData.get("remainingAmount") as string;
+  const recipientAccountNo = (formData.get("recipientAccountNo") as string | null)?.replace(/\s/g, "").trim() || null;
+  const matchPhrase = (formData.get("matchPhrase") as string | null)?.trim() || null;
 
   const totalAmount = totalAmountStr ? parseFloat(totalAmountStr) : null;
   const remainingAmount = remainingAmountStr ? parseFloat(remainingAmountStr) : totalAmount;
@@ -617,7 +623,8 @@ export async function updateRecurringPayment(formData: FormData) {
     where: { id, userId },
     data: {
       name, defaultAmount, dayOfMonth, categoryId, endDate,
-      totalAmount, remainingAmount
+      totalAmount, remainingAmount,
+      recipientAccountNo, matchPhrase,
     }
   });
 
