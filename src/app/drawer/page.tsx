@@ -5,6 +5,7 @@ import { format, differenceInDays } from "date-fns";
 import { useLanguage } from "@/components/LanguageProvider";
 import { pl } from "date-fns/locale";
 import { Archive, FileText, ShieldCheck, Plus, Trash2, CalendarDays, Wallet, AlertTriangle, X, Paperclip, UploadCloud, Award } from "lucide-react";
+import { DiscoverPage } from "@/components/DiscoverPage";
 
 export default function DigitalDrawerPage() {
   const { t } = useLanguage();
@@ -123,7 +124,7 @@ export default function DigitalDrawerPage() {
 
   return (
     <div className="flex-1 p-6 md:p-8 space-y-6 max-w-7xl mx-auto w-full">
-      
+      <DiscoverPage page="drawer" />
       {/* NAGŁÓWEK */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 dark:bg-black/40 backdrop-blur-xl p-4 rounded-3xl border border-black/5 dark:border-white/10 shadow-sm">
         <div className="flex items-center gap-3">

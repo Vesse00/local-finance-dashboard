@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { PlannerUI } from "@/components/planner/planner-ui";
+import { DiscoverPage } from "@/components/DiscoverPage";
 
 const safeSerialize = (data: any) => 
   JSON.parse(JSON.stringify(data, (key, value) => 
@@ -39,12 +40,15 @@ export default async function PlannerPage() {
   });
 
   return (
-    <PlannerUI 
-      categories={safeSerialize(categories)} 
-      currentMonthExpenses={safeSerialize(expenses)}
-      currentMonthIncomes={safeSerialize(incomes)}
-      recurrings={safeSerialize(recurrings)}
-      currency={user.currency || "PLN"}
-    />
+    <>
+      <DiscoverPage page="planner" />
+      <PlannerUI 
+        categories={safeSerialize(categories)} 
+        currentMonthExpenses={safeSerialize(expenses)}
+        currentMonthIncomes={safeSerialize(incomes)}
+        recurrings={safeSerialize(recurrings)}
+        currency={user.currency || "PLN"}
+      />
+    </>
   );
 }

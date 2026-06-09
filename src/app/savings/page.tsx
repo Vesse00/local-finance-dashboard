@@ -5,6 +5,7 @@ import { PiggyBank, Briefcase, Building, ChevronRight, Plus, Landmark, X, Trash2
 import { TransferUI } from "@/components/savings/transfer-ui";
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
+import { DiscoverPage } from "@/components/DiscoverPage";
 
 export default function SavingsPage() {
   const { t } = useLanguage();
@@ -16,6 +17,12 @@ export default function SavingsPage() {
   // Modal dodawania subkonta
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newAccount, setNewAccount] = useState({ name: "", balance: "", type: "SAVINGS", currency: "PLN" });
+  // Po załadowaniu currency z API ustaw domyślną walutę nowego konta
+  const openAddModal = () => {
+    setErrorMessage("");
+    setNewAccount({ name: "", balance: "", type: "SAVINGS", currency });
+    setIsAddModalOpen(true);
+  };
   const [errorMessage, setErrorMessage] = useState("");
 
   const fetchData = async () => {
@@ -51,7 +58,7 @@ export default function SavingsPage() {
       
       if (res.ok) {
         setIsAddModalOpen(false);
-        setNewAccount({ name: "", balance: "", type: "SAVINGS", currency: "PLN" });
+        setNewAccount({ name: "", balance: "", type: "SAVINGS", currency });
         fetchData();
       } else {
         const err = await res.json();
@@ -81,7 +88,15 @@ export default function SavingsPage() {
     }
   };
 
-  const totalSavings = mainSavings + subAccounts.reduce((acc, curr) => acc + curr.balance, 0);
+  // Grupuj salda według waluty (PLN to suma mainSavings + PLN subkont, pozostałe osobno)
+  const currencyTotals = subAccounts.reduce<Record<string, number>>((acc, curr) => {
+    const cur = curr.currency || currency;
+    acc[cur] = (acc[cur] || 0) + curr.balance;
+    return acc;
+  }, {});
+  // Dodaj główne oszczędności do PLN (lub domyślnej waluty)
+  currencyTotals[currency] = (currencyTotals[currency] || 0) + mainSavings;
+  const currencyEntries = Object.entries(currencyTotals).filter(([, v]) => v !== 0);
 
   const getAccountIcon = (type: string) => {
     if (type === "IKE") return <Briefcase className="w-8 h-8 text-blue-500" />;
@@ -101,7 +116,7 @@ export default function SavingsPage() {
 
   return (
     <div className="flex-1 p-6 md:p-8 space-y-8 max-w-7xl mx-auto w-full">
-      {/* NAGŁÓWEK */}
+      <DiscoverPage page="savings" />
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 p-8 rounded-3xl border border-blue-500/20 bg-blue-500/5 backdrop-blur-xl relative overflow-hidden">
         <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-500 opacity-20 blur-[80px] pointer-events-none"></div>
         
@@ -118,11 +133,16 @@ export default function SavingsPage() {
         </div>
 
         <div className="flex flex-col items-center md:items-end gap-4 z-10">
-          <div className="text-4xl md:text-5xl font-extrabold tracking-tight text-blue-600 dark:text-blue-400">
-            {totalSavings.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol" })}
+          <div className="flex flex-col items-center md:items-end gap-1">
+            {currencyEntries.map(([cur, total]) => (
+              <div key={cur} className="text-4xl md:text-5xl font-extrabold tracking-tight text-blue-600 dark:text-blue-400">
+                {total.toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{" "}
+                <span className="text-2xl md:text-3xl font-bold opacity-70">{cur}</span>
+              </div>
+            ))}
           </div>
           <div className="flex gap-2">
-            <button onClick={() => { setErrorMessage(""); setIsAddModalOpen(true); }} className="px-4 py-3 bg-white/50 dark:bg-black/30 hover:bg-white/80 dark:hover:bg-black/50 rounded-xl font-bold text-sm text-zinc-700 dark:text-zinc-300 transition-colors flex items-center gap-2 border border-black/5 dark:border-white/5 shadow-sm">
+            <button onClick={openAddModal} className="px-4 py-3 bg-white/50 dark:bg-black/30 hover:bg-white/80 dark:hover:bg-black/50 rounded-xl font-bold text-sm text-zinc-700 dark:text-zinc-300 transition-colors flex items-center gap-2 border border-black/5 dark:border-white/5 shadow-sm">
               <Plus className="w-4 h-4" /> {t("savings_page.new_subaccount")}
             </button>
             <TransferUI onTransferComplete={fetchData} />

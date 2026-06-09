@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { EnergyPageClient } from "./energy-page-client";
+import { DiscoverPage } from "@/components/DiscoverPage";
 
 export default async function EnergyPage() {
   const user = await prisma.user.findFirst();
@@ -11,5 +12,5 @@ export default async function EnergyPage() {
     take: 30
   });
 
-  return <EnergyPageClient entries={entries} />;
+  return <><DiscoverPage page="health/energy" /><EnergyPageClient entries={entries} /></>;
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
 import { format, differenceInDays } from "date-fns";
 import { CarFront, Plus, Shield, Droplet, CalendarDays, X, ArrowRight } from "lucide-react";
+import { DiscoverPage } from "@/components/DiscoverPage";
 
 export default function GaragePage() {
   const { t, language } = useLanguage();
@@ -59,7 +60,7 @@ export default function GaragePage() {
 
   return (
     <div className="flex-1 p-6 md:p-8 space-y-6 max-w-7xl mx-auto w-full">
-      
+      <DiscoverPage page="garage" />
       {/* NAGŁÓWEK */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/60 dark:bg-black/40 backdrop-blur-xl p-4 rounded-3xl border border-black/5 dark:border-white/10 shadow-sm">
         <div className="flex items-center gap-3">

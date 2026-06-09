@@ -5,6 +5,7 @@ import AuthProvider from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { AppLayout } from "@/components/layout/app-layout";
+import { AchievementsProvider } from "@/components/AchievementsProvider";
 
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
@@ -29,10 +30,11 @@ export default function RootLayout({
         >
           <LanguageProvider>
             <AuthProvider>
-              {/* Tutaj dodajemy nasz nowy układ! */}
-              <AppLayout>
-                {children}
-              </AppLayout>
+              <AchievementsProvider>
+                <AppLayout>
+                  {children}
+                </AppLayout>
+              </AchievementsProvider>
             </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>

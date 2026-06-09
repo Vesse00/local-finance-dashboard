@@ -1,35 +1,60 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Trophy, Lock, ChevronRight } from "lucide-react";
-import { TIER_STYLES, type AchievementResult } from "@/lib/achievements";
+import { Trophy, Lock } from "lucide-react";
+import { TIER_STYLES, ACHIEVEMENTS, type AchievementResult } from "@/lib/achievements";
 
-// ── Karta pojedynczego osiągnięcia ───────────────────────────
-function AchievementCard({ ach }: { ach: AchievementResult }) {
+// ── Karta osiągnięcia ─────────────────────────────────────
+function AchievementCard({
+  ach,
+  allAchievements,
+}: {
+  ach: AchievementResult;
+  allAchievements: AchievementResult[];
+}) {
   const isComplete = ach.unlockedTier === 4;
+  const isLocked = !ach.isPrerequisiteMet;
   const currentTierStyle = ach.unlockedTier > 0 ? TIER_STYLES[ach.unlockedTier] : null;
+
+  // Znajdź prerequisite do wyświetlenia w locku
+  const prereq = ach.prerequisiteId
+    ? allAchievements.find((a) => a.id === ach.prerequisiteId)
+    : null;
 
   return (
     <div
       className={`relative flex flex-col p-5 rounded-2xl border transition-all duration-300
-        ${isComplete
-          ? "bg-linear-to-br from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 border-purple-200 dark:border-purple-500/30 shadow-lg shadow-purple-500/10"
-          : ach.unlockedTier > 0
-            ? "bg-white/70 dark:bg-zinc-950/60 border-black/5 dark:border-white/10 shadow-sm"
-            : "bg-white/40 dark:bg-zinc-950/30 border-black/5 dark:border-white/5"
+        ${isLocked
+          ? "bg-zinc-50/50 dark:bg-zinc-950/20 border-black/5 dark:border-white/5 opacity-70"
+          : isComplete
+            ? "bg-linear-to-br from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 border-purple-200 dark:border-purple-500/30 shadow-lg shadow-purple-500/10"
+            : ach.unlockedTier > 0
+              ? "bg-white/70 dark:bg-zinc-950/60 border-black/5 dark:border-white/10 shadow-sm"
+              : "bg-white/40 dark:bg-zinc-950/30 border-black/5 dark:border-white/5"
         }
       `}
     >
-      {/* Platyna – blask w tle */}
-      {isComplete && (
-        <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-purple-500/5 to-indigo-500/5 pointer-events-none" />
+      {/* Lock overlay */}
+      {isLocked && (
+        <div className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center z-10 bg-zinc-950/40 dark:bg-zinc-950/60 backdrop-blur-[2px]">
+          <Lock className="w-7 h-7 text-zinc-300 dark:text-zinc-500 mb-2" />
+          <p className="text-[11px] font-semibold text-zinc-300 dark:text-zinc-500 text-center px-4">
+            Wymaga odblokowania:
+          </p>
+          <p className="text-[11px] font-black text-zinc-200 dark:text-zinc-300 mt-0.5">
+            {prereq ? `${prereq.icon} ${prereq.name}` : "Inne osiągnięcie"}
+          </p>
+          {prereq && prereq.unlockedTier > 0 && (
+            <span className="text-[9px] mt-1 text-zinc-400">(masz {TIER_STYLES[prereq.unlockedTier as 1|2|3|4].label})</span>
+          )}
+        </div>
       )}
 
-      {/* Nagłówek */}
+      {/* Nagłówek karty */}
       <div className="flex items-start gap-3 mb-4">
         <div
           className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl shrink-0 shadow-inner
-            ${ach.unlockedTier > 0
+            ${ach.unlockedTier > 0 && !isLocked
               ? `bg-linear-to-br ${currentTierStyle!.gradient} shadow-md ${currentTierStyle!.glow}`
               : "bg-zinc-100 dark:bg-zinc-800"
             }
@@ -39,24 +64,25 @@ function AchievementCard({ ach }: { ach: AchievementResult }) {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-bold text-zinc-900 dark:text-white text-sm leading-tight">{ach.name}</h3>
-            {ach.unlockedTier > 0 && (
+            <h3 className="font-bold text-zinc-900 dark:text-white text-sm leading-tight">
+              {ach.name}
+            </h3>
+            {ach.unlockedTier > 0 && !isLocked && (
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${currentTierStyle!.badge}`}>
                 {currentTierStyle!.label}
               </span>
             )}
           </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 leading-snug">{ach.description}</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 leading-snug">
+            {ach.description}
+          </p>
         </div>
-        {ach.unlockedTier === 0 && (
-          <Lock className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0 mt-0.5" />
-        )}
       </div>
 
-      {/* 4 Tiery */}
+      {/* Paski 4 tierów */}
       <div className="flex gap-1.5 mb-4">
         {ach.tiers.map((tier) => {
-          const unlocked = ach.unlockedTier >= tier.level;
+          const unlocked = !isLocked && ach.unlockedTier >= tier.level;
           const style = TIER_STYLES[tier.level];
           return (
             <div
@@ -66,10 +92,7 @@ function AchievementCard({ ach }: { ach: AchievementResult }) {
             >
               <div
                 className={`w-full h-1.5 rounded-full transition-all duration-500
-                  ${unlocked
-                    ? `bg-linear-to-r ${style.gradient}`
-                    : "bg-zinc-200 dark:bg-zinc-700"
-                  }
+                  ${unlocked ? `bg-linear-to-r ${style.gradient}` : "bg-zinc-200 dark:bg-zinc-700"}
                 `}
               />
               <span
@@ -85,17 +108,15 @@ function AchievementCard({ ach }: { ach: AchievementResult }) {
       </div>
 
       {/* Pasek postępu do następnego tiera */}
-      {ach.nextTier ? (
+      {!isLocked && ach.nextTier ? (
         <div className="space-y-1.5">
           <div className="flex justify-between items-center text-[10px]">
-            <span className="text-zinc-500 dark:text-zinc-400 font-medium">
-              {ach.formatValue
-                ? ach.formatValue(ach.currentValue)
-                : `${ach.currentValue} ${ach.unit}`}
+            <span className="text-zinc-500 font-medium">
+              {ach.formatValue ? ach.formatValue(ach.currentValue, ach.displayCurrency) : `${ach.currentValue} ${ach.unit}`}
             </span>
-            <span className="text-zinc-400 dark:text-zinc-500">
+            <span className="text-zinc-400">
               cel: {ach.formatValue
-                ? ach.formatValue(ach.nextTier.threshold)
+                ? ach.formatValue(ach.nextTier.threshold, ach.displayCurrency)
                 : `${ach.nextTier.threshold} ${ach.unit}`}
             </span>
           </div>
@@ -105,31 +126,36 @@ function AchievementCard({ ach }: { ach: AchievementResult }) {
               style={{ width: `${ach.progressToNext}%` }}
             />
           </div>
-          <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
-            Następny: <span className="font-semibold text-zinc-600 dark:text-zinc-300">{ach.nextTier.description}</span>
+          <p className="text-[10px] text-zinc-400">
+            Następny:{" "}
+            <span className="font-semibold text-zinc-600 dark:text-zinc-300">
+              {ach.nextTier.description}
+            </span>
           </p>
         </div>
-      ) : (
+      ) : !isLocked ? (
         <div className="flex items-center gap-2 text-[11px] font-bold text-purple-600 dark:text-purple-400">
           <Trophy className="w-3.5 h-3.5" />
           Wszystkie tiery odblokowane!
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
 
-// ── Sekcja kategorii ──────────────────────────────────────────
+// ── Sekcja kategorii ──────────────────────────────────────
 function CategorySection({
-  categoryIcon,
   category,
+  categoryIcon,
   achievements,
+  allAchievements,
 }: {
-  categoryIcon: string;
   category: string;
+  categoryIcon: string;
   achievements: AchievementResult[];
+  allAchievements: AchievementResult[];
 }) {
-  const unlockedCount = achievements.filter((a) => a.unlockedTier > 0).length;
+  const unlockedCount = achievements.filter((a) => a.unlockedTier > 0 && a.isPrerequisiteMet).length;
   const totalTiers = achievements.reduce((s, a) => s + a.tiers.length, 0);
   const unlockedTiers = achievements.reduce((s, a) => s + a.unlockedTier, 0);
 
@@ -140,7 +166,7 @@ function CategorySection({
           <span className="text-xl">{categoryIcon}</span>
           {category}
           <span className="text-xs font-normal text-zinc-400">
-            ({unlockedCount}/{achievements.length} osiągnięć)
+            ({unlockedCount}/{achievements.length})
           </span>
         </h2>
         <div className="text-xs text-zinc-400 font-medium">
@@ -149,51 +175,68 @@ function CategorySection({
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {achievements.map((ach) => (
-          <AchievementCard key={ach.id} ach={ach} />
+          <AchievementCard key={ach.id} ach={ach} allAchievements={allAchievements} />
         ))}
       </div>
     </section>
   );
 }
 
-// ── Główna strona ─────────────────────────────────────────────
+// ── Strona główna ─────────────────────────────────────────
 export default function AchievementsPage() {
   const [achievements, setAchievements] = useState<AchievementResult[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/achievements")
-      .then((r) => r.json())
-      .then((data) => {
-        setAchievements(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    const fetchData = () => {
+      fetch("/api/achievements")
+        .then((r) => r.json())
+        .then((raw: Array<Omit<AchievementResult, "formatValue">>) => {
+          const merged: AchievementResult[] = raw.map((item) => {
+            const def = ACHIEVEMENTS.find((d) => d.id === item.id);
+            return { ...item, formatValue: def?.formatValue } as AchievementResult;
+          });
+          setAchievements(merged);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    };
+
+    fetchData();
+
+    // Odświeżaj po evencie (np. po imporcie, dodaniu wpływu) i co 60s
+    window.addEventListener("achievementCheck", fetchData);
+    const interval = setInterval(fetchData, 60_000);
+    return () => {
+      window.removeEventListener("achievementCheck", fetchData);
+      clearInterval(interval);
+    };
   }, []);
 
-  // Grupowanie po kategorii, zachowanie kolejności
+  // Grupuj po kategorii (zachowując kolejność z ACHIEVEMENTS)
   const grouped = useMemo(() => {
     const map = new Map<string, { icon: string; items: AchievementResult[] }>();
+    for (const def of ACHIEVEMENTS) {
+      if (!map.has(def.category)) map.set(def.category, { icon: def.categoryIcon, items: [] });
+    }
     for (const ach of achievements) {
-      if (!map.has(ach.category)) {
-        map.set(ach.category, { icon: ach.categoryIcon, items: [] });
-      }
-      map.get(ach.category)!.items.push(ach);
+      map.get(ach.category)?.items.push(ach);
     }
     return map;
   }, [achievements]);
 
-  // Statystyki globalne
-  const totalUnlocked = achievements.filter((a) => a.unlockedTier > 0).length;
-  const totalPlatinum = achievements.filter((a) => a.unlockedTier === 4).length;
-  const totalTiers = achievements.reduce((s, a) => s + a.unlockedTier, 0);
-  const maxTiers   = achievements.reduce((s, a) => s + a.tiers.length, 0);
-  const overallPct = maxTiers > 0 ? Math.round((totalTiers / maxTiers) * 100) : 0;
+  // Globalne statystyki
+  const totalUnlocked   = achievements.filter((a) => a.unlockedTier > 0 && a.isPrerequisiteMet).length;
+  const totalPlatinum   = achievements.filter((a) => a.unlockedTier === 4).length;
+  const totalTiers      = achievements.reduce((s, a) => s + a.unlockedTier, 0);
+  const maxTiers        = achievements.reduce((s, a) => s + a.tiers.length, 0);
+  const overallPct      = maxTiers > 0 ? Math.round((totalTiers / maxTiers) * 100) : 0;
+  const currentStreak   = achievements.find((a) => a.id === "login_streak")?.currentValue ?? 0;
 
   return (
     <div className="flex-1 p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
 
-      {/* ── Nagłówek ─────────────────────────────────────────── */}
+      {/* ── Nagłówek ──────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl p-6 rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2.5 text-zinc-900 dark:text-white">
@@ -201,13 +244,12 @@ export default function AchievementsPage() {
             Osiągnięcia
           </h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-            Odblokuj kolejne tiery aktywnie korzystając z aplikacji
+            Odblokuj tiery aktywnie korzystając z aplikacji – powiadomienia pojawiają się automatycznie!
           </p>
         </div>
 
-        {/* Mini statystyki */}
         {!loading && (
-          <div className="flex gap-4 flex-wrap">
+          <div className="flex gap-5 flex-wrap">
             <div className="text-center">
               <div className="text-2xl font-black text-zinc-900 dark:text-white">{totalUnlocked}</div>
               <div className="text-[10px] text-zinc-400 uppercase tracking-wide font-bold">odblokowanych</div>
@@ -217,6 +259,10 @@ export default function AchievementsPage() {
               <div className="text-[10px] text-zinc-400 uppercase tracking-wide font-bold">Platyna 💎</div>
             </div>
             <div className="text-center">
+              <div className="text-2xl font-black text-yellow-500">{currentStreak}</div>
+              <div className="text-[10px] text-zinc-400 uppercase tracking-wide font-bold">dni z rzędu ☀️</div>
+            </div>
+            <div className="text-center">
               <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{overallPct}%</div>
               <div className="text-[10px] text-zinc-400 uppercase tracking-wide font-bold">ukończonych tierów</div>
             </div>
@@ -224,20 +270,19 @@ export default function AchievementsPage() {
         )}
       </div>
 
-      {/* ── Pasek ogólnego postępu ────────────────────────────── */}
+      {/* ── Ogólny pasek postępu ──────────────────────────── */}
       {!loading && (
         <div className="bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl p-4 rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
           <div className="flex justify-between text-xs font-medium mb-2 text-zinc-600 dark:text-zinc-400">
-            <span>Ogólny postęp tierów</span>
-            <span>{totalTiers} / {maxTiers} tierów</span>
+            <span>Ogólny postęp ({totalTiers}/{maxTiers} tierów)</span>
+            <span>{overallPct}%</span>
           </div>
           <div className="h-3 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
             <div
-              className="h-full rounded-full bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-1000"
+              className="h-full rounded-full bg-linear-to-r from-amber-500 via-yellow-400 via-30% to-purple-500 transition-all duration-1000"
               style={{ width: `${overallPct}%` }}
             />
           </div>
-          {/* Miniaturowe flagi tierów */}
           <div className="flex justify-between mt-1.5 text-[9px] text-zinc-400 font-bold">
             <span>🥉 Brąz</span>
             <span>🥈 Srebro</span>
@@ -247,24 +292,27 @@ export default function AchievementsPage() {
         </div>
       )}
 
-      {/* ── Skeleton / Ładowanie ──────────────────────────────── */}
+      {/* ── Skeleton ──────────────────────────────────────── */}
       {loading && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {Array.from({ length: 9 }).map((_, i) => (
+          {Array.from({ length: 12 }).map((_, i) => (
             <div key={i} className="h-52 rounded-2xl bg-zinc-100 dark:bg-zinc-900 animate-pulse" />
           ))}
         </div>
       )}
 
-      {/* ── Kategorie ────────────────────────────────────────── */}
-      {!loading && Array.from(grouped.entries()).map(([category, { icon, items }]) => (
-        <CategorySection
-          key={category}
-          category={category}
-          categoryIcon={icon}
-          achievements={items}
-        />
-      ))}
+      {/* ── Kategorie ─────────────────────────────────────── */}
+      {!loading && Array.from(grouped.entries()).map(([category, { icon, items }]) =>
+        items.length > 0 ? (
+          <CategorySection
+            key={category}
+            category={category}
+            categoryIcon={icon}
+            achievements={items}
+            allAchievements={achievements}
+          />
+        ) : null
+      )}
     </div>
   );
 }

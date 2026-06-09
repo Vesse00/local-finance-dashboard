@@ -21,6 +21,13 @@ model User {
 
   location         String?
 
+  // Seria logowania (osiągnięcia)
+  loginStreak     Int       @default(0)
+  lastLoginDate   String?   // "YYYY-MM-DD"
+
+  // Odkryte sekcje aplikacji (osiągnięcia odkrywcy)
+  discoveredPages String    @default("") // przecinek-separated: "calendar,savings,health"
+
   // POLA DO ODZYSKIWANIA HASŁA E-MAILEM
   resetToken       String?  @unique
   resetTokenExpiry DateTime?
@@ -51,6 +58,7 @@ model Income {
   description         String?  
   bankTransactionType String?  
   date                DateTime @default(now())
+  category            String?  // np. "Wynagrodzenie", "Inne"
   
   userId              String
   user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)

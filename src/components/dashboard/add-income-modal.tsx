@@ -35,7 +35,7 @@ export function AddIncomeModal() {
 
   const modalContent = isOpen ? (
     <div 
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" 
+      className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" 
       onClick={() => setIsOpen(false)}
     >
       <div 
@@ -64,6 +64,17 @@ export function AddIncomeModal() {
           <div>
             <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">{t("dashboard.main.modal.source")}</label>
             <input name="source" type="text" placeholder={t("dashboard.main.modal.source_placeholder")} className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-zinc-900 dark:text-white" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Kategoria</label>
+            <select name="category" className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-zinc-800 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-zinc-900 dark:text-white">
+              <option value="">– wybierz –</option>
+              <option value="Wynagrodzenie">💵 Wynagrodzenie</option>
+              <option value="Premia">🏆 Premia</option>
+              <option value="Odsetki">📈 Odsetki</option>
+              <option value="Zwrot">↩️ Zwrot</option>
+              <option value="Inne">📌 Inne</option>
+            </select>
           </div>
           <button type="submit" disabled={isPending} className="active:scale-95 ease-in-out w-full  mt-2 rounded-xl bg-primary py-3 text-white font-semibold shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]">
             {isPending ? t("dashboard.main.modal.submitting") : t("dashboard.main.modal.submit")}

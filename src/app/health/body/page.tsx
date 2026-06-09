@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { BodyPageClient } from "./body-page-client";
+import { DiscoverPage } from "@/components/DiscoverPage";
 
 export default async function BodyMeasurementsPage() {
   const user = await prisma.user.findFirst();
@@ -11,5 +12,5 @@ export default async function BodyMeasurementsPage() {
 
   const filteredData = healthData.filter(d => d.weight || d.chest || d.waist || d.hips || d.biceps || d.thigh);
 
-  return <BodyPageClient initialData={filteredData} />;
+  return <><DiscoverPage page="health/body" /><BodyPageClient initialData={filteredData} /></>;
 }

@@ -4,6 +4,7 @@ import { LineChart, Wallet, Activity, Clock, Power } from "lucide-react";
 import { FinanceAnalysis } from "@/components/analysis/finance-analysis";
 import { TimeAnalysis } from "@/components/analysis/time-analysis";
 import { HealthAnalysis } from "@/components/analysis/health-analysis";
+import { DiscoverPage } from "@/components/DiscoverPage";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +55,7 @@ export default async function AnalysisPage({ searchParams }: { searchParams: Pro
 
   return (
     <div className="flex-1 p-6 md:p-8 space-y-8">
-      
+      <DiscoverPage page="analysis" />
       <div className="flex flex-col gap-6">
         <div className="max-w-7xl mx-auto w-full space-y-6 relative z-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-white/40 dark:bg-black/20 backdrop-blur-xl p-6 rounded-3xl border border-white/50 dark:border-white/5 shadow-sm transition-all">
@@ -85,7 +86,7 @@ export default async function AnalysisPage({ searchParams }: { searchParams: Pro
           <Link href="/analysis?tab=time" className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold transition-all text-sm ${activeTab === "time" ? "bg-white dark:bg-zinc-800 text-blue-500 shadow-sm" : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"}`}><Clock className="w-4 h-4" /> Czas Pracy</Link>
         </div>
       </div>
-
+    
       {activeTab === "finances" && <FinanceAnalysis expenses={safeSerialize(expenses)} incomes={safeSerialize(incomes)} baseCurrency={user.currency || "PLN"} />}
       {activeTab === "time" && <TimeAnalysis workDays={safeSerialize(workDays)} />}
       {activeTab === "health" && <HealthAnalysis healthDays={safeSerialize(healthDays)} healthEntries={safeSerialize(healthEntries)} />}

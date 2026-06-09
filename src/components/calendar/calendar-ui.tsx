@@ -267,6 +267,7 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
         date={detailsDate}
         allExpenses={expenses}
         allIncomes={incomes}
+        categories={categories}
         currency={currency}
       />
 

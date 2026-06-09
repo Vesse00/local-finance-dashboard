@@ -17,6 +17,7 @@ export function TransferForm({ defaultDate, onSuccess, defaultFrom = "MAIN", def
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [accounts, setAccounts] = useState<any[]>([]);
+  const [mainCurrency, setMainCurrency] = useState("PLN");
   
   const [fromAccount, setFromAccount] = useState(defaultFrom);
   const [toAccount, setToAccount] = useState(defaultTo);
@@ -26,6 +27,7 @@ export function TransferForm({ defaultDate, onSuccess, defaultFrom = "MAIN", def
       .then(res => res.json())
       .then(data => {
         if (data.accounts) setAccounts(data.accounts);
+        if (data.currency) setMainCurrency(data.currency);
       })
       .catch(err => console.error(err));
   }, []);
@@ -58,6 +60,11 @@ export function TransferForm({ defaultDate, onSuccess, defaultFrom = "MAIN", def
 
   const isSameAccount = fromAccount === toAccount;
 
+  // Waluta konta źródłowego
+  const fromCurrency = (fromAccount === "MAIN" || fromAccount === "SAVINGS")
+    ? mainCurrency
+    : accounts.find(a => a.id === fromAccount)?.currency || mainCurrency;
+
   return (
     <form className="space-y-6 animate-in fade-in duration-300" onSubmit={handleSubmit}>
       <input type="hidden" name="date" value={defaultDate?.toISOString() || new Date().toISOString()} />
@@ -79,7 +86,7 @@ export function TransferForm({ defaultDate, onSuccess, defaultFrom = "MAIN", def
               <optgroup label={t("calendar.modals.transfer_form.savings_subaccounts")} className="text-zinc-500 bg-zinc-100 dark:bg-zinc-800 font-semibold">
                 {accounts.map(acc => (
                   <option key={acc.id} value={acc.id} className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900 font-bold">
-                    {acc.name} ({acc.type})
+                    {acc.name} ({acc.type}){acc.currency && acc.currency !== mainCurrency ? ` \u00b7 ${acc.currency}` : ""}
                   </option>
                 ))}
               </optgroup>
@@ -106,7 +113,7 @@ export function TransferForm({ defaultDate, onSuccess, defaultFrom = "MAIN", def
               <optgroup label={t("calendar.modals.transfer_form.savings_subaccounts")} className="text-zinc-500 bg-zinc-100 dark:bg-zinc-800 font-semibold">
                 {accounts.map(acc => (
                   <option key={acc.id} value={acc.id} className="text-zinc-900 bg-white dark:text-white dark:bg-zinc-900 font-bold">
-                    {acc.name} ({acc.type})
+                    {acc.name} ({acc.type}){acc.currency && acc.currency !== mainCurrency ? ` \u00b7 ${acc.currency}` : ""}
                   </option>
                 ))}
               </optgroup>
@@ -127,7 +134,7 @@ export function TransferForm({ defaultDate, onSuccess, defaultFrom = "MAIN", def
             className="w-full rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-4 pr-12 outline-none focus:border-indigo-500 transition-all text-zinc-900 dark:text-white text-2xl font-black text-center shadow-sm" 
             required 
           />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">{t("calendar.modals.transfer_form.currency")}</span>
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">{fromCurrency}</span>
         </div>
       </div>
 

@@ -6,6 +6,8 @@ import { computeAchievements, type AchievementData } from "@/lib/achievements";
 
 export const dynamic = "force-dynamic";
 
+const SALARY_KEYWORDS = ["wynagrodzenie", "pensja", "płaca", "wypłata", "salary", "premia"];
+
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session || !(session.user as any)?.id) {
@@ -13,10 +15,32 @@ export async function GET() {
   }
   const userId = (session.user as any).id as string;
 
+  // ── Login streak – aktualizuj przy każdym wywołaniu ──────
+  const today = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+  const yesterday = new Date(Date.now() - 86_400_000).toISOString().split("T")[0];
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { loginStreak: true, lastLoginDate: true, discoveredPages: true, savings: true, currency: true },
+  });
+
+  let loginStreak = user?.loginStreak ?? 0;
+
+  if (user && user.lastLoginDate !== today) {
+    // Nowy dzień – zaktualizuj serię
+    const newStreak = user.lastLoginDate === yesterday ? loginStreak + 1 : 1;
+    await prisma.user.update({
+      where: { id: userId },
+      data: { loginStreak: newStreak, lastLoginDate: today },
+    });
+    loginStreak = newStreak;
+  }
+
+  // ── Równoległe zapytania ──────────────────────────────────
   const [
     savingsAccounts,
     importedTransactionsCount,
-    incomesCount,
+    allIncomes,
     activeRecurring,
     recurringWithLoan,
     healthDaysCount,
@@ -25,39 +49,21 @@ export async function GET() {
     drawerItemsCount,
     usedCategories,
   ] = await Promise.all([
-    // Suma sald kont oszczędnościowych
-    prisma.savingsAccount.findMany({ where: { userId }, select: { balance: true } }),
-
-    // Liczba zaimportowanych transakcji (mają bankTxHash)
+    prisma.savingsAccount.findMany({ where: { userId }, select: { balance: true, currency: true } }),
     prisma.expense.count({ where: { userId, bankTxHash: { not: null } } }),
-
-    // Liczba przychodów
-    prisma.income.count({ where: { userId } }),
-
-    // Aktywne zlecenia stałe
+    prisma.income.findMany({
+      where: { userId },
+      select: { category: true, description: true, source: true },
+    }),
     prisma.recurringPayment.count({ where: { userId, isActive: true } }),
-
-    // Kredyty (mają totalAmount + remainingAmount)
     prisma.recurringPayment.findMany({
       where: { userId, totalAmount: { not: null }, remainingAmount: { not: null } },
       select: { totalAmount: true, remainingAmount: true },
     }),
-
-    // Dni zdrowotne
     prisma.healthDay.count({ where: { userId } }),
-
-    // Nadgodziny
     prisma.workDay.findMany({ where: { userId, isOvertime: true }, select: { overtimeHours: true } }),
-
-    // Serwisy samochodowe
-    prisma.carEvent.count({
-      where: { car: { userId } },
-    }),
-
-    // Dokumenty w szufladzie
+    prisma.carEvent.count({ where: { car: { userId } } }),
     prisma.drawerItem.count({ where: { userId } }),
-
-    // Unikalne kategorie użyte w wydatkach
     prisma.expense.findMany({
       where: { userId, categoryId: { not: null } },
       select: { categoryId: true },
@@ -65,23 +71,57 @@ export async function GET() {
     }),
   ]);
 
-  const totalSavingsBalance = savingsAccounts.reduce((sum, a) => sum + a.balance, 0);
-  const totalOvertimeHours = workDays.reduce((sum, d) => sum + (d.overtimeHours ?? 0), 0);
+  // ── Obliczenia ────────────────────────────────────────────
+  const userDefaultCurrency = user?.currency ?? "PLN";
+  // Skarbonka: główna pula oszczędności + subkonta w domyślnej walucie
+  const plnSubAccountsBalance = savingsAccounts
+    .filter((a) => !a.currency || a.currency === userDefaultCurrency)
+    .reduce((s, a) => s + a.balance, 0);
+  const totalSavingsBalance = (user?.savings ?? 0) + plnSubAccountsBalance;
+  const totalOvertimeHours = workDays.reduce((s, d) => s + (d.overtimeHours ?? 0), 0);
 
-  // Najlepszy % spłaconego kredytu spośród wszystkich
+  // Najlepszy % spłaconego kredytu
   let bestLoanPaidPercent = 0;
   for (const r of recurringWithLoan) {
     if (r.totalAmount && r.remainingAmount !== null) {
-      const paid = r.totalAmount - r.remainingAmount;
-      const pct = (paid / r.totalAmount) * 100;
+      const pct = ((r.totalAmount - r.remainingAmount) / r.totalAmount) * 100;
       if (pct > bestLoanPaidPercent) bestLoanPaidPercent = pct;
     }
   }
 
+  // Liczba wynagrodzeń (po kategorii lub po frazie w opisie/źródle)
+  const salaryIncomesCount = allIncomes.filter((inc) => {
+    if (inc.category === "Wynagrodzenie") return true;
+    const text = ((inc.description ?? "") + " " + (inc.source ?? "")).toLowerCase();
+    return SALARY_KEYWORDS.some((kw) => text.includes(kw));
+  }).length;
+
+  // Konta w obcych walutach (względem domyślnej waluty użytkownika)
+  const foreignCurrencies = new Set(
+    savingsAccounts.filter((a) => a.currency && a.currency !== userDefaultCurrency).map((a) => a.currency)
+  );
+  const foreignCurrencyAccountsCount = foreignCurrencies.size;
+
+  // Saldo per obca waluta → znajdź tę z największym saldem
+  const foreignBalanceByCurrency: Record<string, number> = {};
+  for (const a of savingsAccounts) {
+    if (a.currency && a.currency !== userDefaultCurrency) {
+      foreignBalanceByCurrency[a.currency] = (foreignBalanceByCurrency[a.currency] || 0) + a.balance;
+    }
+  }
+  const foreignEntries = Object.entries(foreignBalanceByCurrency).sort(([, a], [, b]) => b - a);
+  const largestForeignCurrency = foreignEntries[0]?.[0] ?? "EUR";
+  const largestForeignCurrencyBalance = foreignEntries[0]?.[1] ?? 0;
+
+  const discoveredPages = (user?.discoveredPages ?? "")
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean);
+
   const data: AchievementData = {
     totalSavingsBalance,
     importedTransactions: importedTransactionsCount,
-    incomesCount,
+    salaryIncomesCount,
     activeRecurringCount: activeRecurring,
     bestLoanPaidPercent,
     healthDaysCount,
@@ -89,9 +129,13 @@ export async function GET() {
     carEventsCount,
     drawerItemsCount,
     expenseCategoriesCount: usedCategories.length,
+    loginStreak,
+    foreignCurrencyAccountsCount,
+    largestForeignCurrencyBalance,
+    largestForeignCurrency,
+    mainCurrency: userDefaultCurrency,
+    discoveredPages,
   };
 
-  const results = computeAchievements(data);
-
-  return NextResponse.json(results);
+  return NextResponse.json(computeAchievements(data));
 }

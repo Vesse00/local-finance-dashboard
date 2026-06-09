@@ -60,18 +60,21 @@ export async function addExpense(formData: FormData) {
 export async function addIncome(formData: FormData) {
   const amount = parseFloat(formData.get("amount") as string);
   const source = formData.get("source") as string;
+  const category = (formData.get("category") as string | null)?.trim() || null;
   const userId = await getUserId();
 
   await prisma.income.create({
     data: {
       amount,
       source: source || "Wypłata",
+      category: category || null,
       date: new Date(),
       userId
     }
   });
 
   revalidatePath("/");
+  revalidatePath("/calendar");
 }
 
 // NOWOŚĆ: Transfer na oszczędności!
@@ -289,6 +292,48 @@ export async function deleteExpense(formData: FormData) {
   // Usuwamy wpis z bazy
   await prisma.expense.delete({
     where: { id }
+  });
+
+  revalidatePath("/");
+  revalidatePath("/calendar");
+}
+
+// --- EDYCJA WPŁYWU ---
+export async function updateIncome(formData: FormData) {
+  const id = formData.get("id") as string;
+  const amount = parseFloat(formData.get("amount") as string);
+  const source = (formData.get("source") as string)?.trim() || null;
+  const category = (formData.get("category") as string | null)?.trim() || null;
+  const userId = await getUserId();
+
+  await prisma.income.update({
+    where: { id, userId },
+    data: {
+      amount,
+      source: source || undefined,
+      category: category || null,
+    }
+  });
+
+  revalidatePath("/");
+  revalidatePath("/calendar");
+}
+
+// --- EDYCJA WYDATKU ---
+export async function updateExpense(formData: FormData) {
+  const id = formData.get("id") as string;
+  const amount = parseFloat(formData.get("amount") as string);
+  const description = (formData.get("description") as string | null)?.trim() || null;
+  const categoryId = (formData.get("categoryId") as string | null) || null;
+  const userId = await getUserId();
+
+  await prisma.expense.update({
+    where: { id, userId },
+    data: {
+      amount,
+      ...(description !== null ? { description } : {}),
+      ...(categoryId ? { categoryId } : {}),
+    }
   });
 
   revalidatePath("/");

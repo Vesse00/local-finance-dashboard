@@ -26,6 +26,18 @@ export class TransferService {
     return account;
   }
 
+  private async getExchangeRate(from: string, to: string): Promise<number> {
+    if (!from || !to || from === to) return 1;
+    try {
+      const res = await fetch(`https://api.frankfurter.app/latest?from=${from}&to=${to}`);
+      if (!res.ok) return 1;
+      const data: any = await res.json();
+      return (data.rates?.[to] as number | undefined) ?? 1;
+    } catch {
+      return 1;
+    }
+  }
+
   async transfer(
     userId: string,
     payload: {
@@ -110,16 +122,22 @@ export class TransferService {
 
     if (fromAccount === 'MAIN' && toAccount !== 'SAVINGS') {
       const toSavingsAccount = await this.getSavingsAccountForUserOrThrow(user.id, toAccount);
+      const mainCurrency = user.currency || 'PLN';
+      const subCurrency = toSavingsAccount.currency || mainCurrency;
+      const rate = await this.getExchangeRate(mainCurrency, subCurrency);
+      const convertedAmount = parsedAmount * rate;
 
       await this.prisma.$transaction([
         this.prisma.savingsAccount.update({
           where: { id: toSavingsAccount.id },
-          data: { balance: { increment: parsedAmount } },
+          data: { balance: { increment: convertedAmount } },
         }),
         this.prisma.expense.create({
           data: {
             amount: parsedAmount,
-            description: 'Transfer na subkonto oszczednosciowe',
+            description: rate !== 1
+              ? `Transfer na subkonto oszczednosciowe (kurs: 1 ${mainCurrency} = ${rate.toFixed(4)} ${subCurrency})`
+              : 'Transfer na subkonto oszczednosciowe',
             type: 'SAVING',
             date: transferDate,
             userId: user.id,
@@ -127,16 +145,18 @@ export class TransferService {
         }),
         this.prisma.savingsTransaction.create({
           data: {
-            amount: parsedAmount,
+            amount: convertedAmount,
             type: 'IN',
-            description: 'Wplata z Glownego Portfela',
+            description: rate !== 1
+              ? `Wplata z Glownego Portfela (kurs ${rate.toFixed(4)})`
+              : 'Wplata z Glownego Portfela',
             savingsAccountId: toSavingsAccount.id,
             userId: user.id,
           },
         }),
       ]);
 
-      return { success: true };
+      return { success: true, exchangeRate: rate };
     }
 
     if (fromAccount !== 'SAVINGS' && toAccount === 'MAIN') {
@@ -144,6 +164,10 @@ export class TransferService {
         user.id,
         fromAccount,
       );
+      const mainCurrency = user.currency || 'PLN';
+      const subCurrency = fromSavingsAccount.currency || mainCurrency;
+      const rate = await this.getExchangeRate(subCurrency, mainCurrency);
+      const convertedAmount = parsedAmount * rate;
 
       await this.prisma.$transaction([
         this.prisma.savingsAccount.update({
@@ -152,9 +176,11 @@ export class TransferService {
         }),
         this.prisma.income.create({
           data: {
-            amount: parsedAmount,
+            amount: convertedAmount,
             source: 'Z subkonta',
-            description: 'Wyplata z subkonta',
+            description: rate !== 1
+              ? `Wyplata z subkonta (kurs: 1 ${subCurrency} = ${rate.toFixed(4)} ${mainCurrency})`
+              : 'Wyplata z subkonta',
             date: transferDate,
             userId: user.id,
           },
@@ -163,18 +189,24 @@ export class TransferService {
           data: {
             amount: parsedAmount,
             type: 'OUT',
-            description: 'Wyplata do Glownego Portfela',
+            description: rate !== 1
+              ? `Wyplata do Glownego Portfela (kurs ${rate.toFixed(4)})`
+              : 'Wyplata do Glownego Portfela',
             savingsAccountId: fromSavingsAccount.id,
             userId: user.id,
           },
         }),
       ]);
 
-      return { success: true };
+      return { success: true, exchangeRate: rate };
     }
 
     if (fromAccount === 'SAVINGS' && toAccount !== 'MAIN') {
       const toSavingsAccount = await this.getSavingsAccountForUserOrThrow(user.id, toAccount);
+      const mainCurrency = user.currency || 'PLN';
+      const subCurrency = toSavingsAccount.currency || mainCurrency;
+      const rate = await this.getExchangeRate(mainCurrency, subCurrency);
+      const convertedAmount = parsedAmount * rate;
 
       await this.prisma.$transaction([
         this.prisma.user.update({
@@ -183,29 +215,33 @@ export class TransferService {
         }),
         this.prisma.savingsAccount.update({
           where: { id: toSavingsAccount.id },
-          data: { balance: { increment: parsedAmount } },
+          data: { balance: { increment: convertedAmount } },
         }),
         this.prisma.savingsTransaction.create({
           data: {
             amount: parsedAmount,
             type: 'OUT',
-            description: 'Przelew na subkonto',
+            description: rate !== 1
+              ? `Przelew na subkonto (kurs: 1 ${mainCurrency} = ${rate.toFixed(4)} ${subCurrency})`
+              : 'Przelew na subkonto',
             savingsAccountId: null,
             userId: user.id,
           },
         }),
         this.prisma.savingsTransaction.create({
           data: {
-            amount: parsedAmount,
+            amount: convertedAmount,
             type: 'IN',
-            description: 'Przelew z Glownych Oszczednosci',
+            description: rate !== 1
+              ? `Przelew z Glownych Oszczednosci (kurs ${rate.toFixed(4)})`
+              : 'Przelew z Glownych Oszczednosci',
             savingsAccountId: toSavingsAccount.id,
             userId: user.id,
           },
         }),
       ]);
 
-      return { success: true };
+      return { success: true, exchangeRate: rate };
     }
 
     if (fromAccount !== 'MAIN' && toAccount === 'SAVINGS') {
@@ -213,6 +249,10 @@ export class TransferService {
         user.id,
         fromAccount,
       );
+      const mainCurrency = user.currency || 'PLN';
+      const subCurrency = fromSavingsAccount.currency || mainCurrency;
+      const rate = await this.getExchangeRate(subCurrency, mainCurrency);
+      const convertedAmount = parsedAmount * rate;
 
       await this.prisma.$transaction([
         this.prisma.savingsAccount.update({
@@ -221,29 +261,33 @@ export class TransferService {
         }),
         this.prisma.user.update({
           where: { id: user.id },
-          data: { savings: { increment: parsedAmount } },
+          data: { savings: { increment: convertedAmount } },
         }),
         this.prisma.savingsTransaction.create({
           data: {
             amount: parsedAmount,
             type: 'OUT',
-            description: 'Przelew na Glowne Oszczednosci',
+            description: rate !== 1
+              ? `Przelew na Glowne Oszczednosci (kurs: 1 ${subCurrency} = ${rate.toFixed(4)} ${mainCurrency})`
+              : 'Przelew na Glowne Oszczednosci',
             savingsAccountId: fromSavingsAccount.id,
             userId: user.id,
           },
         }),
         this.prisma.savingsTransaction.create({
           data: {
-            amount: parsedAmount,
+            amount: convertedAmount,
             type: 'IN',
-            description: 'Przelew z subkonta',
+            description: rate !== 1
+              ? `Przelew z subkonta (kurs ${rate.toFixed(4)})`
+              : 'Przelew z subkonta',
             savingsAccountId: null,
             userId: user.id,
           },
         }),
       ]);
 
-      return { success: true };
+      return { success: true, exchangeRate: rate };
     }
 
     const fromSavingsAccount = await this.getSavingsAccountForUserOrThrow(
@@ -251,6 +295,10 @@ export class TransferService {
       fromAccount,
     );
     const toSavingsAccount = await this.getSavingsAccountForUserOrThrow(user.id, toAccount);
+    const fromCurrency = fromSavingsAccount.currency || (user.currency || 'PLN');
+    const toCurrency = toSavingsAccount.currency || (user.currency || 'PLN');
+    const rate = await this.getExchangeRate(fromCurrency, toCurrency);
+    const convertedAmount = parsedAmount * rate;
 
     await this.prisma.$transaction([
       this.prisma.savingsAccount.update({
@@ -259,28 +307,32 @@ export class TransferService {
       }),
       this.prisma.savingsAccount.update({
         where: { id: toSavingsAccount.id },
-        data: { balance: { increment: parsedAmount } },
+        data: { balance: { increment: convertedAmount } },
       }),
       this.prisma.savingsTransaction.create({
         data: {
           amount: parsedAmount,
           type: 'OUT',
-          description: 'Przelew wewnetrzny (Wychodzacy)',
+          description: rate !== 1
+            ? `Przelew wewnetrzny (kurs: 1 ${fromCurrency} = ${rate.toFixed(4)} ${toCurrency})`
+            : 'Przelew wewnetrzny (Wychodzacy)',
           savingsAccountId: fromSavingsAccount.id,
           userId: user.id,
         },
       }),
       this.prisma.savingsTransaction.create({
         data: {
-          amount: parsedAmount,
+          amount: convertedAmount,
           type: 'IN',
-          description: 'Przelew wewnetrzny (Przychodzacy)',
+          description: rate !== 1
+            ? `Przelew wewnetrzny (kurs ${rate.toFixed(4)})`
+            : 'Przelew wewnetrzny (Przychodzacy)',
           savingsAccountId: toSavingsAccount.id,
           userId: user.id,
         },
       }),
     ]);
 
-    return { success: true };
+    return { success: true, exchangeRate: rate };
   }
 }

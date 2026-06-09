@@ -1,5 +1,6 @@
 import { getCalendarData } from "@/lib/actions";
 import { CalendarUI } from "@/components/calendar/calendar-ui";
+import { DiscoverPage } from "@/components/DiscoverPage";
 
 const safeSerialize = (data: any) => 
   JSON.parse(JSON.stringify(data, (key, value) => 
@@ -11,11 +12,14 @@ export default async function CalendarPage() {
   const { expenses, incomes, categories, currency } = await getCalendarData();
 
   return (
-    <CalendarUI
-      expenses={safeSerialize(expenses)}
-      incomes={safeSerialize(incomes)}
-      categories={safeSerialize(categories)}
-      currency={currency}
-    />
+    <>
+      <DiscoverPage page="calendar" />
+      <CalendarUI
+        expenses={safeSerialize(expenses)}
+        incomes={safeSerialize(incomes)}
+        categories={safeSerialize(categories)}
+        currency={currency}
+      />
+    </>
   );
 }

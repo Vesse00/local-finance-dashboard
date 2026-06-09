@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { DailyPageClient } from "./daily-page-client";
 import { startOfMonth, endOfMonth } from "date-fns";
+import { DiscoverPage } from "@/components/DiscoverPage";
 
 export default async function DailyHealthPage() {
   const user = await prisma.user.findFirst();
@@ -24,5 +25,5 @@ export default async function DailyHealthPage() {
     }
   });
 
-  return <DailyPageClient initialDays={initialDays} initialEntries={initialEntries} />;
+  return <><DiscoverPage page="health/daily" /><DailyPageClient initialDays={initialDays} initialEntries={initialEntries} /></>;
 }
