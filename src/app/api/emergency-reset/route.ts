@@ -8,8 +8,9 @@ export async function DELETE(req: Request) {
   try {
     // 1. Sprawdzamy, czy użytkownik jest zalogowany
     const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.email) {
+    const userId = (session?.user as any)?.id;
+
+    if (!userId) {
       return NextResponse.json({ error: "Brak autoryzacji. Zaloguj się ponownie." }, { status: 401 });
     }
 
@@ -21,9 +22,9 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Hasło jest wymagane do potwierdzenia operacji." }, { status: 400 });
     }
 
-    // 3. Pobieramy użytkownika z bazy, aby uzyskać jego zahashowane hasło i ID
+    // 3. Pobieramy użytkownika z bazy po ID (nie po email – email nie jest w sesji JWT)
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { id: userId }
     });
 
     if (!user) {

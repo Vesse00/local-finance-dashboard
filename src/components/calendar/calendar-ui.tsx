@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
+import { useState, useMemo } from "react";
+import { ChevronLeft, ChevronRight, Settings, Flame, TrendingDown } from "lucide-react";
 import { 
   format, addMonths, subMonths, startOfMonth, endOfMonth, 
   startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, 
-  isToday, setYear, isSameDay
+  isToday, setYear, isSameDay, startOfDay
 } from "date-fns";
 import { pl, enUS } from "date-fns/locale";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -20,6 +20,20 @@ interface CalendarUIProps {
   incomes: any[];
   categories: any[];
   currency?: string;
+}
+
+/** Oblicza streak – ile dni z rzędu (wstecz od dzisiaj) zawiera wydatki */
+function calcStreak(expenses: any[]): number {
+  const today = startOfDay(new Date());
+  let streak = 0;
+  let checking = new Date(today);
+  while (true) {
+    const has = expenses.some(e => isSameDay(new Date(e.date), checking));
+    if (!has) break;
+    streak++;
+    checking = new Date(checking.getTime() - 86400000);
+  }
+  return streak;
 }
 
 export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: CalendarUIProps) {
@@ -70,6 +84,21 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
+  // Obliczenia dla paska budżetu i streak
+  const monthExpenses = useMemo(() =>
+    expenses.filter(e => {
+      const d = new Date(e.date);
+      return d.getFullYear() === currentMonth.getFullYear() && d.getMonth() === currentMonth.getMonth() && e.type === "EXPENSE";
+    }), [expenses, currentMonth]);
+
+  const totalMonthSpend = useMemo(() => monthExpenses.reduce((s, e) => s + e.amount, 0), [monthExpenses]);
+  const totalBudgetLimit = useMemo(() => categories.reduce((s: number, c: any) => s + (c.budgetLimit || 0), 0), [categories]);
+
+  const streak = useMemo(() => calcStreak(expenses), [expenses]);
+
+  const budgetPct = totalBudgetLimit > 0 ? Math.min(100, (totalMonthSpend / totalBudgetLimit) * 100) : 0;
+  const budgetColor = budgetPct < 60 ? "bg-emerald-500" : budgetPct < 85 ? "bg-amber-500" : "bg-red-500";
+
   return (
     <div className="flex-1 p-6 md:p-8 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl p-4 rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
@@ -95,6 +124,29 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
           <button onClick={nextMonth} className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
             <ChevronRight className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* STREAK + PASEK BUDŻETU */}
+        <div className="flex flex-col gap-2 flex-1 md:max-w-xs">
+          {streak > 0 && (
+            <div className="flex items-center gap-1.5 text-sm font-semibold text-amber-500">
+              <Flame className="w-4 h-4" />
+              <span>{streak} {streak === 1 ? "dzień" : streak < 5 ? "dni" : "dni"} z rzędu!</span>
+            </div>
+          )}
+          {totalBudgetLimit > 0 && (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-xs text-zinc-500">
+                <span className="flex items-center gap-1"><TrendingDown className="w-3.5 h-3.5" /> Budżet miesięczny</span>
+                <span className={budgetPct >= 85 ? "text-red-500 font-bold" : ""}>
+                  {totalMonthSpend.toLocaleString("pl-PL", { style: "currency", currency, maximumFractionDigits: 0 })} / {totalBudgetLimit.toLocaleString("pl-PL", { style: "currency", currency, maximumFractionDigits: 0 })}
+                </span>
+              </div>
+              <div className="h-2 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
+                <div className={`h-full rounded-full transition-all duration-500 ${budgetColor}`} style={{ width: `${budgetPct}%` }} />
+              </div>
+            </div>
+          )}
         </div>
         
         <div className="flex flex-wrap items-center justify-end gap-3">
@@ -123,27 +175,37 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
             const isCurrentMonth = isSameMonth(date, currentMonth);
             const isCurrentDay = isToday(date);
             
-            // Pobieramy transakcje z danego dnia
             const dayExpenses = expenses.filter(e => isSameDay(new Date(e.date), date));
             const dayIncomes = incomes.filter(inc => isSameDay(new Date(inc.date), date));
 
-            // Łączymy wszystkie w jedną tablicę do wygodnego limitowania
             const allDayTransactions = [
               ...dayIncomes.map(inc => ({ ...inc, isIncome: true })),
               ...dayExpenses.map(exp => ({ ...exp, isIncome: false }))
             ];
 
-            // Ustalamy limit widocznych elementów (np. 3 pierwsze)
             const MAX_VISIBLE = 3;
             const visibleTransactions = allDayTransactions.slice(0, MAX_VISIBLE);
             const hiddenCount = allDayTransactions.length - MAX_VISIBLE;
+
+            // Kolor tła dnia: zielony = przychód, czerwony = dużo wydatków, żółty = umiarkowane
+            const daySpend = dayExpenses.filter(e => e.type === "EXPENSE").reduce((s: number, e: any) => s + e.amount, 0);
+            const dayIncome = dayIncomes.reduce((s: number, e: any) => s + e.amount, 0);
+            const isPast = date < startOfDay(new Date()) && !isCurrentDay;
+            let dayColorClass = "";
+            if (isCurrentMonth && isPast && (daySpend > 0 || dayIncome > 0)) {
+              if (dayIncome > 0 && daySpend === 0) dayColorClass = "bg-emerald-50 dark:bg-emerald-950/30";
+              else if (daySpend > 200) dayColorClass = "bg-red-50 dark:bg-red-950/25";
+              else if (daySpend > 0) dayColorClass = "bg-amber-50 dark:bg-amber-950/20";
+            }
 
             return (
               <div 
                 key={i} 
                 onClick={() => isCurrentMonth && handleDayClick(date)}
                 className={`group relative min-h-[120px] p-2 transition-colors border-t border-l border-transparent
-                  ${isCurrentMonth ? "bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer" : "bg-zinc-50/50 dark:bg-zinc-900/30 cursor-default"}
+                  ${isCurrentMonth
+                    ? `hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer ${dayColorClass || "bg-white dark:bg-zinc-950"}`
+                    : "bg-zinc-50/50 dark:bg-zinc-900/30 cursor-default"}
                 `}
               >
                 <span className={`text-sm font-medium ${
@@ -156,7 +218,6 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
                   {format(date, 'd')}
                 </span>
 
-                {/* Wyświetlanie transakcji bez scrollbara, obcięte do MAX_VISIBLE */}
                 <div className="flex flex-col gap-1 mt-1">
                   {visibleTransactions.map(tx => (
                     tx.isIncome ? (
@@ -170,7 +231,6 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
                     )
                   ))}
                   
-                  {/* Jeśli są jakieś ukryte transakcje, pokaż mały chip z informacją */}
                   {hiddenCount > 0 && (
                     <div className="truncate rounded bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold border border-black/5 dark:border-white/5 text-center mt-0.5">
                       {t("calendar.more_transactions").replace("{count}", hiddenCount.toString())}
@@ -197,6 +257,8 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
         onClose={() => setIsExpenseModalOpen(false)} 
         selectedDate={expenseDate}
         categories={categories}
+        expenses={expenses}
+        currency={currency}
       />
 
       <DayDetailsModal

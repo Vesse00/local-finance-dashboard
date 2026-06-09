@@ -1,7 +1,7 @@
 "use client";
 
 import { X, Calendar as CalendarIcon, Repeat, Scale, ArrowRightLeft } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { addExpense, adjustMainBalance } from "@/lib/actions";
 import { RecurringForm } from "./recurring-form";
@@ -12,16 +12,21 @@ interface ExpenseModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedDate: Date | null;
-  categories: any[]; 
+  categories: any[];
+  expenses?: any[];
+  currency?: string;
 }
 
-export function ExpenseModal({ isOpen, onClose, selectedDate, categories }: ExpenseModalProps) {
+const QUICK_AMOUNTS = [10, 20, 50, 100, 200, 500];
+
+export function ExpenseModal({ isOpen, onClose, selectedDate, categories, expenses = [], currency = "PLN" }: ExpenseModalProps) {
   const { t, language } = useLanguage();
   const [isPending, startTransition] = useTransition();
   const [mounted, setMounted] = useState(false);
+  const amountRef = useRef<HTMLInputElement>(null);
   
-  // ZMIANA: Mamy 4 opcje
   const [type, setType] = useState<"ONETIME" | "RECURRING" | "CORRECTION" | "TRANSFER">("ONETIME");
+  const [quickAmount, setQuickAmount] = useState<number | null>(null);
 
   const NEW_CATEGORY_CONST = t("calendar.modals.expense.category_new");
   const [categorySelection, setCategorySelection] = useState(NEW_CATEGORY_CONST);
@@ -33,6 +38,7 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories }: Expe
     if (isOpen) {
       document.body.style.overflow = "hidden";
       setType("ONETIME");
+      setQuickAmount(null);
       setCategorySelection(categories.length > 0 ? categories[0].name : NEW_CATEGORY_CONST);
       setCustomCategory("");
     } else {
@@ -40,6 +46,27 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories }: Expe
     }
     return () => { document.body.style.overflow = "auto"; };
   }, [isOpen, categories]);
+
+  const handleQuickAmount = (val: number) => {
+    setQuickAmount(val);
+    if (amountRef.current) {
+      amountRef.current.value = String(val);
+    }
+  };
+
+  // Wydatki bieżącego miesiąca per kategoria
+  const now = new Date();
+  const spendByCategory = useMemo(() => {
+    const map: Record<string, number> = {};
+    expenses.forEach((e: any) => {
+      if (e.type !== "EXPENSE") return;
+      const d = new Date(e.date);
+      if (d.getFullYear() !== now.getFullYear() || d.getMonth() !== now.getMonth()) return;
+      const catName = e.category?.name || "";
+      map[catName] = (map[catName] || 0) + e.amount;
+    });
+    return map;
+  }, [expenses]);
 
   const handleOnetimeSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -64,18 +91,22 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories }: Expe
 
   const modalContent = isOpen ? (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={onClose}>
-      <div className="relative w-full max-w-md rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+      {/* Szerszy modal dla trybu ONETIME, normalny dla reszty */}
+      <div
+        className={`relative w-full rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${type === "ONETIME" ? "max-w-2xl" : "max-w-md"}`}
+        onClick={e => e.stopPropagation()}
+      >
         <button onClick={onClose} className="absolute right-4 top-4 rounded-full p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300 transition-colors">
           <X className="h-5 w-5" />
         </button>
 
         <h3 className="text-xl font-bold mb-1 text-zinc-900 dark:text-white">{t("calendar.modals.expense.title")}</h3>
-        <p className="text-sm text-zinc-500 mb-6">
+        <p className="text-sm text-zinc-500 mb-4">
           {selectedDate?.toLocaleDateString(language === "en" ? "en-US" : "pl-PL", { day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
 
-        {/* SIATKA 2x2 */}
-        <div className="grid grid-cols-2 gap-2 mb-6 bg-black/5 dark:bg-white/5 p-2 rounded-2xl">
+        {/* ZAKŁADKI TRYBU */}
+        <div className="grid grid-cols-4 gap-2 mb-5 bg-black/5 dark:bg-white/5 p-1.5 rounded-2xl">
           <button type="button" onClick={() => setType("ONETIME")} className={`py-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all ${type === "ONETIME" ? "bg-white dark:bg-zinc-800 shadow-sm text-zinc-900 dark:text-white" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}>
             <CalendarIcon className="w-3.5 h-3.5" /> {t("calendar.modals.expense.type_expense")}
           </button>
@@ -90,33 +121,120 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories }: Expe
           </button>
         </div>
 
-        {/* FORMULARZE */}
+        {/* FORMULARZ ONETIME – 2 kolumny */}
         {type === "ONETIME" && (
-          <form className="space-y-4 animate-in slide-in-from-left-4 duration-300" onSubmit={handleOnetimeSubmit}>
+          <form onSubmit={handleOnetimeSubmit} className="animate-in slide-in-from-left-4 duration-300">
             <input type="hidden" name="date" value={selectedDate?.toISOString() || new Date().toISOString()} />
-            <div>
-              <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">{t("calendar.modals.expense.amount_label")}</label>
-              <input name="amount" type="number" step="0.01" placeholder={t("calendar.modals.expense.amount_placeholder")} className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary text-zinc-900 dark:text-white" required />
+            <input type="hidden" name="category" value={categorySelection === NEW_CATEGORY_CONST ? customCategory.trim() : categorySelection} />
+
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] gap-5">
+              {/* LEWA KOLUMNA – kwota + opis + submit */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t("calendar.modals.expense.amount_label")}</label>
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {QUICK_AMOUNTS.map(val => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => handleQuickAmount(val)}
+                        className={`py-2.5 rounded-xl text-sm font-bold transition-all border ${
+                          quickAmount === val
+                            ? "bg-primary text-white border-primary shadow-md shadow-primary/25"
+                            : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-zinc-600 dark:text-zinc-300 hover:border-primary/50 hover:text-primary"
+                        }`}
+                      >
+                        {val} zł
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    ref={amountRef}
+                    name="amount"
+                    type="number"
+                    step="0.01"
+                    placeholder={t("calendar.modals.expense.amount_placeholder")}
+                    defaultValue={quickAmount ?? ""}
+                    onChange={() => setQuickAmount(null)}
+                    className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary text-zinc-900 dark:text-white text-lg font-bold"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">{t("calendar.modals.expense.description_label")}</label>
+                  <input name="description" type="text" placeholder={t("calendar.modals.expense.description_placeholder")} className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary text-zinc-900 dark:text-white" />
+                </div>
+
+                <button type="submit" disabled={isPending} className="w-full rounded-xl bg-primary py-3 text-white font-semibold shadow-lg shadow-primary/20 disabled:opacity-50 transition-opacity">
+                  {isPending ? t("calendar.modals.expense.submitting") : t("calendar.modals.expense.submit_expense")}
+                </button>
+              </div>
+
+              {/* PRAWA KOLUMNA – kategorie ze wskaźnikiem budżetu */}
+              <div className="flex flex-col">
+                <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t("calendar.modals.expense.category_label")}</label>
+                <div className="flex flex-col gap-1.5 overflow-y-auto max-h-72 pr-0.5 flex-1">
+                  {categories.map((cat: any) => {
+                    const spent = spendByCategory[cat.name] || 0;
+                    const limit = cat.budgetLimit;
+                    const pct = limit ? Math.min(100, (spent / limit) * 100) : 0;
+                    const barColor = pct < 60 ? "bg-emerald-500" : pct < 85 ? "bg-amber-500" : "bg-red-500";
+                    const isSelected = categorySelection === cat.name;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setCategorySelection(cat.name)}
+                        className={`w-full text-left px-3 py-2.5 rounded-xl border transition-all ${
+                          isSelected
+                            ? "bg-primary/10 border-primary shadow-sm"
+                            : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 hover:border-primary/40"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-base leading-none">{cat.icon}</span>
+                          <span className={`text-xs font-semibold truncate flex-1 ${isSelected ? "text-primary" : "text-zinc-700 dark:text-zinc-300"}`}>{cat.name}</span>
+                        </div>
+                        {limit ? (
+                          <>
+                            <div className="flex justify-between text-[10px] text-zinc-500 mb-0.5">
+                              <span>{spent.toLocaleString("pl-PL", { maximumFractionDigits: 0 })} / {limit.toLocaleString("pl-PL", { maximumFractionDigits: 0 })} zł</span>
+                              <span className={pct >= 85 ? "text-red-500 font-bold" : ""}>{Math.round(pct)}%</span>
+                            </div>
+                            <div className="h-1 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
+                              <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-[10px] text-zinc-400">Brak limitu</div>
+                        )}
+                      </button>
+                    );
+                  })}
+                  <button
+                    type="button"
+                    onClick={() => setCategorySelection(NEW_CATEGORY_CONST)}
+                    className={`w-full text-left px-3 py-2.5 rounded-xl border border-dashed transition-all ${
+                      categorySelection === NEW_CATEGORY_CONST
+                        ? "bg-primary/10 border-primary"
+                        : "bg-black/5 dark:bg-white/5 border-black/20 dark:border-white/20 hover:border-primary/40"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">＋</span>
+                      <span className="text-xs font-semibold text-zinc-500">Nowa kategoria</span>
+                    </div>
+                  </button>
+                </div>
+                {categorySelection === NEW_CATEGORY_CONST && (
+                  <input type="text" placeholder={t("calendar.modals.expense.category_custom_placeholder")} value={customCategory} onChange={(e) => setCustomCategory(e.target.value)} required className="mt-2 w-full rounded-xl border border-primary/50 bg-primary/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary text-zinc-900 dark:text-white text-sm animate-in slide-in-from-top-2" />
+                )}
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">{t("calendar.modals.expense.category_label")}</label>
-              <select name="category" value={categorySelection} onChange={(e) => setCategorySelection(e.target.value)} className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary text-zinc-900 dark:text-white mb-2">
-                {categories.map(cat => <option key={cat.id} value={cat.name} className="bg-white dark:bg-zinc-900">{cat.icon} {cat.name}</option>)}
-                <option value={NEW_CATEGORY_CONST} className="text-primary font-bold bg-white dark:bg-zinc-900">+ {t("calendar.modals.expense.category_new_label")}</option>
-              </select>
-              {categorySelection === NEW_CATEGORY_CONST && <input type="text" placeholder={t("calendar.modals.expense.category_custom_placeholder")} value={customCategory} onChange={(e) => setCustomCategory(e.target.value)} required className="w-full rounded-xl border border-primary/50 bg-primary/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary text-zinc-900 dark:text-white animate-in slide-in-from-top-2" />}
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">{t("calendar.modals.expense.description_label")}</label>
-              <input name="description" type="text" placeholder={t("calendar.modals.expense.description_placeholder")} className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-primary focus:ring-1 focus:ring-primary text-zinc-900 dark:text-white" />
-            </div>
-            <button type="submit" disabled={isPending} className="w-full mt-2 rounded-xl bg-primary py-3 text-white font-semibold shadow-lg shadow-primary/20 disabled:opacity-50">
-              {isPending ? t("calendar.modals.expense.submitting") : t("calendar.modals.expense.submit_expense")}
-            </button>
           </form>
         )}
 
-        {/* NASZ TRANSFER FORM! Z domyślnym ustawieniem z Portfela na Oszczędności */}
         {type === "TRANSFER" && (
           <TransferForm defaultDate={selectedDate} onSuccess={onClose} defaultFrom="MAIN" defaultTo="SAVINGS" />
         )}
@@ -138,7 +256,6 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories }: Expe
             </button>
           </form>
         )}
-
       </div>
     </div>
   ) : null;
