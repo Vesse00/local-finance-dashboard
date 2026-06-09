@@ -381,11 +381,14 @@ export async function addRecurringPayment(formData: FormData) {
     }
 
     if (amountForThisMonth > 0) {
+      // Przyszłe raty = PENDING (do potwierdzenia przez import). Bieżący i przeszłe = COMPLETED.
+      const isPastOrCurrent = expenseDate <= today;
       expensesToCreate.push({
         amount: amountForThisMonth,
         description: name,
         date: expenseDate,
         type: "EXPENSE",
+        status: isPastOrCurrent ? "COMPLETED" : "PENDING",
         categoryId: categoryId, 
         userId: userId,
         recurringId: newRecurring.id
@@ -495,11 +498,13 @@ export async function overpayRecurring(formData: FormData) {
     simulatedAccumulated += amountForThisMonth;
 
     if (amountForThisMonth > 0) {
+      const isPastOrCurrent = expenseDate <= today;
       expensesToCreate.push({
         amount: amountForThisMonth,
         description: rec.name,
         date: expenseDate,
         type: "EXPENSE",
+        status: isPastOrCurrent ? "COMPLETED" : "PENDING",
         categoryId: rec.categoryId, 
         userId: rec.userId,
         recurringId: rec.id
@@ -668,11 +673,13 @@ export async function updateRecurringPayment(formData: FormData) {
     }
 
     if (amountForThisMonth > 0) {
+      const isPastOrCurrent = expenseDate <= today;
       expensesToCreate.push({
         amount: amountForThisMonth,
         description: name,
         date: expenseDate,
         type: "EXPENSE",
+        status: isPastOrCurrent ? "COMPLETED" : "PENDING",
         categoryId: categoryId, 
         userId: userId,
         recurringId: id

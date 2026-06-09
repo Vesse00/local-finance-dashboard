@@ -8,12 +8,13 @@ import { signOut } from "next-auth/react";
 import { 
   Menu, X, LayoutDashboard, LineChart, Wallet, CalendarDays, Repeat, PiggyBank, 
   ArrowRightLeft, Briefcase, Clock, User, Heart, Dumbbell, Scale, Archive, Settings, LogOut, ChevronDown, 
-  CarFront
+  CarFront, Trophy
 } from "lucide-react";
 
 const topItems = [
   { name: "Pulpit", href: "/", icon: LayoutDashboard },
   { name: "Analiza", href: "/analysis", icon: LineChart },
+  { name: "Osiągnięcia", href: "/achievements", icon: Trophy },
 ];
 
 const navGroups = [

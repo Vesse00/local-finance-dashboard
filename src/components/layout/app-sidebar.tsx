@@ -7,7 +7,7 @@ import { signOut } from "next-auth/react";
 import { 
   LayoutDashboard, ArrowRightLeft, PieChart, 
   LogOut, CalendarDays, PiggyBank, Repeat, ChevronDown, Wallet, LineChart, Settings, 
-  Briefcase, Clock, Activity, Droplet, Dumbbell, Scale, User, Heart, Archive, CarFront, Zap, Calculator
+  Briefcase, Clock, Activity, Droplet, Dumbbell, Scale, User, Heart, Archive, CarFront, Zap, Calculator, Trophy
 } from "lucide-react";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -15,7 +15,8 @@ import { useLanguage } from "@/components/LanguageProvider";
 const topItems = [
   { nameKey: "sidebar.top.dashboard", href: "/", icon: LayoutDashboard },
   { nameKey: "sidebar.top.analysis", href: "/analysis", icon: LineChart },
-  { nameKey: "Planer", href: "/planner", icon: Calculator }, // Dodany Planer
+  { nameKey: "Planer", href: "/planner", icon: Calculator },
+  { nameKey: "Osiągnięcia", href: "/achievements", icon: Trophy },
 ];
 
 // Zaktualizowana struktura nawigacji (obsługa podgrup)

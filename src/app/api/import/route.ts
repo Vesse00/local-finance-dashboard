@@ -148,17 +148,24 @@ export async function POST(req: Request) {
         }
 
         if (matchedRecurring) {
-          // Szukamy PENDING Expense z tego zlecenia w całym miesiącu transakcji
+          // Szukamy w całym miesiącu transakcji
           const windowStart = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
           const windowEnd   = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0, 23, 59, 59, 999));
+
+          // 1. Priorytet: PENDING (zaplanowana rata czekająca na potwierdzenie)
           const pendingExpense = await prisma.expense.findFirst({
             where: { recurringId: matchedRecurring.id, status: "PENDING", date: { gte: windowStart, lte: windowEnd } },
           });
 
-          if (pendingExpense) {
+          // 2. Fallback: systemowo wygenerowany COMPLETED bez bankTxHash (stary styl)
+          const targetExpense = pendingExpense ?? await prisma.expense.findFirst({
+            where: { recurringId: matchedRecurring.id, bankTxHash: null, date: { gte: windowStart, lte: windowEnd } },
+          });
+
+          if (targetExpense) {
             // Scalamy: faktyczna kwota zastępuje zaplanowaną, status → COMPLETED
             await prisma.expense.update({
-              where: { id: pendingExpense.id },
+              where: { id: targetExpense.id },
               data: { amount: absAmount, date, status: "COMPLETED", bankTxHash, bankTransactionType: typ },
             });
 
