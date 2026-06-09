@@ -29,77 +29,60 @@
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
-
-  /* ── Widget semantic color tokens ───────────────────────────
-     Change a single line here to retheme an entire widget.
-     All Tailwind opacity modifiers (/30, /5, etc.) work automatically. */
-  --color-health:    var(--color-cyan-400);
-  --color-health-dim:   var(--color-cyan-700);
-  --color-health-muted: var(--color-cyan-900);
-
-  --color-work:    var(--color-amber-400);
-  --color-work-dim:   var(--color-amber-700);
-  --color-work-muted: var(--color-amber-900);
-
-  --color-briefing:    var(--color-violet-400);
-  --color-briefing-dim:   var(--color-violet-700);
-  --color-briefing-muted: var(--color-violet-900);
-
-  /* Finance widget stays green (uses default green-* palette) */
 }
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 5%;
-    --card: 0 0% 96%;
-    --card-foreground: 0 0% 5%;
-    --popover: 0 0% 96%;
-    --popover-foreground: 0 0% 5%;
-    --primary: 142 71% 38%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 92%;
-    --secondary-foreground: 0 0% 10%;
-    --muted: 0 0% 92%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 0 0% 92%;
-    --accent-foreground: 0 0% 10%;
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 142 30% 82%;
-    --input: 0 0% 88%;
-    --ring: 142 71% 38%;
-    --radius: 0rem;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 262.1 83.3% 57.8%;
+    --radius: 0.75rem;
 
     /* Dynamiczne kolory dla gradientu tła (Tryb Jasny) */
-    --bg-gradient-start: 142 71% 96%;
-    --bg-gradient-end: 0 0% 98%;
+    --bg-gradient-start: 262.1 83.3% 96%;
+    --bg-gradient-end: 0 0% 100%;
   }
 
   .dark {
-    --background: 0 0% 2%;
-    --foreground: 0 0% 95%;
-    --card: 0 0% 4%;
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 4%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 142 71% 45%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 9%;
-    --secondary-foreground: 0 0% 95%;
-    --muted: 0 0% 8%;
-    --muted-foreground: 145 20% 45%;
-    --accent: 0 0% 8%;
-    --accent-foreground: 0 0% 95%;
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 240 5% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 5% 15%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 240 5% 15%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 150 30% 12%;
-    --input: 0 0% 12%;
-    --ring: 142 71% 45%;
+    --border: 240 5% 20%;
+    --input: 240 5% 20%;
+    --ring: 262.1 83.3% 57.8%;
 
     /* Dynamiczne kolory dla gradientu tła (Tryb Ciemny) */
-    --bg-gradient-start: 142 71% 5%;
-    --bg-gradient-end: 0 0% 2%;
+    --bg-gradient-start: 262.1 83.3% 12%;
+    --bg-gradient-end: 240 10% 4%;
   }
 }
 

@@ -1,7 +1,6 @@
 "use client";
 
-import { Zap, ArrowRight, Umbrella, Stethoscope } from "lucide-react";
-import { PixelClock } from "@/components/ui/pixel-icons";
+import { Briefcase, Zap, ArrowRight, Umbrella, Stethoscope } from "lucide-react";
 import Link from "next/link";
 import { format, isBefore, isToday, startOfDay } from "date-fns";
 import { pl, enUS } from "date-fns/locale";
@@ -78,54 +77,59 @@ export function WorkWidget({ workDays }: WorkWidgetProps) {
   const currentMonthName = format(now, "LLLL", { locale: language === 'pl' ? pl : enUS });
 
   return (
-    <div className="border border-work-muted/30 bg-black/40 p-6 md:p-8 flex flex-col justify-between relative overflow-hidden h-full transition-all">
+    <div className="bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl border border-black/5 dark:border-white/10 rounded-[2.5rem] p-6 md:p-8 shadow-2xl shadow-indigo-500/5 flex flex-col justify-between relative overflow-hidden group h-full transition-all">
       
-      <div className="relative flex flex-col h-full">
+      {/* Dynamiczne tło (Zaświeci się na zielono na koniec miesiąca, gdy osiągniemy 100%) */}
+      <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full pointer-events-none opacity-20 transition-all duration-500 dark:opacity-20" 
+           style={{ background: isGoalReached ? 'radial-gradient(circle, rgba(16,185,129,0.6) 0%, rgba(16,185,129,0) 70%)' : 'radial-gradient(circle, rgba(59,130,246,0.6) 0%, rgba(59,130,246,0) 70%)' }}></div>
 
-        {/* Header */}
+      <div className="relative z-10 flex flex-col h-full">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <PixelClock className="w-8 h-8 text-work-dim shrink-0" />
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner transition-colors ${isGoalReached ? "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border border-emerald-500/20" : "bg-blue-500/10 text-blue-500 dark:text-blue-400 border border-blue-500/20"}`}>
+              <Briefcase className="w-5 h-5" />
+            </div>
             <div>
-              <p className="text-[10px] font-mono text-work-dim tracking-widest mb-0.5">{`>`} STATUS</p>
-              <h2 className="text-xs font-mono font-black text-work uppercase tracking-widest">{t("dashboard.work.title")}</h2>
-              <p className="text-sm font-mono uppercase tracking-wider text-zinc-400 mt-0.5">{currentMonthName}</p>
+              <h2 className="text-[10px] md:text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{t("dashboard.work.title")}</h2>
+              <p className="text-sm uppercase tracking-wider font-black text-zinc-900 dark:text-white mt-0.5">{currentMonthName}</p>
             </div>
           </div>
-          <Link href="/work-schedule" className="p-2 border border-work-muted/40 hover:border-work-dim hover:text-work text-zinc-600 transition-all">
+          <Link href="/work-schedule" className="p-2.5 bg-black/5 dark:bg-white/5 rounded-2xl hover:bg-white dark:hover:bg-white/10 transition-all shadow-none hover:shadow-sm text-zinc-600 dark:text-zinc-300">
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
-        {/* Hours counter */}
+        {/* GŁÓWNY LICZNIK: np. 8 / 168h */}
         <div className="flex items-end gap-2 mb-6 flex-1">
-          <div className={`text-6xl font-mono font-black tracking-tighter transition-colors ${isGoalReached ? "text-work" : "text-work-dim"}`}>
+          <div className={`text-6xl font-black tracking-tighter transition-colors drop-shadow-sm ${isGoalReached ? "text-emerald-600 dark:text-emerald-400" : "text-blue-600 dark:text-blue-400"}`}>
             {workedHoursUpToToday % 1 !== 0 ? workedHoursUpToToday.toFixed(1) : workedHoursUpToToday}
           </div>
-          <div className="text-lg font-mono text-work-muted mb-1.5">/ {totalMonthlyGoal}h</div>
+          <div className="text-lg font-bold text-zinc-400 dark:text-zinc-500 mb-1.5 tracking-wider">/ {totalMonthlyGoal}h</div>
         </div>
 
-        {/* Progress bar */}
-        <div className="w-full h-1.5 bg-work-muted/20 overflow-hidden mb-6">
-          <div
-            className={`h-full transition-all duration-1000 ease-out ${isGoalReached ? "bg-work" : "bg-work-dim"}`}
+        {/* PASEK POSTĘPU (Rośnie każdego dnia po trochu) */}
+        <div className="w-full h-2.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden mb-6 shadow-inner">
+          <div 
+            className={`h-full rounded-full transition-all duration-1000 ease-out relative ${isGoalReached ? "bg-emerald-500" : "bg-blue-500"}`}
             style={{ width: `${progressPercent}%` }}
-          />
+          >
+            <div className="absolute inset-0 bg-white/20 w-full animate-pulse"></div>
+          </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 border-t border-work-muted/20 pt-5 mt-auto">
+        {/* STATYSTYKI MIESIĘCZNE NA DOLE */}
+        <div className="grid grid-cols-3 gap-2 border-t border-black/5 dark:border-white/10 pt-5 mt-auto">
           <div className="flex flex-col">
-            <span className="text-[10px] font-mono text-work-dim uppercase tracking-wider flex items-center gap-1.5 mb-1.5"><Zap className="w-3.5 h-3.5" /> {t("dashboard.work.overtime")}</span>
-            <span className="text-lg font-mono font-black text-work">{overtimeHours}h</span>
+            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1.5"><Zap className="w-3.5 h-3.5 text-amber-500" /> {t("dashboard.work.overtime")}</span>
+            <span className="text-lg font-black text-zinc-900 dark:text-white drop-shadow-sm">{overtimeHours}h</span>
           </div>
-          <div className="flex flex-col border-l border-work-muted/20 pl-3">
-            <span className="text-[10px] font-mono text-work-dim uppercase tracking-wider flex items-center gap-1.5 mb-1.5"><Umbrella className="w-3.5 h-3.5" /> {t("dashboard.work.vacation")}</span>
-            <span className="text-lg font-mono font-black text-work">{vacationDays} <span className="text-xs font-mono text-work-muted lowercase">{t("dashboard.work.days")}</span></span>
+          <div className="flex flex-col border-l border-black/5 dark:border-white/10 pl-3">
+            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1.5"><Umbrella className="w-3.5 h-3.5 text-purple-500" /> {t("dashboard.work.vacation")}</span>
+            <span className="text-lg font-black text-zinc-900 dark:text-white drop-shadow-sm">{vacationDays} <span className="text-xs font-bold text-zinc-400 lowercase">{t("dashboard.work.days")}</span></span>
           </div>
-          <div className="flex flex-col border-l border-work-muted/20 pl-3">
-            <span className="text-[10px] font-mono text-work-dim uppercase tracking-wider flex items-center gap-1.5 mb-1.5"><Stethoscope className="w-3.5 h-3.5" /> {t("dashboard.work.sick_leave")}</span>
-            <span className="text-lg font-mono font-black text-work">{sickDays} <span className="text-xs font-mono text-work-muted lowercase">{t("dashboard.work.days")}</span></span>
+          <div className="flex flex-col border-l border-black/5 dark:border-white/10 pl-3">
+            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1.5"><Stethoscope className="w-3.5 h-3.5 text-amber-600" /> {t("dashboard.work.sick_leave")}</span>
+            <span className="text-lg font-black text-zinc-900 dark:text-white drop-shadow-sm">{sickDays} <span className="text-xs font-bold text-zinc-400 lowercase">{t("dashboard.work.days")}</span></span>
           </div>
         </div>
       </div>

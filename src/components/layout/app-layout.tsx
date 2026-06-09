@@ -14,12 +14,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const isAuthRoute = authRoutes.includes(pathname);
 
   if (isAuthRoute) {
-    return (
-      <main className="min-h-screen bg-background relative">
-        <AppBackground />
-        {children}
-      </main>
-    );
+    return <main className="min-h-screen bg-background">{children}</main>;
   }
 
   return (

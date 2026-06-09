@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { TrendingDown, TrendingUp, AlertCircle, ArrowRightLeft, ChevronLeft, ChevronRight, CalendarClock, Calendar, Sparkles } from "lucide-react";
-import { PixelChart } from "@/components/ui/pixel-icons";
+import { Wallet, TrendingDown, TrendingUp, PiggyBank, AlertCircle, ArrowRightLeft, ChevronLeft, ChevronRight, CalendarClock, Calendar, Sparkles } from "lucide-react";
 import { transferToSavings } from "@/lib/actions";
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -111,7 +110,9 @@ export function MainWidget({ currentStats, summaries, currency, payday }: MainWi
   const activeData = timelineData[slide];
 
   return (
-    <div className="relative overflow-hidden border border-green-900/30 bg-black/40 p-6 md:p-8 transition-all min-h-[340px] md:min-h-[260px] flex flex-col group">
+    <div className="relative overflow-hidden rounded-[2.5rem] border border-black/5 dark:border-white/10 bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl p-6 md:p-8 shadow-2xl shadow-indigo-500/5 transition-all min-h-[340px] md:min-h-[260px] flex flex-col group">
+      {/* Bardziej wydajny radial gadiant zamiast filter: blur() */}
+      <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full pointer-events-none opacity-20 dark:opacity-20" style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.6) 0%, rgba(99,102,241,0) 70%)' }}></div>
       
       <div className="relative flex flex-col md:flex-row justify-between gap-8 flex-1">
         
@@ -128,29 +129,29 @@ export function MainWidget({ currentStats, summaries, currency, payday }: MainWi
                 
                 {/* NAGŁÓWEK ZE STRZAŁKAMI NAWIGACJI */}
                 <div className="flex items-center justify-between w-full z-10 pr-2">
-                  <div className="flex items-center border border-green-900/40 bg-black/30">
-                    <button onClick={prevSlide} disabled={slide === 0} className="p-2 bg-transparent hover:bg-green-400/5 disabled:opacity-20 transition-all text-zinc-600 hover:text-green-400 disabled:hover:bg-transparent">
+                  <div className="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-2xl border border-black/5 dark:border-white/5 backdrop-blur-md">
+                    <button onClick={prevSlide} disabled={slide === 0} className="p-2 rounded-xl bg-transparent hover:bg-white dark:hover:bg-white/10 disabled:opacity-30 transition-all text-zinc-600 dark:text-zinc-300 disabled:hover:bg-transparent shadow-none hover:shadow-sm">
                       <ChevronLeft className="w-4 h-4" />
                     </button>
-
+                    
                     <div className="px-5 py-1.5 flex items-center justify-center min-w-[120px] md:min-w-[160px]">
-                      <span className={`text-[11px] md:text-xs font-mono font-black uppercase tracking-widest ${
-                        data.type === "CURRENT" ? "text-green-400" :
-                        data.type === "HISTORY" ? "text-green-600" :
-                        "text-green-800"
+                      <span className={`text-[11px] md:text-xs font-black uppercase tracking-widest ${
+                        data.type === "CURRENT" ? "text-indigo-600 dark:text-indigo-400" : 
+                        data.type === "HISTORY" ? "text-emerald-600 dark:text-emerald-400" : 
+                        "text-blue-500 dark:text-blue-400"
                       }`}>
                         {data.type === "CURRENT" ? t("dashboard.main.left_to_spend") : data.displayMonthYear}
                       </span>
                     </div>
-
-                    <button onClick={nextSlide} disabled={slide === totalSlides - 1} className="p-2 bg-transparent hover:bg-green-400/5 disabled:opacity-20 transition-all text-zinc-600 hover:text-green-400 disabled:hover:bg-transparent">
+                    
+                    <button onClick={nextSlide} disabled={slide === totalSlides - 1} className="p-2 rounded-xl bg-transparent hover:bg-white dark:hover:bg-white/10 disabled:opacity-30 transition-all text-zinc-600 dark:text-zinc-300 disabled:hover:bg-transparent shadow-none hover:shadow-sm">
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
                   
                   {data.type === "CURRENT" && currentStats.wplywy > 0 && (
-                     <Link href="/calendar" className="hidden lg:flex items-center justify-center border border-green-900/40 hover:border-green-700 hover:text-green-400 text-zinc-600 w-10 h-10 transition-all active:scale-95" title={language === 'pl' ? "Kalendarz" : "Calendar"}>
-                       <Calendar className="w-4 h-4" />
+                     <Link href="/calendar" className="hidden lg:flex items-center justify-center bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 w-10 h-10 rounded-2xl transition-all active:scale-95 group/cal" title={language === 'pl' ? "Kalendarz" : "Calendar"}>
+                       <Calendar className="w-4 h-4 group-hover/cal:scale-110 transition-transform" />
                      </Link>
                   )}
                 </div>
@@ -161,42 +162,43 @@ export function MainWidget({ currentStats, summaries, currency, payday }: MainWi
                   <>
                     {currentStats.wplywy === 0 ? (
                       today < payday ? (
-                        <div className="p-5 border border-green-900/30 bg-black/30 flex flex-col gap-2 w-fit relative overflow-hidden mt-2">
-                          <h2 className="text-green-700 font-mono text-xs uppercase tracking-widest flex items-center gap-2">
-                            <Sparkles className="w-4 h-4 text-green-800" /> {language === 'pl' ? "> OCZEKIWANIE_NA_WYPLATE" : "> AWAITING_SALARY"}
+                        <div className="p-6 rounded-3xl bg-gradient-to-br from-indigo-500/5 to-purple-500/5 border border-indigo-500/20 dark:border-indigo-500/10 flex flex-col gap-2 w-fit relative overflow-hidden mt-2">
+                          <div className="absolute -right-4 -top-4 opacity-10"><Sparkles className="w-24 h-24 text-indigo-500" /></div>
+                          <h2 className="text-zinc-600 dark:text-zinc-300 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-indigo-500" /> {language === 'pl' ? "Oczekujemy na wypłatę" : "Awaiting salary"}
                           </h2>
-                          <div className="text-4xl md:text-5xl font-mono font-black tracking-tight text-green-400 mt-1">
+                          <div className="text-4xl md:text-5xl font-black tracking-tight text-indigo-600 dark:text-indigo-400 mt-1 drop-shadow-sm">
                             Za {daysToPayday} {daysToPayday === 1 ? (language === 'pl' ? 'dzień' : 'day') : (language === 'pl' ? 'dni' : 'days')}
                           </div>
                           
                           {/* Saldo na przetrwanie (dodane na życzenie użytkownika) */}
-                          <div className="mt-1 flex items-center justify-between gap-4 py-1.5 px-3 border border-green-900/30 bg-black/20 w-fit relative z-10">
-                            <span className="text-[10px] uppercase tracking-wider font-mono text-green-800">
+                          <div className="mt-1 flex items-center justify-between gap-4 py-1.5 px-3 bg-white/40 dark:bg-black/20 rounded-xl border border-white/50 dark:border-white/5 w-fit shadow-sm relative z-10">
+                            <span className="text-[10px] uppercase tracking-wider font-extrabold text-zinc-500 dark:text-zinc-400">
                               {language === 'pl' ? "Pozostałe saldo" : "Left to spend"}
                             </span>
-                            <span className="text-xs font-mono text-green-400">
+                            <span className="text-xs font-black text-zinc-700 dark:text-zinc-200">
                               {data.leftToSpend.toLocaleString(language === 'pl' ? "pl-PL" : "en-US", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol" })}
                             </span>
                           </div>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-4 text-amber-500 border border-amber-900/50 bg-amber-500/5 p-5 w-fit mt-2">
-                          <AlertCircle className="w-6 h-6 flex-shrink-0" />
-                          <span className="text-sm font-mono">{t("dashboard.main.add_income_start")}</span>
+                        <div className="flex items-center gap-4 text-amber-700 dark:text-amber-400 bg-amber-500/10 p-5 rounded-3xl border border-amber-500/20 w-fit mt-2">
+                          <AlertCircle className="w-7 h-7 flex-shrink-0 opacity-80" />
+                          <span className="text-sm font-bold tracking-wide">{t("dashboard.main.add_income_start")}</span>
                         </div>
                       )
                     ) : (
                       <div className="flex flex-col gap-4 mt-2">
-                        <div className="text-6xl md:text-7xl font-mono font-black tracking-tighter text-green-400">
+                        <div className="text-6xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-500 drop-shadow-sm">
                           {data.leftToSpend.toLocaleString(language === 'pl' ? "pl-PL" : "en-US", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol" })}
                         </div>
-                        <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
-                          <div className="flex items-center gap-2 px-3 py-2 border border-green-900/40 bg-green-400/5 text-green-500">
-                            <TrendingUp className="w-3.5 h-3.5" />
+                        <div className="flex flex-wrap items-center gap-3 text-sm font-bold">
+                          <div className="flex items-center shadow-sm gap-2 px-3.5 py-2 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                            <TrendingUp className="w-4 h-4 opacity-70" />
                             {currentStats.wplywy.toLocaleString(language === 'pl' ? "pl-PL" : "en-US", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol" })}
                           </div>
-                          <div className="flex items-center gap-2 px-3 py-2 border border-red-900/40 bg-red-900/5 text-red-500">
-                            <TrendingDown className="w-3.5 h-3.5" />
+                          <div className="flex items-center shadow-sm gap-2 px-3.5 py-2 rounded-xl bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20">
+                            <TrendingDown className="w-4 h-4 opacity-70" />
                             {currentStats.wydano.toLocaleString(language === 'pl' ? "pl-PL" : "en-US", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol" })}
                           </div>
                         </div>
@@ -205,7 +207,7 @@ export function MainWidget({ currentStats, summaries, currency, payday }: MainWi
                     {/* MOBILNY PRZYCISK KALENDARZA */}
                     {currentStats.wplywy > 0 && (
                       <div className="lg:hidden absolute bottom-2 left-0 right-4 z-10">
-                         <Link href="/calendar" className="active:scale-95 ease-in-out flex items-center justify-center gap-2 w-full py-4 text-xs font-mono uppercase tracking-wider border border-green-700 bg-green-400/10 text-green-400 hover:bg-green-400/20 transition-all">
+                         <Link href="/calendar" className="active:scale-95 ease-in-out flex items-center justify-center gap-2 w-full py-4 text-sm font-bold rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:shadow-lg transition-all border border-zinc-800 dark:border-white">
                            <Calendar className="w-4 h-4" /> {language === 'pl' ? "Przejdź do kalendarza" : "Go to calendar"}
                          </Link>
                       </div>
@@ -214,22 +216,22 @@ export function MainWidget({ currentStats, summaries, currency, payday }: MainWi
                 )}
 
                 {data.type === "HISTORY" && (
-                  <div className={`flex flex-col gap-3 py-4 px-6 border w-fit ${data.isEmpty ? "border-green-900/10 bg-black/10" : "border-green-900/30 bg-black/30"}`}>
-                    <h2 className="text-[10px] font-mono text-green-800 uppercase tracking-widest">
+                  <div className={`flex flex-col gap-3 py-4 px-6 rounded-3xl border w-fit ${data.isEmpty ? "bg-zinc-100/50 dark:bg-zinc-900/50 border-zinc-200/50 dark:border-zinc-800/50" : "bg-white/50 dark:bg-zinc-900/80 border-black/5 dark:border-zinc-800 shadow-sm"}`}>
+                     <h2 className="text-zinc-400 dark:text-zinc-500 font-bold text-[10px] uppercase tracking-widest pl-1 mt-2">
                       {data.isEmpty ? t("dashboard.main.no_data") : t("dashboard.main.left_this_month")}
                     </h2>
-                    <div className={`text-5xl md:text-6xl font-mono font-black tracking-tighter mb-2 ${data.isEmpty ? "text-green-900/40" : "text-green-600"}`}>
+                    <div className={`text-5xl md:text-6xl font-black tracking-tighter mb-2 ${data.isEmpty ? "text-zinc-300 dark:text-zinc-700" : "text-zinc-900 dark:text-white"}`}>
                       {data.leftToSpend.toLocaleString(language === 'pl' ? "pl-PL" : "en-US", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol" })}
                     </div>
                   </div>
                 )}
 
                 {data.type === "FUTURE" && (
-                  <div className="px-6 py-5 border border-green-900/20 bg-black/20 flex flex-col gap-2 w-fit mt-2">
-                    <h2 className="text-[10px] font-mono text-green-900 uppercase tracking-widest flex items-center gap-2">
-                      <CalendarClock className="w-3.5 h-3.5" /> {t("dashboard.main.future_month")}
+                  <div className="px-6 py-5 rounded-3xl bg-blue-500/5 border border-blue-500/10 flex flex-col gap-2 w-fit mt-2">
+                    <h2 className="text-blue-500 dark:text-blue-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-2">
+                      <CalendarClock className="w-4 h-4 text-blue-500" /> {t("dashboard.main.future_month")}
                     </h2>
-                    <div className="text-5xl md:text-6xl font-mono font-black tracking-tighter text-green-900/30 mt-1">
+                    <div className="text-5xl md:text-6xl font-black tracking-tighter text-blue-900/30 dark:text-blue-200/30 mt-1">
                       {(0).toLocaleString(language === 'pl' ? "pl-PL" : "en-US", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol" })}
                     </div>
                   </div>
@@ -241,9 +243,9 @@ export function MainWidget({ currentStats, summaries, currency, payday }: MainWi
           </div>
           
           {/* KROPKI NAWIGACYJNE NA DOLE */}
-          <div className="absolute bottom-0 left-0 right-4 flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-0">
+          <div className="absolute bottom-0 left-0 right-4 flex justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-0">
             {Array.from({ length: totalSlides }).map((_, i) => (
-              <div key={i} className={`h-1 transition-all duration-300 ${slide === i ? "w-6 bg-green-500" : "w-1.5 bg-green-900/40"}`} />
+              <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${slide === i ? "w-6 bg-indigo-500" : "w-1.5 bg-black/10 dark:bg-white/20"}`} />
             ))}
           </div>
         </div>
@@ -251,8 +253,8 @@ export function MainWidget({ currentStats, summaries, currency, payday }: MainWi
         {/* ========================================== */}
         {/* DZIELNIK (DIVIDER)                         */}
         {/* ========================================== */}
-        <div className="hidden md:block w-px bg-green-900/30"></div>
-        <div className="md:hidden h-px w-full bg-green-900/30 my-2"></div>
+        <div className="hidden md:block w-px bg-gradient-to-b from-transparent via-black/10 dark:via-white/10 to-transparent"></div>
+        <div className="md:hidden h-px w-full bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent my-2"></div>
 
         {/* ========================================== */}
         {/* PRAWA STRONA: OSZCZĘDNOŚCI (STATYCZNA)     */}
@@ -261,13 +263,15 @@ export function MainWidget({ currentStats, summaries, currency, payday }: MainWi
           <div className={`flex flex-col gap-6 w-full transition-opacity duration-500 ${activeData.isEmpty ? "opacity-40 grayscale" : "opacity-100"}`}>
             
             <div className="flex flex-col gap-1 items-center md:items-start text-center md:text-left">
-              <div className="flex flex-row items-center gap-2 mb-2">
-                <PixelChart className="w-5 h-5 text-green-800" />
-                <p className="text-[10px] font-mono text-green-700 uppercase tracking-widest">
+              <div className="flex flex-row items-center gap-2.5 opacity-80 mb-2">
+                <div className="p-1.5 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
+                  <PiggyBank className="w-5 h-5 md:w-4 md:h-4" />
+                </div>
+                <p className="text-[10px] md:text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mt-0.5">
                   {activeData.type === "HISTORY" ? t("dashboard.main.savings_then") : t("dashboard.main.savings_now")}
                 </p>
               </div>
-              <p className="text-4xl md:text-4xl lg:text-5xl font-mono font-black text-green-400 tracking-tighter">
+              <p className="text-4xl md:text-4xl lg:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter">
                 {activeData.savingsTotal.toLocaleString(language === 'pl' ? "pl-PL" : "en-US", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol" })}
               </p>
             </div>
@@ -276,17 +280,17 @@ export function MainWidget({ currentStats, summaries, currency, payday }: MainWi
             {activeData.type === "CURRENT" ? (
               <form action={transferToSavings} className="w-full">
                 <input type="hidden" name="amount" value={currentStats.kwotaWolna} />
-                <button
-                  type="submit"
+                <button 
+                  type="submit" 
                   disabled={!maPieniadzeDoOszczedzania}
-                  className="w-full flex items-center justify-center gap-2 text-xs font-mono uppercase tracking-wider py-4 border border-green-700 bg-green-400/10 text-green-400 hover:bg-green-400/20 disabled:opacity-30 disabled:cursor-not-allowed active:scale-[0.98] transition-all group"
+                  className="w-full flex items-center justify-center gap-2 text-xs md:text-sm font-bold py-4 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border border-zinc-800 dark:border-white disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-xl hover:shadow-zinc-900/10 dark:hover:shadow-white/10 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all group overflow-hidden relative"
                 >
-                  <ArrowRightLeft className="w-4 h-4 group-hover:rotate-180 transition-transform duration-700" />
-                  {t("dashboard.main.transfer_rest")}
+                  <ArrowRightLeft className="w-4 h-4 text-teal-400 dark:text-teal-600 group-hover:rotate-180 transition-transform duration-700" />
+                  <span className="relative z-10">{t("dashboard.main.transfer_rest")}</span>
                 </button>
               </form>
             ) : (
-              <div className="w-full py-4 text-center text-[10px] font-mono uppercase tracking-widest text-green-900 border border-dashed border-green-900/30">
+              <div className="w-full py-4 text-center text-[10px] uppercase font-black tracking-widest text-zinc-400 dark:text-zinc-500 border border-dashed border-zinc-300 dark:border-zinc-700 rounded-2xl bg-black/5 dark:bg-white/5">
                 {activeData.type === "HISTORY" ? t("dashboard.main.history_record") : t("dashboard.main.not_available_yet")}
               </div>
             )}
