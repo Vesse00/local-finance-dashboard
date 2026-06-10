@@ -2,10 +2,10 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
-import { X, TrendingDown, TrendingUp, PiggyBank, Calendar as CalendarIcon, ArrowRightLeft, Trash2, ChevronDown, ChevronUp, Landmark, Pencil, Check, Ban } from "lucide-react";
+import { X, TrendingDown, TrendingUp, PiggyBank, Calendar as CalendarIcon, ArrowRightLeft, Trash2, ChevronDown, ChevronUp, Landmark, Pencil, Check, Ban, RefreshCw } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { pl, enUS } from "date-fns/locale";
-import { deleteExpense, deleteIncome, updateIncome, updateExpense } from "@/lib/actions";
+import { deleteExpense, deleteIncome, updateIncome, updateExpense, convertExpenseToIncome } from "@/lib/actions";
 import { useLanguage } from "@/components/LanguageProvider";
 
 const INCOME_CATEGORIES = [
@@ -42,6 +42,10 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
   const [editCategory, setEditCategory] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editCategoryId, setEditCategoryId] = useState("");
+  const [editType, setEditType] = useState("EXPENSE");
+  const [editSavingsAccountId, setEditSavingsAccountId] = useState("");
+  const [savingsAccounts, setSavingsAccounts] = useState<any[]>([]);
+  const [convertSource, setConvertSource] = useState("");
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -72,6 +76,14 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
     setEditAmount(String(expense.amount));
     setEditDescription(expense.description || "");
     setEditCategoryId(expense.categoryId || "");
+    setEditType(expense.type || "EXPENSE");
+    setEditSavingsAccountId("");
+    setConvertSource(expense.description || "");
+    // Pobierz konta oszczędnościowe dla selektora
+    fetch("/api/savings")
+      .then(r => r.json())
+      .then(data => setSavingsAccounts(data.accounts || []))
+      .catch(() => {});
   };
 
   const cancelEdit = () => setEditingId(null);
@@ -94,8 +106,19 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
     formData.append("amount", editAmount);
     formData.append("description", editDescription);
     if (editCategoryId) formData.append("categoryId", editCategoryId);
+    formData.append("type", editType);
     startTransition(async () => {
       await updateExpense(formData);
+      setEditingId(null);
+    });
+  };
+
+  const handleConvertToIncome = (id: string) => {
+    const formData = new FormData();
+    formData.append("id", id);
+    formData.append("source", convertSource || "Wpływ");
+    startTransition(async () => {
+      await convertExpenseToIncome(formData);
       setEditingId(null);
     });
   };
@@ -118,7 +141,7 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
   const dayExpensesAll = allExpenses.filter(e => isSameDay(new Date(e.date), date));
 
   const dayExpenses = dayExpensesAll.filter(e => e.type === "EXPENSE");
-  const daySavings = dayExpensesAll.filter(e => e.type === "SAVING" || e.type === "INVESTMENT");
+  const daySavings = dayExpensesAll.filter(e => e.type === "SAVING" || e.type === "INVESTMENT" || e.type === "WITHDRAWAL" || e.type === "TRANSFER");
 
   const totalIncomes = dayIncomes.reduce((acc, curr) => acc + curr.amount, 0);
   const totalExpenses = dayExpenses.reduce((acc, curr) => acc + curr.amount, 0);
@@ -297,6 +320,29 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
                               </select>
                             </div>
                           )}
+                          {/* TYP TRANSAKCJI */}
+                          <div>
+                            <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">Typ transakcji</label>
+                            <select value={editType} onChange={e => setEditType(e.target.value)} className={selectCls}>
+                              <option value="EXPENSE">💸 Wydatek</option>
+                              <option value="SAVING">🏦 Przelew / Oszczędności</option>
+                              <option value="INVESTMENT">📈 Inwestycja</option>
+                              <option value="WITHDRAWAL">💵 Wypłata gotówkowa (bankomat)</option>
+                              <option value="TRANSFER">🔄 Transfer (wewnętrzny)</option>
+                            </select>
+                          </div>
+                          {/* KONTO OSZCZĘDNOŚCIOWE (tylko dla SAVING) */}
+                          {(editType === "SAVING" || editType === "TRANSFER") && savingsAccounts.length > 0 && (
+                            <div>
+                              <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">Konto oszczędnościowe</label>
+                              <select value={editSavingsAccountId} onChange={e => setEditSavingsAccountId(e.target.value)} className={selectCls}>
+                                <option value="">– główna pula –</option>
+                                {savingsAccounts.map((acc: any) => (
+                                  <option key={acc.id} value={acc.id}>{acc.name} ({acc.balance.toFixed(2)} {acc.currency})</option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
                           <div className="flex gap-2 pt-1">
                             <button onClick={() => handleSaveExpense(expense.id)} disabled={isPending} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary/90 disabled:opacity-50 transition-colors">
                               <Check className="w-3.5 h-3.5" /> Zapisz
@@ -304,6 +350,26 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
                             <button onClick={cancelEdit} disabled={isPending} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-black/5 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 text-xs font-semibold hover:bg-black/10 disabled:opacity-50 transition-colors">
                               <Ban className="w-3.5 h-3.5" /> Anuluj
                             </button>
+                          </div>
+                          {/* KONWERSJA NA WPŁYW */}
+                          <div className="pt-1 border-t border-red-200/50 dark:border-red-500/10">
+                            <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wide mb-1.5">Konwertuj na wpływ</p>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                placeholder="Źródło wpływu..."
+                                value={convertSource}
+                                onChange={e => setConvertSource(e.target.value)}
+                                className={`${inputCls} flex-1`}
+                              />
+                              <button
+                                onClick={() => handleConvertToIncome(expense.id)}
+                                disabled={isPending}
+                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-semibold hover:bg-emerald-600 disabled:opacity-50 transition-colors whitespace-nowrap"
+                              >
+                                <RefreshCw className="w-3 h-3" /> Na wpływ
+                              </button>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -325,13 +391,21 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
               {daySavings.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm font-semibold text-blue-600 dark:text-blue-400 mb-2">
-                    <span className="flex items-center gap-1.5"><PiggyBank className="w-4 h-4" /> {t("calendar.modals.day_details.savings")}</span>
+                    <span className="flex items-center gap-1.5"><PiggyBank className="w-4 h-4" /> {t("calendar.modals.day_details.savings")} / Transfery</span>
                   </div>
                   {daySavings.map(saving => (
                     <div key={saving.id} className="group flex items-center justify-between p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
                       <div className="flex items-center gap-2">
-                        <ArrowRightLeft className="w-4 h-4 text-blue-500" />
-                        <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{saving.description || t("calendar.modals.day_details.transfer")}</span>
+                        {saving.type === "WITHDRAWAL" ? (
+                          <span className="text-base">💵</span>
+                        ) : saving.type === "INVESTMENT" ? (
+                          <span className="text-base">📈</span>
+                        ) : saving.type === "TRANSFER" ? (
+                          <span className="text-base">🔄</span>
+                        ) : (
+                          <ArrowRightLeft className="w-4 h-4 text-blue-500" />
+                        )}
+                        <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{saving.description || (saving.type === "WITHDRAWAL" ? "Wypłata gotówkowa" : t("calendar.modals.day_details.transfer"))}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{saving.amount.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: 'narrowSymbol' })}</span>

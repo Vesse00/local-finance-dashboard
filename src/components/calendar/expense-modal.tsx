@@ -1,9 +1,9 @@
 "use client";
 
-import { X, Calendar as CalendarIcon, Repeat, Scale, ArrowRightLeft, LayoutList } from "lucide-react";
+import { X, Calendar as CalendarIcon, Repeat, Scale, ArrowRightLeft, LayoutList, Banknote } from "lucide-react";
 import { useEffect, useState, useTransition, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { addExpense, adjustMainBalance } from "@/lib/actions";
+import { addExpense, adjustMainBalance, addWithdrawal } from "@/lib/actions";
 import { RecurringForm } from "./recurring-form";
 import { TransferForm } from "./transfer-form";
 import { MultiExpenseForm } from "./multi-expense-form";
@@ -26,7 +26,7 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories, expens
   const [mounted, setMounted] = useState(false);
   const amountRef = useRef<HTMLInputElement>(null);
   
-  const [type, setType] = useState<"ONETIME" | "MULTI" | "RECURRING" | "CORRECTION" | "TRANSFER">("ONETIME");
+  const [type, setType] = useState<"ONETIME" | "MULTI" | "RECURRING" | "CORRECTION" | "TRANSFER" | "WITHDRAWAL">("ONETIME");
   const [quickAmount, setQuickAmount] = useState<number | null>(null);
 
   const NEW_CATEGORY_CONST = t("calendar.modals.expense.category_new");
@@ -90,6 +90,15 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories, expens
     });
   };
 
+  const handleWithdrawalSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    startTransition(async () => {
+      await addWithdrawal(formData);
+      onClose();
+    });
+  };
+
   const modalContent = isOpen ? (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={onClose}>
       {/* Szerszy modal dla trybu ONETIME, normalny dla reszty */}
@@ -107,12 +116,15 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories, expens
         </p>
 
         {/* ZAKŁADKI TRYBU */}
-        <div className="grid grid-cols-5 gap-2 mb-5 bg-black/5 dark:bg-white/5 p-1.5 rounded-2xl">
+        <div className="grid grid-cols-6 gap-1.5 mb-5 bg-black/5 dark:bg-white/5 p-1.5 rounded-2xl">
           <button type="button" onClick={() => setType("ONETIME")} className={`py-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all ${type === "ONETIME" ? "bg-white dark:bg-zinc-800 shadow-sm text-zinc-900 dark:text-white" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}>
             <CalendarIcon className="w-3.5 h-3.5" /> {t("calendar.modals.expense.type_expense")}
           </button>
           <button type="button" onClick={() => setType("MULTI")} className={`py-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all ${type === "MULTI" ? "bg-teal-500 shadow-md shadow-teal-500/20 text-white" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}>
-            <LayoutList className="w-3.5 h-3.5" /> Lista dnia
+            <LayoutList className="w-3.5 h-3.5" /> {t("calendar.modals.expense.type_multi")}
+          </button>
+          <button type="button" onClick={() => setType("WITHDRAWAL")} className={`py-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all ${type === "WITHDRAWAL" ? "bg-yellow-500 shadow-md shadow-yellow-500/20 text-white" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}>
+            <Banknote className="w-3.5 h-3.5" /> Bankomat
           </button>
           <button type="button" onClick={() => setType("TRANSFER")} className={`py-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all ${type === "TRANSFER" ? "bg-blue-500 shadow-md shadow-blue-500/20 text-white" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}>
             <ArrowRightLeft className="w-3.5 h-3.5" /> {t("calendar.modals.expense.type_transfer")}
@@ -211,7 +223,7 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories, expens
                             </div>
                           </>
                         ) : (
-                          <div className="text-[10px] text-zinc-400">Brak limitu</div>
+                          <div className="text-[10px] text-zinc-400">{t("calendar.modals.expense.category_no_limit")}</div>
                         )}
                       </button>
                     );
@@ -227,7 +239,7 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories, expens
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-base">＋</span>
-                      <span className="text-xs font-semibold text-zinc-500">Nowa kategoria</span>
+                      <span className="text-xs font-semibold text-zinc-500">{t("calendar.modals.expense.category_new_label")}</span>
                     </div>
                   </button>
                 </div>
@@ -250,6 +262,26 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories, expens
 
         {type === "TRANSFER" && (
           <TransferForm defaultDate={selectedDate} onSuccess={onClose} defaultFrom="MAIN" defaultTo="SAVINGS" />
+        )}
+
+        {type === "WITHDRAWAL" && (
+          <form className="space-y-4 animate-in fade-in duration-300" onSubmit={handleWithdrawalSubmit}>
+            <input type="hidden" name="date" value={selectedDate?.toISOString() || new Date().toISOString()} />
+            <div className="bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/30 rounded-xl p-3 text-xs text-yellow-700 dark:text-yellow-400">
+              💵 Wypłata gotówkowa jest traktowana jako <strong>transfer</strong> — nie jest liczona jako wydatek w statystykach.
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Kwota wypłaty</label>
+              <input name="amount" type="number" step="0.01" min="0.01" placeholder="0.00" className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 text-zinc-900 dark:text-white text-lg font-bold" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Opis (opcjonalny)</label>
+              <input name="description" type="text" defaultValue="Wypłata gotówkowa" className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 text-zinc-900 dark:text-white" />
+            </div>
+            <button type="submit" disabled={isPending} className="w-full mt-2 rounded-xl bg-yellow-500 py-3 text-white font-semibold shadow-lg shadow-yellow-500/20 disabled:opacity-50">
+              {isPending ? "Zapisywanie..." : "💵 Zarejestruj wypłatę"}
+            </button>
+          </form>
         )}
 
         {type === "RECURRING" && (

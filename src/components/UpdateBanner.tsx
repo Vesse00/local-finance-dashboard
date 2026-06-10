@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { X, ArrowUpCircle } from "lucide-react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 interface UpdateStatus {
   updateAvailable: boolean;
@@ -10,11 +11,11 @@ interface UpdateStatus {
 }
 
 export function UpdateBanner() {
+  const { t } = useLanguage();
   const [status, setStatus] = useState<UpdateStatus | null>(null);
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    // Sprawdzamy czy użytkownik już zamknął baner w tej sesji
     const wasDismissed = sessionStorage.getItem("update-banner-dismissed");
     if (wasDismissed) {
       setDismissed(true);
@@ -39,7 +40,7 @@ export function UpdateBanner() {
       <div className="flex items-center gap-2">
         <ArrowUpCircle className="h-4 w-4 shrink-0" />
         <span>
-          Dostępna jest nowa wersja aplikacji
+          {t("update_banner.available")}
           {status.latestVersion ? ` (${status.latestVersion})` : ""}.{" "}
           <a
             href="https://github.com/Vesse00/local-finance-dashboard/releases/latest"
@@ -47,20 +48,20 @@ export function UpdateBanner() {
             rel="noopener noreferrer"
             className="underline underline-offset-2 hover:text-amber-900"
           >
-            Zobacz co nowego
+            {t("update_banner.see_changelog")}
           </a>
           {" · "}
           <a
             href="/settings?tab=utilities"
             className="underline underline-offset-2 hover:text-amber-900"
           >
-            Zaktualizuj
+            {t("update_banner.update_link")}
           </a>
         </span>
       </div>
       <button
         onClick={handleDismiss}
-        aria-label="Zamknij powiadomienie o aktualizacji"
+        aria-label={t("update_banner.dismiss_aria")}
         className="shrink-0 rounded-md p-1 hover:bg-amber-400 transition-colors"
       >
         <X className="h-4 w-4" />

@@ -57,6 +57,27 @@ export async function addExpense(formData: FormData) {
   revalidatePath("/calendar");
 }
 
+// --- WYPŁATA GOTÓWKOWA (bankomat) – traktowana jako transfer, nie liczy do statystyk ---
+export async function addWithdrawal(formData: FormData) {
+  const amount = parseFloat(formData.get("amount") as string);
+  const description = (formData.get("description") as string | null)?.trim() || "Wypłata gotówkowa";
+  const dateString = formData.get("date") as string;
+  const userId = await getUserId();
+
+  await prisma.expense.create({
+    data: {
+      amount,
+      description,
+      date: new Date(dateString),
+      type: "WITHDRAWAL",
+      userId,
+    }
+  });
+
+  revalidatePath("/");
+  revalidatePath("/calendar");
+}
+
 export async function addExpensesBatch(
   items: { amount: number; description: string; categoryName: string; date: string }[],
 ) {
@@ -361,7 +382,22 @@ export async function updateExpense(formData: FormData) {
   const amount = parseFloat(formData.get("amount") as string);
   const description = (formData.get("description") as string | null)?.trim() || null;
   const categoryId = (formData.get("categoryId") as string | null) || null;
+  const newType = (formData.get("type") as string | null) || null;
   const userId = await getUserId();
+
+  // Jeśli zmienia się typ, korekcja salda oszczędności
+  if (newType) {
+    const existing = await prisma.expense.findUnique({ where: { id, userId }, select: { type: true, amount: true } });
+    if (existing) {
+      const wasSaving = existing.type === "SAVING" || existing.type === "INVESTMENT";
+      const willBeSaving = newType === "SAVING" || newType === "INVESTMENT";
+      if (wasSaving && !willBeSaving) {
+        await prisma.user.update({ where: { id: userId }, data: { savings: { decrement: existing.amount } } });
+      } else if (!wasSaving && willBeSaving) {
+        await prisma.user.update({ where: { id: userId }, data: { savings: { increment: amount } } });
+      }
+    }
+  }
 
   await prisma.expense.update({
     where: { id, userId },
@@ -369,6 +405,37 @@ export async function updateExpense(formData: FormData) {
       amount,
       ...(description !== null ? { description } : {}),
       ...(categoryId ? { categoryId } : {}),
+      ...(newType ? { type: newType } : {}),
+    }
+  });
+
+  revalidatePath("/");
+  revalidatePath("/calendar");
+}
+
+// --- KONWERSJA WYDATKU NA WPŁYW ---
+export async function convertExpenseToIncome(formData: FormData) {
+  const id = formData.get("id") as string;
+  const source = (formData.get("source") as string | null)?.trim() || "Wpływ";
+  const userId = await getUserId();
+
+  const expense = await prisma.expense.findUnique({ where: { id, userId } });
+  if (!expense) return;
+
+  // Jeśli był typ SAVING/INVESTMENT – oddaj pieniądze z puli oszczędności
+  if (expense.type === "SAVING" || expense.type === "INVESTMENT") {
+    await prisma.user.update({ where: { id: userId }, data: { savings: { decrement: expense.amount } } });
+  }
+
+  await prisma.expense.delete({ where: { id } });
+
+  await prisma.income.create({
+    data: {
+      amount: expense.amount,
+      source,
+      description: expense.description ?? undefined,
+      date: expense.date,
+      userId,
     }
   });
 

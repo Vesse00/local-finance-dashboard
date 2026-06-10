@@ -78,7 +78,7 @@ export function AppSidebar() {
     <aside className="w-64 border-r border-black/5 dark:border-white/10 bg-white/50 dark:bg-black/20 backdrop-blur-xl h-screen sticky top-0 flex flex-col hidden md:flex">
       <div className="p-6">
         <h1 className="text-xl font-black bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
-          Dashboard
+          MeBase<span className="float ">.</span>
         </h1>
       </div>
 

@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { Shield, Mail, Lock, CheckCircle2, AlertCircle, Save, KeyRound, Pencil, Eye, EyeOff, MapPin, Wrench, Settings, Trash2, AlertTriangle, RefreshCw, Clock } from "lucide-react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function SettingsPage() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"security" | "utilities" | "admin" | "danger">("security");
   
   const [currentEmail, setCurrentEmail] = useState("");
@@ -99,7 +101,7 @@ export default function SettingsPage() {
       const data = await res.json();
       if (res.ok) {
         setSystemStatus("success");
-        setSystemMessage("Ustawienia systemowe zostały zapisane.");
+        setSystemMessage(t("settings_page.admin_save_success"));
         setTimeout(() => setSystemStatus("idle"), 5000);
       } else {
         setSystemStatus("error");
@@ -107,7 +109,7 @@ export default function SettingsPage() {
       }
     } catch {
       setSystemStatus("error");
-      setSystemMessage("Błąd serwera.");
+      setSystemMessage(t("settings_page.error_server"));
     }
   };
 
@@ -126,7 +128,7 @@ export default function SettingsPage() {
     const data = await res.json();
     if (res.ok) {
       setStatus("success"); 
-      setMessage("Wszystkie rekordy zostały trwale usunięte. Masz teraz czystą kartę.");
+      setMessage(t("settings_page.danger_success"));
       setDeletePassword("");
       setShowDeleteConfirm(false); // Zwijamy formularz potwierdzenia
       
@@ -136,10 +138,10 @@ export default function SettingsPage() {
       }, 3000);
       
     } else {
-      setStatus("error"); setMessage(data.error || "Nieprawidłowe hasło lub błąd serwera.");
+      setStatus("error"); setMessage(data.error || t("settings_page.error_generic"));
     }
   } catch (err) { 
-    setStatus("error"); setMessage("Błąd serwera przy próbie usunięcia danych."); 
+    setStatus("error"); setMessage(t("settings_page.error_server")); 
   }
 };
 
@@ -148,7 +150,7 @@ export default function SettingsPage() {
     setStatus("saving"); setMessage("");
 
     if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
-      setStatus("error"); setMessage("Nowe hasła nie są identyczne!"); return;
+      setStatus("error"); setMessage(t("settings_page.security_passwords_mismatch")); return;
     }
 
     try {
@@ -162,15 +164,15 @@ export default function SettingsPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setStatus("success"); setMessage("Zmiany zabezpieczeń zostały zapisane.");
+        setStatus("success"); setMessage(t("settings_page.security_success"));
         setCurrentEmail(formData.newEmail || currentEmail);
         setIsEditingEmail(false);
         setFormData(prev => ({ ...prev, currentPassword: "", newPassword: "", confirmPassword: "" }));
         setTimeout(() => setStatus("idle"), 5000);
       } else {
-        setStatus("error"); setMessage(data.error || "Wystąpił błąd.");
+        setStatus("error"); setMessage(data.error || t("settings_page.error_generic"));
       }
-    } catch (err) { setStatus("error"); setMessage("Błąd serwera."); }
+    } catch (err) { setStatus("error"); setMessage(t("settings_page.error_server")); }
   };
 
   const handleUtilitiesSubmit = async (e: React.FormEvent) => {
@@ -184,15 +186,15 @@ export default function SettingsPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setStatus("success"); setMessage("Preferencje zostały zaktualizowane.");
+        setStatus("success"); setMessage(t("settings_page.utilities_success"));
         setTimeout(() => setStatus("idle"), 5000);
       } else {
-        setStatus("error"); setMessage(data.error || "Wystąpił błąd.");
+        setStatus("error"); setMessage(data.error || t("settings_page.error_generic"));
       }
-    } catch (err) { setStatus("error"); setMessage("Błąd serwera."); }
+    } catch (err) { setStatus("error"); setMessage(t("settings_page.error_server")); }
   };
 
-  if (loading) return <div className="p-12 text-center text-zinc-500 animate-pulse">Wczytywanie ustawień...</div>;
+  if (loading) return <div className="p-12 text-center text-zinc-500 animate-pulse">{t("settings_page.loading")}</div>;
 
   return (
     <div className="flex-1 p-6 md:p-8 max-w-4xl mx-auto w-full space-y-8 relative z-10">
@@ -209,10 +211,10 @@ export default function SettingsPage() {
           </div>
           <div>
             <span className="px-3 py-1 bg-white/10 rounded-lg text-xs font-bold uppercase tracking-wider mb-2 inline-block text-zinc-300">
-              Konfiguracja
+              {t("settings_page.config_badge")}
             </span>
-            <h1 className="text-3xl font-black text-white">Ustawienia Aplikacji</h1>
-            <p className="text-zinc-400 mt-1 text-sm max-w-md">Zarządzaj swoimi danymi, bezpieczeństwem i preferencjami Asystenta.</p>
+            <h1 className="text-3xl font-black text-white">{t("settings_page.title")}</h1>
+            <p className="text-zinc-400 mt-1 text-sm max-w-md">{t("settings_page.subtitle")}</p>
           </div>
         </div>
       </div>
@@ -227,7 +229,7 @@ export default function SettingsPage() {
               : "bg-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-white/50 dark:hover:bg-zinc-800/50"
           }`}
         >
-          <Shield className="w-4 h-4" /> Zabezpieczenia Konta
+          <Shield className="w-4 h-4" /> {t("settings_page.tab_security")}
         </button>
         <button 
           onClick={() => { setActiveTab("utilities"); setStatus("idle"); setMessage(""); }}
@@ -237,7 +239,7 @@ export default function SettingsPage() {
               : "bg-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-white/50 dark:hover:bg-zinc-800/50"
           }`}
         >
-          <Wrench className="w-4 h-4" /> System & Utilities
+          <Wrench className="w-4 h-4" /> {t("settings_page.tab_utilities")}
         </button>
         {userRole === "ADMIN" && (
           <button 
@@ -248,7 +250,7 @@ export default function SettingsPage() {
                 : "bg-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-white/50 dark:hover:bg-zinc-800/50"
             }`}
           >
-            <Shield className="w-4 h-4" /> Panel Admina
+            <Shield className="w-4 h-4" /> {t("settings_page.tab_admin")}
           </button>
         )}
         <button 
@@ -259,7 +261,7 @@ export default function SettingsPage() {
               : "bg-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-white/50 dark:hover:bg-zinc-800/50"
           }`}
         >
-          <AlertTriangle className="w-4 h-4" /> Danger Zone
+          <AlertTriangle className="w-4 h-4" /> {t("settings_page.tab_danger")}
         </button>
       </div>
 
@@ -275,12 +277,12 @@ export default function SettingsPage() {
               
               <div className="space-y-4">
                 <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-white/40 dark:border-zinc-800 pb-2">
-                  <Mail className="w-5 h-5 text-indigo-500" /> Adres E-mail
+                  <Mail className="w-5 h-5 text-indigo-500" /> {t("settings_page.security_email_title")}
                 </h2>
                 <div className="space-y-2 group max-w-md">
                   <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center justify-between">
-                    <span>Twój E-mail</span>
-                    {isEditingEmail && <span className="text-indigo-500 text-[10px]">Tryb edycji</span>}
+                    <span>{t("settings_page.security_email_label")}</span>
+                    {isEditingEmail && <span className="text-indigo-500 text-[10px]">{t("settings_page.security_editing_badge")}</span>}
                   </label>
                   <div className="relative flex items-center">
                     <input 
@@ -302,22 +304,20 @@ export default function SettingsPage() {
 
               <div className="space-y-4 pt-4">
                 <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-white/40 dark:border-zinc-800 pb-2">
-                  <KeyRound className="w-5 h-5 text-emerald-500" /> Zmiana Hasła
+                  <KeyRound className="w-5 h-5 text-emerald-500" /> {t("settings_page.security_password_title")}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Nowe hasło</label>
+                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">{t("settings_page.security_new_password_label")}</label>
                     <div className="relative flex items-center">
-                      {/* PRZYWRÓCONY PLACEHOLDER */}
-                      <input type={showNewPassword ? "text" : "password"} name="newPassword" placeholder="Minimum 6 znaków" value={formData.newPassword} onChange={handleChange} className="w-full p-4 pr-12 bg-white/60 dark:bg-zinc-900 border border-white/40 dark:border-zinc-800 rounded-xl outline-none focus:border-emerald-500 font-bold text-zinc-900 dark:text-white transition-colors" />
+                      <input type={showNewPassword ? "text" : "password"} name="newPassword" placeholder={t("settings_page.security_new_password_placeholder")} value={formData.newPassword} onChange={handleChange} className="w-full p-4 pr-12 bg-white/60 dark:bg-zinc-900 border border-white/40 dark:border-zinc-800 rounded-xl outline-none focus:border-emerald-500 font-bold text-zinc-900 dark:text-white transition-colors" />
                       <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-4 text-zinc-400 hover:text-emerald-500"><Eye className="w-5 h-5" /></button>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Powtórz nowe hasło</label>
+                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">{t("settings_page.security_confirm_password_label")}</label>
                     <div className="relative flex items-center">
-                      {/* PRZYWRÓCONY PLACEHOLDER */}
-                      <input type={showConfirmPassword ? "text" : "password"} name="confirmPassword" placeholder="Powtórz nowe hasło" value={formData.confirmPassword} onChange={handleChange} className="w-full p-4 pr-12 bg-white/60 dark:bg-zinc-900 border border-white/40 dark:border-zinc-800 rounded-xl outline-none focus:border-emerald-500 font-bold text-zinc-900 dark:text-white transition-colors" />
+                      <input type={showConfirmPassword ? "text" : "password"} name="confirmPassword" placeholder={t("settings_page.security_confirm_password_placeholder")} value={formData.confirmPassword} onChange={handleChange} className="w-full p-4 pr-12 bg-white/60 dark:bg-zinc-900 border border-white/40 dark:border-zinc-800 rounded-xl outline-none focus:border-emerald-500 font-bold text-zinc-900 dark:text-white transition-colors" />
                       <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-4 text-zinc-400 hover:text-emerald-500"><Eye className="w-5 h-5" /></button>
                     </div>
                   </div>
@@ -328,14 +328,13 @@ export default function SettingsPage() {
                 <div className="flex items-start gap-3 text-red-600 dark:text-red-400">
                   <AlertCircle className="w-5 h-5 mt-0.5" />
                   <div>
-                    <h3 className="text-sm font-bold uppercase tracking-wider">Potwierdzenie tożsamości</h3>
-                    <p className="text-xs opacity-80 mt-1">Podaj OBECNE hasło, aby zapisać zmiany zabezpieczeń.</p>
+                    <h3 className="text-sm font-bold uppercase tracking-wider">{t("settings_page.security_identity_title")}</h3>
+                    <p className="text-xs opacity-80 mt-1">{t("settings_page.security_identity_desc")}</p>
                   </div>
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-red-400" />
-                  {/* PRZYWRÓCONY PLACEHOLDER */}
-                  <input type={showCurrentPassword ? "text" : "password"} name="currentPassword" placeholder="Wpisz obecne hasło..." required value={formData.currentPassword} onChange={handleChange} className="w-full p-4 pl-12 pr-12 bg-white dark:bg-zinc-950 border border-red-200 dark:border-red-500/30 rounded-xl outline-none focus:border-red-500 font-bold text-zinc-900 dark:text-white transition-colors" />
+                  <input type={showCurrentPassword ? "text" : "password"} name="currentPassword" placeholder={t("settings_page.security_current_password_placeholder")} required value={formData.currentPassword} onChange={handleChange} className="w-full p-4 pl-12 pr-12 bg-white dark:bg-zinc-950 border border-red-200 dark:border-red-500/30 rounded-xl outline-none focus:border-red-500 font-bold text-zinc-900 dark:text-white transition-colors" />
                 </div>
               </div>
 
@@ -345,7 +344,7 @@ export default function SettingsPage() {
 
             <div className="p-6 bg-white/50 dark:bg-zinc-900/30 border-t border-white/40 dark:border-zinc-800 flex justify-end">
               <button type="submit" disabled={status === "saving" || !formData.currentPassword} className="px-8 py-3.5 rounded-xl font-bold text-white bg-indigo-500 hover:bg-indigo-600 shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-50">
-                {status === "saving" ? "Zapisywanie..." : "Zapisz zabezpieczenia"}
+                {status === "saving" ? t("settings_page.security_saving") : t("settings_page.security_save_btn")}
               </button>
             </div>
           </form>
@@ -360,17 +359,17 @@ export default function SettingsPage() {
               
               <div className="space-y-4">
                 <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-white/40 dark:border-zinc-800 pb-2">
-                  <MapPin className="w-5 h-5 text-purple-500" /> Lokalizacja i Pogoda
+                  <MapPin className="w-5 h-5 text-purple-500" /> {t("settings_page.utilities_location_title")}
                 </h2>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl">
-                  Podaj swoją miejscowość, aby Asystent w Daily Briefingu mógł rano i wieczorem informować Cię o prognozie pogody (korzystamy z darmowego API, nie potrzebujesz klucza!).
+                  {t("settings_page.utilities_location_desc")}
                 </p>
                 
                 <div className="space-y-2 max-w-md pt-2">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Miasto (np. Poznań, Warszawa)</label>
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">{t("settings_page.utilities_location_label")}</label>
                   <input 
                     type="text" 
-                    placeholder="Wpisz miasto..."
+                    placeholder={t("settings_page.utilities_location_placeholder")}
                     value={location} 
                     onChange={(e) => { setLocation(e.target.value); setStatus("idle"); setMessage(""); }}
                     className="w-full p-4 bg-white/60 dark:bg-zinc-900 border border-white/40 dark:border-zinc-800 rounded-xl outline-none focus:border-purple-500 font-bold text-zinc-900 dark:text-white transition-colors" 
@@ -380,13 +379,13 @@ export default function SettingsPage() {
 
               <div className="space-y-4 pt-4">
                 <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-white/40 dark:border-zinc-800 pb-2">
-                  <span className="w-5 h-5 flex items-center justify-center font-bold text-purple-500 rounded-full border border-purple-500 text-xs">$</span> Główna Waluta
+                  <span className="w-5 h-5 flex items-center justify-center font-bold text-purple-500 rounded-full border border-purple-500 text-xs">$</span> {t("settings_page.utilities_currency_title")}
                 </h2>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl">
-                  Wybierz domyślną walutę, w której aplikacja będzie wyświetlać wprowadzane i statystyczne dane o Twoich finansach.
+                  {t("settings_page.utilities_currency_desc")}
                 </p>
                 <div className="space-y-2 max-w-md pt-2">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Twoja waluta</label>
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">{t("settings_page.utilities_currency_label")}</label>
                   <select 
                     value={currency} 
                     onChange={(e) => { setCurrency(e.target.value); setStatus("idle"); setMessage(""); }}
@@ -404,13 +403,13 @@ export default function SettingsPage() {
 
               <div className="space-y-4 pt-4">
                 <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-white/40 dark:border-zinc-800 pb-2">
-                  <span className="w-5 h-5 flex items-center justify-center font-bold text-purple-500 rounded-full border border-purple-500 text-xs">D</span> Dzień Wypłaty
+                  <span className="w-5 h-5 flex items-center justify-center font-bold text-purple-500 rounded-full border border-purple-500 text-xs">D</span> {t("settings_page.utilities_payday_title")}
                 </h2>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl">
-                  Wybierz dzień miesiąca, w którym najczęściej otrzymujesz wypłatę. Dzięki temu system odpowiednio wcześnie wyśle powiadomienia i uaktualni status budżetu na dany miesiąc.
+                  {t("settings_page.utilities_payday_desc")}
                 </p>
                 <div className="space-y-2 max-w-md pt-2">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Dzień wypłaty</label>
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">{t("settings_page.utilities_payday_label")}</label>
                   <select 
                     value={payday} 
                     onChange={(e) => { setPayday(Number(e.target.value)); setStatus("idle"); setMessage(""); }}
@@ -418,7 +417,7 @@ export default function SettingsPage() {
                   >
                     {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
                       <option key={day} value={day}>
-                        {day} dzień miesiąca
+                        {t("settings_page.utilities_payday_day").replace("{day}", String(day))}
                       </option>
                     ))}
                   </select>
@@ -431,7 +430,7 @@ export default function SettingsPage() {
 
             <div className="p-6 bg-white/50 dark:bg-zinc-900/30 border-t border-white/40 dark:border-zinc-800 flex justify-end">
               <button type="submit" disabled={status === "saving"} className="px-8 py-3.5 rounded-xl font-bold text-white bg-purple-500 hover:bg-purple-600 shadow-lg shadow-purple-500/20 transition-all disabled:opacity-50">
-                {status === "saving" ? "Zapisywanie..." : "Zapisz preferencje"}
+                {status === "saving" ? t("settings_page.utilities_saving") : t("settings_page.utilities_save_btn")}
               </button>
             </div>
           </form>
@@ -447,7 +446,7 @@ export default function SettingsPage() {
       {/* Status aktualizacji */}
       <div className="space-y-4">
         <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-white/40 dark:border-zinc-800 pb-2">
-          <RefreshCw className="w-5 h-5 text-orange-500" /> Status Aktualizacji
+          <RefreshCw className="w-5 h-5 text-orange-500" /> {t("settings_page.admin_update_status_title")}
         </h2>
         {updateInfo ? (
           <div className={`p-4 rounded-xl border ${updateInfo.updateAvailable ? "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30" : "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30"}`}>
@@ -460,33 +459,32 @@ export default function SettingsPage() {
               <div>
                 <p className={`font-bold text-sm ${updateInfo.updateAvailable ? "text-amber-700 dark:text-amber-400" : "text-emerald-700 dark:text-emerald-400"}`}>
                   {updateInfo.updateAvailable
-                    ? `Dostępna nowa wersja: ${updateInfo.latestVersion ?? "nieznana"}`
-                    : "Aplikacja jest aktualna"}
+                    ? t("settings_page.admin_update_available").replace("{version}", updateInfo.latestVersion ?? t("settings_page.admin_update_unknown"))
+                    : t("settings_page.admin_update_current")}
                 </p>
                 {updateInfo.lastChecked && (
                   <p className="text-xs text-zinc-500 mt-0.5">
-                    Ostatnie sprawdzenie: {new Date(updateInfo.lastChecked).toLocaleString("pl-PL")}
+                    {t("settings_page.admin_last_checked")} {new Date(updateInfo.lastChecked).toLocaleString()}
                   </p>
                 )}
               </div>
             </div>
           </div>
         ) : (
-          <p className="text-sm text-zinc-500">Ładowanie statusu aktualizacji...</p>
+          <p className="text-sm text-zinc-500">{t("settings_page.admin_update_loading")}</p>
         )}
       </div>
 
       {/* Harmonogram sprawdzania */}
       <div className="space-y-4 pt-4">
         <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-white/40 dark:border-zinc-800 pb-2">
-          <Clock className="w-5 h-5 text-orange-500" /> Harmonogram Sprawdzania Aktualizacji
+          <Clock className="w-5 h-5 text-orange-500" /> {t("settings_page.admin_schedule_title")}
         </h2>
         <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl">
-          Backend automatycznie sprawdza dostępność nowych wersji na GitHubie raz dziennie o wybranej godzinie.
-          Jeżeli wykryje aktualizację, pojawi się baner na górze aplikacji.
+          {t("settings_page.admin_schedule_desc")}
         </p>
         <div className="space-y-2 max-w-xs pt-2">
-          <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Godzina sprawdzania (0–23)</label>
+          <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">{t("settings_page.admin_hour_label")}</label>
           <select
             value={updateCheckHour}
             onChange={(e) => { setUpdateCheckHour(Number(e.target.value)); setSystemStatus("idle"); setSystemMessage(""); }}
@@ -507,7 +505,7 @@ export default function SettingsPage() {
 
     <div className="p-6 bg-white/50 dark:bg-zinc-900/30 border-t border-white/40 dark:border-zinc-800 flex justify-end">
       <button type="submit" disabled={systemStatus === "saving"} className="px-8 py-3.5 rounded-xl font-bold text-white bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50">
-        {systemStatus === "saving" ? "Zapisywanie..." : "Zapisz ustawienia systemu"}
+        {systemStatus === "saving" ? t("settings_page.admin_saving") : t("settings_page.admin_save_btn")}
       </button>
     </div>
   </form>
@@ -522,23 +520,17 @@ export default function SettingsPage() {
       
       <div className="space-y-4">
   <h2 className="text-lg font-bold text-red-600 dark:text-red-500 flex items-center gap-2 border-b border-red-500/20 pb-2">
-    <AlertTriangle className="w-5 h-5" /> Strefa Niebezpieczna: Reset Danych
+    <AlertTriangle className="w-5 h-5" /> {t("settings_page.danger_title")}
   </h2>
   <div className="text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed space-y-2">
-    <p>
-      Z tego miejsca możesz trwale i nieodwracalnie usunąć wszystkie swoje historyczne dane z aplikacji 
-      (transakcje, oszczędności, statystyki zdrowotne, wpisy w kalendarzu, pojazdy). 
-    </p>
+    <p>{t("settings_page.danger_desc")}</p>
     <div className="p-3 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
       <p className="font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-        <Shield className="w-4 h-4 text-emerald-500" /> Twoje konto jest bezpieczne
+        <Shield className="w-4 h-4 text-emerald-500" /> {t("settings_page.danger_account_safe_title")}
       </p>
-      <p className="text-xs mt-1">
-        Ta operacja <strong className="text-zinc-900 dark:text-zinc-300">nie usunie</strong> Twojego konta użytkownika, adresu e-mail ani hasła. 
-        Rozpoczniesz po prostu z czystą kartą.
-      </p>
+      <p className="text-xs mt-1">{t("settings_page.danger_account_safe_desc")}</p>
     </div>
-    <strong className="text-red-600 dark:text-red-400 block mt-4">Uwaga: Tej operacji usuwania rekordów nie można cofnąć!</strong>
+    <strong className="text-red-600 dark:text-red-400 block mt-4">{t("settings_page.danger_warning")}</strong>
   </div>
 </div>
 
@@ -547,17 +539,15 @@ export default function SettingsPage() {
           onClick={() => setShowDeleteConfirm(true)}
           className="px-6 py-3 rounded-xl font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-500/10 hover:bg-red-200 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 transition-all flex items-center gap-2"
         >
-          <Trash2 className="w-5 h-5" /> Rozpocznij procedurę usunięcia danych
+          <Trash2 className="w-5 h-5" /> {t("settings_page.danger_start_btn")}
         </button>
       ) : (
         <form onSubmit={handleDeleteData} className="p-6 bg-red-50/80 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-2xl space-y-6 max-w-2xl animate-in fade-in zoom-in-95 duration-300">
           <div className="flex items-start gap-3 text-red-700 dark:text-red-400">
             <AlertCircle className="w-6 h-6 mt-0.5 shrink-0" />
             <div>
-              <h3 className="text-sm font-black uppercase tracking-wider">Potwierdzenie autoryzacji</h3>
-              <p className="text-xs opacity-90 mt-1">
-                Aby zapobiec przypadkowemu usunięciu danych, musisz potwierdzić tę akcję swoim obecnym hasłem.
-              </p>
+              <h3 className="text-sm font-black uppercase tracking-wider">{t("settings_page.danger_confirm_title")}</h3>
+              <p className="text-xs opacity-90 mt-1">{t("settings_page.danger_confirm_desc")}</p>
             </div>
           </div>
           
@@ -565,7 +555,7 @@ export default function SettingsPage() {
             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500/70" />
             <input 
               type={showDeletePassword ? "text" : "password"} 
-              placeholder="Wprowadź swoje hasło..." 
+              placeholder={t("settings_page.danger_password_placeholder")} 
               required 
               value={deletePassword} 
               onChange={(e) => { setDeletePassword(e.target.value); setStatus("idle"); setMessage(""); }}
@@ -586,14 +576,14 @@ export default function SettingsPage() {
               onClick={() => { setShowDeleteConfirm(false); setDeletePassword(""); setStatus("idle"); setMessage(""); }}
               className="px-4 py-2 rounded-lg font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
             >
-              Anuluj
+              {t("settings_page.danger_cancel_btn")}
             </button>
             <button 
               type="submit" 
               disabled={status === "saving" || !deletePassword} 
               className="px-6 py-2 rounded-lg font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all disabled:opacity-50 flex items-center gap-2"
             >
-              {status === "saving" ? "Trwa usuwanie..." : "Tak, usuń wszystkie dane"}
+              {status === "saving" ? t("settings_page.danger_deleting") : t("settings_page.danger_confirm_btn")}
             </button>
           </div>
         </form>
