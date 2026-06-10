@@ -36,7 +36,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Nieprawidłowe hasło.");
         }
 
-        return { id: user.id, name: user.username };
+        return { id: user.id, name: user.username, role: user.role };
       }
     })
   ],
@@ -44,6 +44,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.role = (user as any).role;
       }
       return token;
     },
@@ -51,6 +52,7 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         // Zapisujemy ID użytkownika w sesji, żeby na Dashboardzie pobierać tylko jego wydatki
         (session.user as any).id = token.id;
+        (session.user as any).role = token.role;
       }
       return session;
     }

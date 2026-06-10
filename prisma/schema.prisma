@@ -15,6 +15,7 @@ model User {
   username String    @unique
   email    String    @unique
   password String    // Zahashowane hasło bcrypt
+  role     String    @default("USER") // "USER" | "ADMIN"
   currency String    @default("PLN") // Miejsce na przyszłą obsługę walut
   savings  Float     @default(0.0)
   payday   Int       @default(10)    // Dzień miesiąca, w którym użytkownik otrzymuje wypłatę
@@ -356,4 +357,13 @@ model EnergyEntry {
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date]) // Zabezpieczenie: tylko 1 główny wpis na dzień
+}
+
+// Globalne ustawienia systemowe (singleton – jeden rekord)
+model SystemSettings {
+  id                String    @id @default("singleton")
+  updateCheckHour   Int       @default(3)   // Godzina sprawdzania (0-23)
+  updateAvailable   Boolean   @default(false)
+  latestVersion     String?
+  lastChecked       DateTime?
 }

@@ -29,6 +29,10 @@ export async function POST(req: Request) {
       }
     }
 
+    // Pierwszy zarejestrowany użytkownik zostaje administratorem
+    const userCount = await prisma.user.count();
+    const role = userCount === 0 ? "ADMIN" : "USER";
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await prisma.user.create({
@@ -36,10 +40,11 @@ export async function POST(req: Request) {
         username,
         email,
         password: hashedPassword,
+        role,
       },
     });
 
-    return NextResponse.json({ success: true, user: { id: newUser.id, username: newUser.username } });
+    return NextResponse.json({ success: true, user: { id: newUser.id, username: newUser.username, role: newUser.role } });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Błąd serwera" }, { status: 500 });

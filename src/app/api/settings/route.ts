@@ -23,6 +23,7 @@ export async function GET() {
       location: user.location || "",
       currency: user.currency || "PLN",
       payday: user.payday ?? 10,
+      role: user.role ?? "USER",
     });
   } catch {
     return NextResponse.json({ error: "Błąd serwera" }, { status: 500 });

@@ -8,6 +8,7 @@ import { SavingsModule } from './savings/savings.module';
 import { SettingsModule } from './settings/settings.module';
 import { TransferModule } from './transfer/transfer.module';
 import { WorkDaysModule } from './work-days/work-days.module';
+import { UpdateCheckModule } from './update-check/update-check.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { WorkDaysModule } from './work-days/work-days.module';
     SettingsModule,
     TransferModule,
     WorkDaysModule,
+    UpdateCheckModule,
   ],
   controllers: [AppController],
   providers: [AppService],

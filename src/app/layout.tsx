@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { AppLayout } from "@/components/layout/app-layout";
 import { AchievementsProvider } from "@/components/AchievementsProvider";
+import { UpdateBanner } from "@/components/UpdateBanner";
 
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
@@ -31,6 +32,7 @@ export default function RootLayout({
           <LanguageProvider>
             <AuthProvider>
               <AchievementsProvider>
+                <UpdateBanner />
                 <AppLayout>
                   {children}
                 </AppLayout>

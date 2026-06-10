@@ -1,16 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Shield, Mail, Lock, CheckCircle2, AlertCircle, Save, KeyRound, Pencil, Eye, EyeOff, MapPin, Wrench, Settings, Trash2, AlertTriangle } from "lucide-react";
+import { Shield, Mail, Lock, CheckCircle2, AlertCircle, Save, KeyRound, Pencil, Eye, EyeOff, MapPin, Wrench, Settings, Trash2, AlertTriangle, RefreshCw, Clock } from "lucide-react";
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<"security" | "utilities" | "danger">("security");
+  const [activeTab, setActiveTab] = useState<"security" | "utilities" | "admin" | "danger">("security");
   
   const [currentEmail, setCurrentEmail] = useState("");
   const [location, setLocation] = useState("");
   const [currency, setCurrency] = useState("PLN");
   const [payday, setPayday] = useState<number>(10);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState<"USER" | "ADMIN">("USER");
+
+  // Stan ustawień systemowych (tylko admin)
+  const [updateCheckHour, setUpdateCheckHour] = useState<number>(3);
+  const [systemStatus, setSystemStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
+  const [systemMessage, setSystemMessage] = useState("");
+  const [updateInfo, setUpdateInfo] = useState<{ updateAvailable: boolean; latestVersion?: string | null; lastChecked?: string | null } | null>(null);
   
   const [formData, setFormData] = useState({
     newEmail: "",
@@ -56,6 +63,20 @@ export default function SettingsPage() {
         if (data.payday !== undefined) {
           setPayday(data.payday);
         }
+        if (data.role) {
+          setUserRole(data.role);
+          if (data.role === "ADMIN") {
+            // Pobieramy ustawienia systemowe i status aktualizacji
+            fetch("/api/system/settings")
+              .then(r => r.json())
+              .then(sys => { if (sys.updateCheckHour !== undefined) setUpdateCheckHour(sys.updateCheckHour); })
+              .catch(() => {});
+            fetch("/api/system/update-status")
+              .then(r => r.json())
+              .then(upd => setUpdateInfo(upd))
+              .catch(() => {});
+          }
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -64,6 +85,30 @@ export default function SettingsPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (status !== "idle") { setStatus("idle"); setMessage(""); }
+  };
+
+  const handleSystemSettingsSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSystemStatus("saving"); setSystemMessage("");
+    try {
+      const res = await fetch("/api/system/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ updateCheckHour }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSystemStatus("success");
+        setSystemMessage("Ustawienia systemowe zostały zapisane.");
+        setTimeout(() => setSystemStatus("idle"), 5000);
+      } else {
+        setSystemStatus("error");
+        setSystemMessage(data.error || "Wystąpił błąd.");
+      }
+    } catch {
+      setSystemStatus("error");
+      setSystemMessage("Błąd serwera.");
+    }
   };
 
   // FUNKCJA USUWANIA WSZYSTKICH DANYCH
@@ -194,6 +239,18 @@ export default function SettingsPage() {
         >
           <Wrench className="w-4 h-4" /> System & Utilities
         </button>
+        {userRole === "ADMIN" && (
+          <button 
+            onClick={() => { setActiveTab("admin"); setStatus("idle"); setMessage(""); }}
+            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-black text-sm transition-all duration-300 ${
+              activeTab === "admin" 
+                ? "bg-orange-500 text-white shadow-lg shadow-orange-500/25 scale-100" 
+                : "bg-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-white/50 dark:hover:bg-zinc-800/50"
+            }`}
+          >
+            <Shield className="w-4 h-4" /> Panel Admina
+          </button>
+        )}
         <button 
           onClick={() => { setActiveTab("danger"); setStatus("idle"); setMessage(""); }}
           className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-black text-sm transition-all duration-300 ${
@@ -379,6 +436,82 @@ export default function SettingsPage() {
             </div>
           </form>
         )}
+
+        {/* ======================================= */}
+{/* TAB 3: DANGER ZONE                      */}
+{/* ======================================= */}
+{activeTab === "admin" && userRole === "ADMIN" && (
+  <form onSubmit={handleSystemSettingsSubmit} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="p-6 md:p-8 space-y-8">
+
+      {/* Status aktualizacji */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-white/40 dark:border-zinc-800 pb-2">
+          <RefreshCw className="w-5 h-5 text-orange-500" /> Status Aktualizacji
+        </h2>
+        {updateInfo ? (
+          <div className={`p-4 rounded-xl border ${updateInfo.updateAvailable ? "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30" : "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30"}`}>
+            <div className="flex items-center gap-3">
+              {updateInfo.updateAvailable ? (
+                <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
+              ) : (
+                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+              )}
+              <div>
+                <p className={`font-bold text-sm ${updateInfo.updateAvailable ? "text-amber-700 dark:text-amber-400" : "text-emerald-700 dark:text-emerald-400"}`}>
+                  {updateInfo.updateAvailable
+                    ? `Dostępna nowa wersja: ${updateInfo.latestVersion ?? "nieznana"}`
+                    : "Aplikacja jest aktualna"}
+                </p>
+                {updateInfo.lastChecked && (
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    Ostatnie sprawdzenie: {new Date(updateInfo.lastChecked).toLocaleString("pl-PL")}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-zinc-500">Ładowanie statusu aktualizacji...</p>
+        )}
+      </div>
+
+      {/* Harmonogram sprawdzania */}
+      <div className="space-y-4 pt-4">
+        <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-white/40 dark:border-zinc-800 pb-2">
+          <Clock className="w-5 h-5 text-orange-500" /> Harmonogram Sprawdzania Aktualizacji
+        </h2>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl">
+          Backend automatycznie sprawdza dostępność nowych wersji na GitHubie raz dziennie o wybranej godzinie.
+          Jeżeli wykryje aktualizację, pojawi się baner na górze aplikacji.
+        </p>
+        <div className="space-y-2 max-w-xs pt-2">
+          <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Godzina sprawdzania (0–23)</label>
+          <select
+            value={updateCheckHour}
+            onChange={(e) => { setUpdateCheckHour(Number(e.target.value)); setSystemStatus("idle"); setSystemMessage(""); }}
+            className="w-full p-4 bg-white/60 dark:bg-zinc-900 border border-white/40 dark:border-zinc-800 rounded-xl outline-none focus:border-orange-500 font-bold text-zinc-900 dark:text-white transition-colors cursor-pointer"
+          >
+            {Array.from({ length: 24 }, (_, i) => (
+              <option key={i} value={i}>
+                {String(i).padStart(2, "0")}:00
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {systemStatus === "error" && <div className="p-4 bg-red-500/10 text-red-500 text-sm font-bold rounded-xl flex items-center gap-2"><AlertCircle className="w-4 h-4" /> {systemMessage}</div>}
+      {systemStatus === "success" && <div className="p-4 bg-emerald-500/10 text-emerald-500 text-sm font-bold rounded-xl flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> {systemMessage}</div>}
+    </div>
+
+    <div className="p-6 bg-white/50 dark:bg-zinc-900/30 border-t border-white/40 dark:border-zinc-800 flex justify-end">
+      <button type="submit" disabled={systemStatus === "saving"} className="px-8 py-3.5 rounded-xl font-bold text-white bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50">
+        {systemStatus === "saving" ? "Zapisywanie..." : "Zapisz ustawienia systemu"}
+      </button>
+    </div>
+  </form>
+)}
 
         {/* ======================================= */}
 {/* TAB 3: DANGER ZONE                      */}
