@@ -470,7 +470,8 @@
     "slider_work": "Stan umysłu w trakcie PRACY",
     "slider_free": "Stan umysłu w CZASIE WOLNYM",
     "note_placeholder": "Co zaprząta Twoje myśli? Np. 'Świetny poranek, ale potem ciężkie spotkanie'...",
-    "save_journal": "Zapisz w dzienniku"
+    "save_journal": "Zapisz w dzienniku",
+    "state_balancing": "Zapisywanie..."
   },
   "health_daily": {
     "title": "Dziennik Aktywności",

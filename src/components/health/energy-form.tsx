@@ -8,11 +8,11 @@ import { ChevronDown, ChevronUp, Wind } from "lucide-react";
 import { useLanguage } from "@/components/LanguageProvider";
 
 const getZenConfig = (val: number, t: any) => {
-  if (val <= 15) return { emoji: "đźĄ€", color: "bg-rose-500", glow: "shadow-rose-500/50", text: t("health_energy.state_1"), textColor: "text-rose-500" };
-  if (val <= 40) return { emoji: "đźŤ‚", color: "bg-orange-400", glow: "shadow-orange-400/50", text: t("health_energy.state_2"), textColor: "text-orange-400" };
-  if (val <= 65) return { emoji: "đźŚ±", color: "bg-emerald-400", glow: "shadow-emerald-400/50", text: t("health_energy.state_3"), textColor: "text-emerald-500" };
-  if (val <= 85) return { emoji: "đź”‹", color: "bg-teal-500", glow: "shadow-teal-500/50", text: t("health_energy.state_4"), textColor: "text-teal-500" };
-  return { emoji: "âšˇ", color: "bg-indigo-500", glow: "shadow-indigo-500/50", text: t("health_energy.state_5"), textColor: "text-indigo-500" };
+  if (val <= 15) return { emoji: "\uD83E\uDD40", color: "bg-rose-500", glow: "shadow-rose-500/50", text: t("health_energy.state_1"), textColor: "text-rose-500" };
+  if (val <= 40) return { emoji: "\uD83C\uDF31", color: "bg-orange-400", glow: "shadow-orange-400/50", text: t("health_energy.state_2"), textColor: "text-orange-400" };
+  if (val <= 65) return { emoji: "\ud83c\udf42", color: "bg-emerald-400", glow: "shadow-emerald-400/50", text: t("health_energy.state_3"), textColor: "text-emerald-500" };
+  if (val <= 85) return { emoji: "\uD83D\uDD0B", color: "bg-teal-500", glow: "shadow-teal-500/50", text: t("health_energy.state_4"), textColor: "text-teal-500" };
+  return { emoji: "\u26A1", color: "bg-indigo-500", glow: "shadow-indigo-500/50", text: t("health_energy.state_5"), textColor: "text-indigo-500" };
 };
 
 const STAGES = [10, 35, 60, 85, 100];
@@ -38,31 +38,31 @@ const OrganicSelector = ({ value, onChange, label, disabled = false, t }: any) =
       </div>
 
       {/* Custom Wide Slider */}
-      <div className="relative w-full max-w-sm h-12 rounded-[2rem] bg-black/5 dark:bg-white/5 border border-white/10 dark:border-white/5 shadow-inner flex items-center overflow-hidden">
+      <div className="relative w-full max-w-sm h-12 rounded-[2rem] bg-black/5 dark:bg-white/5 border border-white/10 dark:border-white/5 shadow-inner flex items-center overflow-hidden will-change: transform">
         
         {/* Niewidzialny input range */}
         <input
           type="range"
           min="0"
           max="100"
-          step="1"
+          step="2"
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
           disabled={disabled}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
         />
 
-        {/* Kolorowe tĹ‚o narastajÄ…ce z lewej strony */}
+        {/* Kolorowe tło narastające z lewej strony */}
         <div 
-          className={`absolute left-0 h-full ${color} opacity-20 transition-all duration-300`} 
+          className={`absolute left-0 h-full ${color} opacity-20 transition-all duration-25 will-change-auto`} 
           style={{ width: `${value}%` }} 
         />
 
-        {/* Customowy uchwyt (Thumb) przypominajÄ…cy pĹ‚ynnÄ… piguĹ‚kÄ™ */}
+        {/* Customowy uchwyt (Thumb) przypominający płynną pigułkę */}
         <div 
           className={`absolute h-10 px-4 rounded-[2rem] flex items-center justify-center text-xs font-black text-white shadow-lg pointer-events-none transition-all duration-100 z-10 ${color}`}
           style={{ 
-            left: `calc(${value}% + ${10 - (value * 0.2)}px)`, // Korekta przesuniÄ™cia, dostosowana do gruboĹ›ci uchwytu, odsuwajÄ…ca na lewo im wiÄ™ksza wartoĹ›Ä‡
+            left: `calc(${value}% + ${10 - (value * 0.2)}px)`, // Korekta przesunięcia, dostosowana do grubości uchwytu, odsuwająca na lewo im większa wartość
             transform: 'translateX(-50%)',
             minWidth: '56px'
           }}
@@ -111,7 +111,7 @@ export function EnergyForm() {
 
       <div className="flex items-center justify-between mb-12">
         <h2 className="text-xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 flex items-center gap-3">
-          <Wind className="w-6 h-6 text-teal-500" /> Stan UmysĹ‚u
+          <Wind className="w-6 h-6 text-teal-500" /> {t("health_energy.mind_state")}
         </h2>
         <input 
           name="date" 
@@ -158,7 +158,7 @@ export function EnergyForm() {
         <button type="submit" disabled={isPending} className="relative w-full py-5 rounded-[2rem] font-black text-white bg-zinc-900 dark:bg-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-all shadow-[0_10px_40px_rgba(0,0,0,0.1)] hover:shadow-[0_10px_40px_rgba(0,0,0,0.15)] overflow-hidden group disabled:opacity-50">
           <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <span className="relative flex items-center justify-center gap-2">
-            {isPending ? t("health_energy.state_balancing") : t("health_energy.save_garden")} <Wind className="w-4 h-4" />
+            {isPending ? t("health_energy.state_balancing") : t("health_energy.save_journal")} <Wind className="w-4 h-4" />
           </span>
         </button>
       </div>
