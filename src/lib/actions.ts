@@ -57,6 +57,42 @@ export async function addExpense(formData: FormData) {
   revalidatePath("/calendar");
 }
 
+export async function addExpensesBatch(
+  items: { amount: number; description: string; categoryName: string; date: string }[],
+) {
+  const userId = await getUserId();
+  const categoryCache = new Map<string, string>(); // name -> id
+
+  for (const item of items) {
+    let categoryId: string;
+
+    if (categoryCache.has(item.categoryName)) {
+      categoryId = categoryCache.get(item.categoryName)!;
+    } else {
+      let category = await prisma.category.findFirst({ where: { name: item.categoryName, userId } });
+      if (!category) {
+        category = await prisma.category.create({ data: { name: item.categoryName, userId, icon: "🏷️" } });
+      }
+      categoryId = category.id;
+      categoryCache.set(item.categoryName, categoryId);
+    }
+
+    await prisma.expense.create({
+      data: {
+        amount: item.amount,
+        description: item.description || "",
+        date: new Date(item.date),
+        categoryId,
+        userId,
+        type: "EXPENSE",
+      },
+    });
+  }
+
+  revalidatePath("/");
+  revalidatePath("/calendar");
+}
+
 export async function addIncome(formData: FormData) {
   const amount = parseFloat(formData.get("amount") as string);
   const source = formData.get("source") as string;

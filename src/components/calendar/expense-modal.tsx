@@ -1,11 +1,12 @@
 "use client";
 
-import { X, Calendar as CalendarIcon, Repeat, Scale, ArrowRightLeft } from "lucide-react";
+import { X, Calendar as CalendarIcon, Repeat, Scale, ArrowRightLeft, LayoutList } from "lucide-react";
 import { useEffect, useState, useTransition, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { addExpense, adjustMainBalance } from "@/lib/actions";
 import { RecurringForm } from "./recurring-form";
 import { TransferForm } from "./transfer-form";
+import { MultiExpenseForm } from "./multi-expense-form";
 import { useLanguage } from "@/components/LanguageProvider";
 
 interface ExpenseModalProps {
@@ -25,7 +26,7 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories, expens
   const [mounted, setMounted] = useState(false);
   const amountRef = useRef<HTMLInputElement>(null);
   
-  const [type, setType] = useState<"ONETIME" | "RECURRING" | "CORRECTION" | "TRANSFER">("ONETIME");
+  const [type, setType] = useState<"ONETIME" | "MULTI" | "RECURRING" | "CORRECTION" | "TRANSFER">("ONETIME");
   const [quickAmount, setQuickAmount] = useState<number | null>(null);
 
   const NEW_CATEGORY_CONST = t("calendar.modals.expense.category_new");
@@ -93,7 +94,7 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories, expens
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={onClose}>
       {/* Szerszy modal dla trybu ONETIME, normalny dla reszty */}
       <div
-        className={`relative w-full rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${type === "ONETIME" ? "max-w-2xl" : "max-w-md"}`}
+        className={`relative w-full rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${type === "MULTI" ? "max-w-3xl" : type === "ONETIME" ? "max-w-2xl" : "max-w-md"}`}
         onClick={e => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute right-4 top-4 rounded-full p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300 transition-colors">
@@ -106,9 +107,12 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories, expens
         </p>
 
         {/* ZAKŁADKI TRYBU */}
-        <div className="grid grid-cols-4 gap-2 mb-5 bg-black/5 dark:bg-white/5 p-1.5 rounded-2xl">
+        <div className="grid grid-cols-5 gap-2 mb-5 bg-black/5 dark:bg-white/5 p-1.5 rounded-2xl">
           <button type="button" onClick={() => setType("ONETIME")} className={`py-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all ${type === "ONETIME" ? "bg-white dark:bg-zinc-800 shadow-sm text-zinc-900 dark:text-white" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}>
             <CalendarIcon className="w-3.5 h-3.5" /> {t("calendar.modals.expense.type_expense")}
+          </button>
+          <button type="button" onClick={() => setType("MULTI")} className={`py-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all ${type === "MULTI" ? "bg-teal-500 shadow-md shadow-teal-500/20 text-white" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}>
+            <LayoutList className="w-3.5 h-3.5" /> Lista dnia
           </button>
           <button type="button" onClick={() => setType("TRANSFER")} className={`py-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all ${type === "TRANSFER" ? "bg-blue-500 shadow-md shadow-blue-500/20 text-white" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}>
             <ArrowRightLeft className="w-3.5 h-3.5" /> {t("calendar.modals.expense.type_transfer")}
@@ -233,6 +237,15 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories, expens
               </div>
             </div>
           </form>
+        )}
+
+        {type === "MULTI" && (
+          <MultiExpenseForm
+            selectedDate={selectedDate}
+            categories={categories}
+            onSuccess={onClose}
+            currency={currency}
+          />
         )}
 
         {type === "TRANSFER" && (
