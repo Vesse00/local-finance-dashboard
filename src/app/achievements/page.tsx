@@ -14,7 +14,7 @@ function AchievementCard({
 }) {
   const isComplete = ach.unlockedTier === 4;
   const isLocked = !ach.isPrerequisiteMet;
-  const currentTierStyle = ach.unlockedTier > 0 ? TIER_STYLES[ach.unlockedTier] : null;
+  const currentTierStyle = ach.unlockedTier > 0 ? TIER_STYLES[ach.unlockedTier as 1 | 2 | 3 | 4] : null;
 
   // Znajdź prerequisite do wyświetlenia w locku
   const prereq = ach.prerequisiteId
