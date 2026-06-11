@@ -2,11 +2,15 @@ FROM node:20-bookworm-slim AS deps
 
 WORKDIR /app
 
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY package.json package-lock.json ./
 COPY backend/package.json backend/package-lock.json ./backend/
 
-RUN npm ci \
-  && npm ci --prefix backend
+RUN npm ci --ignore-scripts \
+  && npm ci --ignore-scripts --prefix backend
 
 FROM deps AS builder
 
@@ -22,6 +26,10 @@ RUN npm run build \
 FROM node:20-bookworm-slim AS runner
 
 WORKDIR /app
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
