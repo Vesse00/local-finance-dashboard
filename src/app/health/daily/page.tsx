@@ -3,6 +3,8 @@ import { DailyPageClient } from "./daily-page-client";
 import { startOfMonth, endOfMonth } from "date-fns";
 import { DiscoverPage } from "@/components/DiscoverPage";
 
+export const dynamic = "force-dynamic";
+
 export default async function DailyHealthPage() {
   const user = await prisma.user.findFirst();
   if (!user) return <div className="p-10 text-center">Brak dostępu</div>;

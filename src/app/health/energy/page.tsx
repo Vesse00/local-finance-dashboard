@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db";
 import { EnergyPageClient } from "./energy-page-client";
 import { DiscoverPage } from "@/components/DiscoverPage";
 
+export const dynamic = "force-dynamic";
+
 export default async function EnergyPage() {
   const user = await prisma.user.findFirst();
   if (!user) return <div className="p-10 text-center">Brak dostępu</div>;

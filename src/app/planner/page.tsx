@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db";
 import { PlannerUI } from "@/components/planner/planner-ui";
 import { DiscoverPage } from "@/components/DiscoverPage";
 
+export const dynamic = "force-dynamic";
+
 const safeSerialize = (data: any) => 
   JSON.parse(JSON.stringify(data, (key, value) => 
     typeof value === 'bigint' ? value.toString() : value

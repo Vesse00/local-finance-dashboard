@@ -7,6 +7,8 @@ import { getBriefingData } from "@/lib/services/briefing"; // Zgrabnie i eleganc
 import { prisma } from "@/lib/db";
 import { startOfMonth, endOfMonth } from "date-fns";
 
+export const dynamic = "force-dynamic";
+
 
 // Bezpieczna konwersja danych z bazy (BigInt do String)
 const safeSerialize = (data: any) => 

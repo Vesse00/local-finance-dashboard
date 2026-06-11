@@ -12,6 +12,8 @@ FROM deps AS builder
 
 WORKDIR /app
 
+ENV DATABASE_URL=file:./dev.db
+
 COPY . .
 
 RUN npm run build \
@@ -23,6 +25,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV DATABASE_URL=file:/data/dev.db
 
 COPY package.json package-lock.json ./
 COPY backend/package.json backend/package-lock.json ./backend/
@@ -39,4 +42,4 @@ COPY --from=builder /app/backend/dist ./backend/dist
 
 EXPOSE 3003 4000
 
-CMD ["sh", "-c", "mkdir -p /data /app/public/uploads && touch /data/dev.db && ln -sf /data/dev.db /app/dev.db && npm run start -- -p 3003 & PORT=${PORT:-4000} npm run start:backend & wait -n"]
+CMD ["sh", "-c", "mkdir -p /data /app/public/uploads && npm run prisma:migrate:deploy && npm run start -- -p 3003 & PORT=${PORT:-4000} npm run start:backend & wait -n"]

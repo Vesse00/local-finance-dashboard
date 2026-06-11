@@ -7,6 +7,8 @@ import {
 import { prisma } from "@/lib/db";
 import { startOfMonth, endOfMonth, differenceInDays, addDays, subMonths, format } from "date-fns";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdvancedAnalysisPage() {
   const user = await prisma.user.findFirst();
   if (!user) return <div className="p-10 text-center">Brak dostępu / Brak danych</div>;

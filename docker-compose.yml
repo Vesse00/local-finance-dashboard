@@ -12,6 +12,7 @@ services:
       - "${BACKEND_PORT:-4000}:4000"
     environment:
       NODE_ENV: production
+      DATABASE_URL: file:/data/dev.db
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3003}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-change-me-nextauth-secret}
       BACKEND_URL: ${BACKEND_URL:-http://127.0.0.1:4000/api}
