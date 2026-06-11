@@ -109,6 +109,35 @@ npm run dev
 
 The application will be available at [http://localhost:3000](http://localhost:3000).
 
+## Production Deploy (Docker)
+
+For a production deployment with a single Docker command:
+
+1. Copy `.env.docker.example` to `.env.docker` and fill in your real domain and secrets.
+2. Create the persistent folders:
+
+```bash
+mkdir -p data public/uploads
+```
+
+3. Build and start the services:
+
+```bash
+docker compose up -d --build
+```
+
+The production image uses a multi-stage build:
+- build stage installs dev dependencies and generates Prisma client,
+- runtime stage installs production dependencies only,
+- SQLite data is persisted in `./data/dev.db`,
+- uploads are persisted in `./public/uploads`.
+
+To update after pulling changes:
+
+```bash
+docker compose up -d --build
+```
+
 ---
 
 <div align="center">
