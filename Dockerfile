@@ -3,7 +3,7 @@ FROM node:20-bookworm-slim AS deps
 WORKDIR /app
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && apt-get install -y --no-install-recommends openssl ca-certificates python3 make g++ \
   && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
@@ -28,7 +28,7 @@ FROM node:20-bookworm-slim AS runner
 WORKDIR /app
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && apt-get install -y --no-install-recommends openssl ca-certificates python3 make g++ \
   && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
@@ -40,6 +40,7 @@ COPY backend/package.json backend/package-lock.json ./backend/
 
 RUN npm ci --omit=dev --ignore-scripts \
   && npm ci --omit=dev --ignore-scripts --prefix backend \
+  && npm rebuild better-sqlite3 --build-from-source \
   && npm cache clean --force
 
 COPY --from=builder /app/.next ./.next
