@@ -40,12 +40,15 @@ COPY backend/package.json backend/package-lock.json ./backend/
 
 RUN npm ci --omit=dev --ignore-scripts \
   && npm ci --omit=dev --ignore-scripts --prefix backend \
+  && npm install --no-save --ignore-scripts prisma@7.4.2 \
   && npm rebuild better-sqlite3 --build-from-source \
   && npm cache clean --force
 
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/src/generated ./src/generated
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/next.config.ts ./next.config.ts
 COPY --from=builder /app/backend/dist ./backend/dist
 

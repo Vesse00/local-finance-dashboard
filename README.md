@@ -123,7 +123,7 @@ mkdir -p data public/uploads
 3. Build and start the services:
 
 ```bash
-docker compose up -d --build
+docker compose --env-file .env.docker up -d --build
 ```
 
 The production image uses a multi-stage build:
@@ -135,7 +135,7 @@ The production image uses a multi-stage build:
 To update after pulling changes:
 
 ```bash
-docker compose up -d --build
+docker compose --env-file .env.docker up -d --build
 ```
 
 ---
