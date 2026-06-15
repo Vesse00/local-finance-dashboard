@@ -29,8 +29,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <OmniBar />
         
         {/* USUNIĘTE PEŁNE TŁO: Zastąpione bardzo delikatnym, przezroczystym przyciemnieniem (usunięto klasę 'backdrop-blur-[2px]', by nie rozmywała wzoru tła z krzyżyków w kontenerze) */}
-        <main className="flex-1 overflow-y-auto bg-white/20 dark:bg-black/10 transition-colors duration-500 relative">
-          {children}
+        <main className="page-content-root flex-1 overflow-y-auto bg-white/20 dark:bg-black/10 transition-colors duration-500 relative">
+          <div key={pathname} className="page-route-enter">
+            {children}
+          </div>
         </main>
       </div>
     </div>

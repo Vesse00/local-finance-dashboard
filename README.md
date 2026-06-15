@@ -111,32 +111,65 @@ The application will be available at [http://localhost:3000](http://localhost:30
 
 ## Production Deploy (Docker)
 
-For a production deployment with a single Docker command:
+Production-ready single-container setup (Next.js + backend API) with persistent SQLite and uploads.
 
-1. Copy `.env.docker.example` to `.env.docker` and fill in your real domain and secrets.
-2. Create the persistent folders:
+### 1) Prerequisites
+- Docker Engine + Docker Compose plugin (`docker compose`)
+- Linux server with open ports for frontend/backend (default: `3003` and `4000`)
+
+### 2) Environment file
+
+Copy the template and edit values:
+
+```bash
+cp .env.docker.example .env.docker
+```
+
+Recommended values:
+- `NEXTAUTH_URL` = public frontend URL (example: `http://YOUR_SERVER_IP:3003`)
+- `CORS_ORIGIN` = same public frontend URL as above
+- `BACKEND_URL` = internal API URL with `/api` prefix (example: `http://127.0.0.1:4000/api`)
+- `DATABASE_URL` = `file:/data/dev.db` (persistent volume path)
+- `NEXTAUTH_SECRET` and `INTERNAL_API_SECRET` = long random secrets
+
+### 3) Persistent folders
 
 ```bash
 mkdir -p data public/uploads
 ```
 
-3. Build and start the services:
+### 4) First run / deploy
 
 ```bash
 docker compose --env-file .env.docker up -d --build
 ```
 
-The production image uses a multi-stage build:
-- build stage installs dev dependencies and generates Prisma client,
-- runtime stage installs production dependencies only,
-- SQLite data is persisted in `./data/dev.db`,
-- uploads are persisted in `./public/uploads`.
+What happens on container startup:
+- Prisma migrations are applied,
+- schema is synced (`prisma db push`) for safe from-zero boot,
+- frontend and backend start in production mode.
 
-To update after pulling changes:
+### 5) Verify deployment
+
+```bash
+docker compose ps
+docker compose logs -f app
+```
+
+Expected:
+- frontend available on `http://SERVER_IP:3003`
+- backend health endpoint available on `http://SERVER_IP:4000/api/health`
+
+### 6) Update after git pull
 
 ```bash
 docker compose --env-file .env.docker up -d --build
 ```
+
+### 7) Data persistence
+- SQLite database: `./data/dev.db`
+- uploaded files: `./public/uploads`
+- container restart policy: `unless-stopped`
 
 ---
 
