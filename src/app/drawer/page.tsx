@@ -322,8 +322,8 @@ export default function DigitalDrawerPage() {
           MODAL: DODAWANIE DO SZUFLADY
       =============================================== */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 z-[60]">
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl w-full max-w-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl shadow-xl w-full max-w-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 duration-200 flex flex-col max-h-[92dvh] sm:max-h-[90vh]">
             <div className={`flex justify-between items-center p-6 border-b border-zinc-100 dark:border-zinc-800 ${formData.type === "CONTRACT" ? "bg-blue-500/5" : formData.type === "WARRANTY" ? "bg-emerald-500/5" : "bg-purple-500/5"}`}>
               <h3 className="font-bold text-lg flex items-center gap-2">
                 {formData.type === "CONTRACT" ? <><FileText className="w-5 h-5 text-blue-500" /> {t("drawer_page.modal_title_contract")}</> : formData.type === "WARRANTY" ? <><ShieldCheck className="w-5 h-5 text-emerald-500" /> {t("drawer_page.modal_title_warranty")}</> : <><Award className="w-5 h-5 text-purple-500" /> {t("drawer_page.modal_title_certificate")}</>}

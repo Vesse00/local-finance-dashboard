@@ -100,22 +100,22 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
   const budgetColor = budgetPct < 60 ? "bg-emerald-500" : budgetPct < 85 ? "bg-amber-500" : "bg-red-500";
 
   return (
-    <div className="flex-1 p-6 md:p-8 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl p-4 rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
+    <div className="flex-1 p-3 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl p-3 sm:p-4 rounded-2xl border border-black/5 dark:border-white/10 shadow-sm">
         
         <div className="flex items-center gap-2">
           <button onClick={prevMonth} className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
             <ChevronLeft className="w-5 h-5" />
           </button>
           
-          <div className="flex items-center justify-center gap-2 min-w-[170px]">
-            <h2 className="text-xl font-bold capitalize">
+          <div className="flex items-center justify-center gap-2 min-w-[150px] sm:min-w-[170px]">
+            <h2 className="text-lg sm:text-xl font-bold capitalize">
               {format(currentMonth, 'LLLL', { locale: dateLocale })}
             </h2>
             <select 
               value={currentMonth.getFullYear()}
               onChange={handleYearChange}
-              className="bg-transparent text-xl font-bold outline-none cursor-pointer text-zinc-600 dark:text-zinc-400 hover:text-primary transition-colors appearance-none"
+              className="bg-transparent text-lg sm:text-xl font-bold outline-none cursor-pointer text-zinc-600 dark:text-zinc-400 hover:text-primary transition-colors appearance-none"
             >
               {years.map(year => <option key={year} value={year} className="text-base bg-white dark:bg-zinc-900">{year}</option>)}
             </select>
@@ -149,13 +149,13 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
           )}
         </div>
         
-        <div className="flex flex-wrap items-center justify-end gap-3">
+        <div className="flex flex-wrap items-center justify-start md:justify-end gap-2 sm:gap-3">
           <ImportModal />
           <AddIncomeModal />
           
           <button 
             onClick={() => setIsCategoryModalOpen(true)}
-            className="flex items-center gap-2 p-2 px-4 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors border border-black/5 dark:border-white/10"
+            className="flex items-center gap-2 p-2 px-3 sm:px-4 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors border border-black/5 dark:border-white/10"
           >
             <Settings className="w-4 h-4 text-zinc-500" />
             <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">{t("calendar.categories_button")}</span>
@@ -166,7 +166,7 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
       <div className="rounded-2xl border border-black/5 dark:border-white/10 bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl overflow-hidden shadow-sm">
         <div className="grid grid-cols-7 border-b border-black/5 dark:border-white/10 bg-black/5 dark:bg-white/5">
           {weekDays.map(day => (
-            <div key={day} className="py-3 text-center text-xs font-semibold uppercase text-zinc-500">{day}</div>
+            <div key={day} className="py-2 sm:py-3 text-center text-[10px] sm:text-xs font-semibold uppercase text-zinc-500">{day}</div>
           ))}
         </div>
         
@@ -202,7 +202,7 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
               <div 
                 key={i} 
                 onClick={() => isCurrentMonth && handleDayClick(date)}
-                className={`group relative min-h-[120px] p-2 transition-colors border-t border-l border-transparent
+                className={`group relative min-h-[86px] sm:min-h-[120px] p-1.5 sm:p-2 transition-colors border-t border-l border-transparent
                   ${isCurrentMonth
                     ? `hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer ${dayColorClass || "bg-white dark:bg-zinc-950"}`
                     : "bg-zinc-50/50 dark:bg-zinc-900/30 cursor-default"}
@@ -218,7 +218,7 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
                   {format(date, 'd')}
                 </span>
 
-                <div className="flex flex-col gap-1 mt-1">
+                <div className="hidden sm:flex flex-col gap-1 mt-1">
                   {visibleTransactions.map(tx => (
                     tx.isIncome ? (
                       <div key={`inc-${tx.id}`} title={tx.source} className="truncate rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium border border-emerald-500/20">
@@ -238,10 +238,28 @@ export function CalendarUI({ expenses, incomes, categories, currency = "PLN" }: 
                   )}
                 </div>
 
+                <div className="sm:hidden mt-1 space-y-1">
+                  {dayIncomes.length > 0 && (
+                    <div className="truncate rounded px-1.5 py-0.5 text-[10px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                      + {dayIncome.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0 })}
+                    </div>
+                  )}
+                  {daySpend > 0 && (
+                    <div className="truncate rounded px-1.5 py-0.5 text-[10px] font-semibold bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/20">
+                      - {daySpend.toLocaleString("pl-PL", { style: "currency", currency: currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0 })}
+                    </div>
+                  )}
+                  {allDayTransactions.length > 2 && (
+                    <div className="text-[10px] text-zinc-500 font-semibold px-1">
+                      {t("calendar.more_transactions").replace("{count}", String(allDayTransactions.length - 2))}
+                    </div>
+                  )}
+                </div>
+
                 {isCurrentMonth && (
                   <button 
                     onClick={(e) => handleAddExpense(e, date)}
-                    className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white opacity-0 shadow-lg transition-all transform scale-90 opacity-100 md:opacity-0 md:group-hover:opacity-100 group-hover:scale-100 hover:bg-primary/80 z-10"
+                    className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-all transform scale-90 opacity-100 md:opacity-0 md:group-hover:opacity-100 group-hover:scale-100 hover:bg-primary/80 z-10"
                   >
                     +
                   </button>

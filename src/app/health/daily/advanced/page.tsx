@@ -564,10 +564,10 @@ export default function AdvancedHealthPage() {
 
       {/* OVERLAY SEARCH / SELECTOR WAGI (Jak w Fitatu) */}
       {isSearchOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setIsSearchOpen(false); setSelectedProduct(null); }}></div>
           
-          <div className="w-full max-w-lg bg-zinc-900 border border-white/10 rounded-[2rem] sm:rounded-[3rem] shadow-2xl relative z-10 flex flex-col max-h-[90vh] overflow-hidden transform transition-all animate-in slide-in-from-bottom-8">
+          <div className="w-full max-w-lg bg-zinc-900 border border-white/10 rounded-t-[2rem] sm:rounded-[3rem] shadow-2xl relative z-10 flex flex-col max-h-[92dvh] sm:max-h-[90vh] overflow-hidden transform transition-all animate-in slide-in-from-bottom-8">
             <div className="flex items-center justify-between p-6 border-b border-white/5">
               <h2 className="text-lg font-black text-white">
                 {selectedProduct ? `Ile zjadłeś? (${selectedProduct.name})` : `Wyszukaj produkt dla: ${activeMealType}`}
@@ -717,10 +717,10 @@ export default function AdvancedHealthPage() {
 
       {/* OVERLAY BUILDER (Tworzenie Własnego Posiłku/Produktu) */}
       {isBuilderOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsBuilderOpen(false)}></div>
           
-          <div className="w-full max-w-xl bg-zinc-950 border border-orange-500/20 rounded-[2rem] shadow-2xl relative z-10 flex flex-col max-h-[90vh] overflow-hidden transform transition-all animate-in slide-in-from-bottom-8">
+          <div className="w-full max-w-xl bg-zinc-950 border border-orange-500/20 rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl relative z-10 flex flex-col max-h-[92dvh] sm:max-h-[90vh] overflow-hidden transform transition-all animate-in slide-in-from-bottom-8">
              <div className="flex items-center justify-between p-6 border-b border-white/5 bg-zinc-900/50">
               <h2 className="text-xl font-black text-white flex items-center gap-2">
                 <Utensils className="w-5 h-5 text-orange-500" />
@@ -822,10 +822,10 @@ export default function AdvancedHealthPage() {
 
       {/* OVERLAY USTAWIENIA CELU KALORYCZNEGO */}
       {isSettingsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsSettingsOpen(false)}></div>
           
-          <div className="w-full max-w-lg bg-zinc-950 border border-white/10 rounded-[2rem] shadow-2xl relative z-10 flex flex-col transform transition-all animate-in zoom-in-95">
+          <div className="w-full max-w-lg bg-zinc-950 border border-white/10 rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl relative z-10 flex flex-col max-h-[92dvh] sm:max-h-[90vh] overflow-hidden transform transition-all animate-in zoom-in-95">
             <div className="flex items-center justify-between p-6 border-b border-white/5 bg-zinc-900/50 rounded-t-[2rem]">
               <h2 className="text-xl font-black text-white flex items-center gap-2">
                 <Target className="w-5 h-5 text-orange-500" />
@@ -836,7 +836,7 @@ export default function AdvancedHealthPage() {
               </button>
             </div>
 
-            <div className="p-6">
+            <div className="p-6 overflow-y-auto">
               
               {/* Przełącznik trybów kalkulatora */}
               <div className="flex p-1.5 bg-black/40 rounded-2xl mb-8 border border-white/5">

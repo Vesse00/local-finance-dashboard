@@ -399,8 +399,8 @@ export function BodyPageClient({ initialData }: { initialData?: any[] }) {
           MODAL DODAWANIA / EDYCJI POMIARU
       =============================================== */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 z-[60]">
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl w-full max-w-md overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl shadow-xl w-full max-w-md overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 duration-200 flex flex-col max-h-[92dvh] sm:max-h-[90vh]">
             <div className="flex justify-between items-center p-6 border-b border-zinc-100 dark:border-zinc-800 bg-indigo-500/5">
               <h3 className="font-bold text-lg text-indigo-700 dark:text-indigo-400 flex items-center gap-2"><Plus className="w-5 h-5" /> {t("health_body.save")}</h3>
               <button onClick={() => setIsAddModalOpen(false)} className="text-zinc-400 hover:text-zinc-600"><X className="w-5 h-5" /></button>

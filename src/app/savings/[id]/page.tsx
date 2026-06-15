@@ -153,8 +153,8 @@ export default function SavingsDetailsPage({ params }: { params: Promise<{ id: s
       </div>
 
       {isCorrectionModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-950 w-full max-w-md rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-in zoom-in-95 flex flex-col">
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white dark:bg-zinc-950 w-full max-w-md max-h-[92dvh] sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden animate-in zoom-in-95 flex flex-col">
             <div className="p-6 border-b border-zinc-100 dark:border-zinc-900 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/20">
               <h3 className="font-bold text-lg flex items-center gap-2">
                 <Scale className="w-5 h-5 text-indigo-500" /> {t("savings_details.correction_modal_title")}
@@ -162,7 +162,7 @@ export default function SavingsDetailsPage({ params }: { params: Promise<{ id: s
               <button onClick={() => setIsCorrectionModalOpen(false)} className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-white"><X className="w-5 h-5" /></button>
             </div>
             
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-6 overflow-y-auto">
               <div className="flex flex-col items-center justify-center py-4 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">{t("savings_details.previous_balance")}</p>
                 <p className="text-2xl font-black text-zinc-900 dark:text-white">{currentBalance.toLocaleString(language === "pl" ? "pl-PL" : "en-US", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol", minimumFractionDigits: 2 })}</p>

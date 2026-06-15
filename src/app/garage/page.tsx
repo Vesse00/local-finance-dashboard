@@ -148,8 +148,8 @@ export default function GaragePage() {
 
       {/* MODAL: DODAWANIE AUTA Z DATAMI */}
       {isCarModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 z-[60]">
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl w-full max-w-md overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl shadow-xl w-full max-w-md overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 flex flex-col max-h-[92dvh] sm:max-h-[90vh]">
             <div className="flex justify-between items-center p-5 border-b border-zinc-100 dark:border-zinc-800">
               <h3 className="font-bold text-lg flex items-center gap-2"><CarFront className="w-5 h-5 text-zinc-500" /> {t("garage_page.btn_add_car")}</h3>
               <button onClick={() => setIsCarModalOpen(false)} className="text-zinc-400 hover:text-zinc-600"><X className="w-5 h-5" /></button>

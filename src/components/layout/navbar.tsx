@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "./mobile-nav";
 import { useLanguage } from "@/components/LanguageProvider";
+import Link from "next/link";
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
@@ -18,14 +19,14 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-black/5 dark:border-white/10 bg-transparent dark:bg-transparent backdrop-blur-xl transition-all duration-300">
+    <header className="fixed md:sticky top-0 inset-x-0 z-90 w-full border-b border-black/5 dark:border-white/10 bg-slate-50/90 dark:bg-zinc-950/85 backdrop-blur-xl transition-all duration-300">
       <div className="flex h-16 items-center justify-between px-6 lg:px-8">
         
         {/* Lewa strona - Logo i powitanie */}
         <div className="flex items-center gap-4">
           <MobileNav />
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-purple-600 shadow-lg shadow-primary/20">
-            <Sparkles className="h-5 w-5 text-white" />
+            <Link href="/"><Sparkles className="h-5 w-5 text-white" /></Link>
           </div>
           <div className="hidden md:flex flex-col">
             <span className="text-sm font-bold bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-600 dark:from-white dark:to-zinc-400">

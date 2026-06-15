@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Wallet, TrendingDown, TrendingUp, PiggyBank, AlertCircle, ArrowRightLeft, ChevronLeft, ChevronRight, CalendarClock, Calendar, Sparkles } from "lucide-react";
+import { TrendingDown, TrendingUp, PiggyBank, AlertCircle, ArrowRightLeft, ChevronLeft, ChevronRight, CalendarClock, Calendar, Sparkles } from "lucide-react";
 import { transferToSavings } from "@/lib/actions";
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -40,7 +40,6 @@ export function MainWidget({ currentStats, summaries, currency, payday }: MainWi
   const { t, language } = useLanguage();
   
   const today = new Date().getDate();
-  const showIncomeWarning = currentStats.wplywy === 0 && today >= payday;
   const daysToPayday = payday - today;
 
   // Przygotowanie osi czasu (Timeline)
@@ -110,7 +109,7 @@ export function MainWidget({ currentStats, summaries, currency, payday }: MainWi
   const activeData = timelineData[slide];
 
   return (
-    <div className="relative overflow-hidden rounded-[2.5rem] border border-black/5 dark:border-white/10 bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl p-6 md:p-8 shadow-2xl shadow-indigo-500/5 transition-all min-h-[340px] md:min-h-[260px] flex flex-col group">
+    <div className="relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-black/5 dark:border-white/10 bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl p-4 md:p-8 shadow-2xl shadow-indigo-500/5 transition-all min-h-[300px] md:min-h-[260px] flex flex-col group">
       {/* Bardziej wydajny radial gadiant zamiast filter: blur() */}
       <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full pointer-events-none opacity-20 dark:opacity-20" style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.6) 0%, rgba(99,102,241,0) 70%)' }}></div>
       
@@ -134,7 +133,7 @@ export function MainWidget({ currentStats, summaries, currency, payday }: MainWi
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                     
-                    <div className="px-5 py-1.5 flex items-center justify-center min-w-[120px] md:min-w-[160px]">
+                    <div className="px-3 md:px-5 py-1.5 flex items-center justify-center min-w-[108px] md:min-w-[160px]">
                       <span className={`text-[11px] md:text-xs font-black uppercase tracking-widest ${
                         data.type === "CURRENT" ? "text-indigo-600 dark:text-indigo-400" : 
                         data.type === "HISTORY" ? "text-emerald-600 dark:text-emerald-400" : 
@@ -167,7 +166,7 @@ export function MainWidget({ currentStats, summaries, currency, payday }: MainWi
                           <h2 className="text-zinc-600 dark:text-zinc-300 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
                             <Sparkles className="w-4 h-4 text-indigo-500" /> {language === 'pl' ? "Oczekujemy na wypłatę" : "Awaiting salary"}
                           </h2>
-                          <div className="text-4xl md:text-5xl font-black tracking-tight text-indigo-600 dark:text-indigo-400 mt-1 drop-shadow-sm">
+                          <div className="text-3xl md:text-5xl font-black tracking-tight text-indigo-600 dark:text-indigo-400 mt-1 drop-shadow-sm">
                             Za {daysToPayday} {daysToPayday === 1 ? (language === 'pl' ? 'dzień' : 'day') : (language === 'pl' ? 'dni' : 'days')}
                           </div>
                           
@@ -189,7 +188,7 @@ export function MainWidget({ currentStats, summaries, currency, payday }: MainWi
                       )
                     ) : (
                       <div className="flex flex-col gap-4 mt-2">
-                        <div className="text-6xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-500 drop-shadow-sm">
+                        <div className="text-5xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-500 drop-shadow-sm">
                           {data.leftToSpend.toLocaleString(language === 'pl' ? "pl-PL" : "en-US", { style: "currency", currency: currency, currencyDisplay: "narrowSymbol" })}
                         </div>
                         <div className="flex flex-wrap items-center gap-3 text-sm font-bold">
@@ -254,12 +253,11 @@ export function MainWidget({ currentStats, summaries, currency, payday }: MainWi
         {/* DZIELNIK (DIVIDER)                         */}
         {/* ========================================== */}
         <div className="hidden md:block w-px bg-gradient-to-b from-transparent via-black/10 dark:via-white/10 to-transparent"></div>
-        <div className="md:hidden h-px w-full bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent my-2"></div>
 
         {/* ========================================== */}
         {/* PRAWA STRONA: OSZCZĘDNOŚCI (STATYCZNA)     */}
         {/* ========================================== */}
-        <div className="flex flex-col justify-center min-w-[200px] lg:min-w-[240px] shrink-0 z-10 pt-2 md:pt-0">
+        <div className="hidden md:flex flex-col justify-center min-w-[200px] lg:min-w-[240px] shrink-0 z-10 pt-2 md:pt-0">
           <div className={`flex flex-col gap-6 w-full transition-opacity duration-500 ${activeData.isEmpty ? "opacity-40 grayscale" : "opacity-100"}`}>
             
             <div className="flex flex-col gap-1 items-center md:items-start text-center md:text-left">

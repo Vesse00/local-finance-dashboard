@@ -54,4 +54,4 @@ COPY --from=builder /app/backend/dist ./backend/dist
 
 EXPOSE 3003 4000
 
-CMD ["sh", "-c", "set -e; mkdir -p /data /app/public/uploads; npm run prisma:migrate:deploy; npx prisma db push --skip-generate; npm run start -- -p 3003 & FRONT_PID=$!; PORT=${PORT:-4000} npm run start:backend & BACK_PID=$!; while kill -0 \"$FRONT_PID\" 2>/dev/null && kill -0 \"$BACK_PID\" 2>/dev/null; do sleep 1; done; kill \"$FRONT_PID\" \"$BACK_PID\" 2>/dev/null || true; wait \"$FRONT_PID\" 2>/dev/null || true; wait \"$BACK_PID\" 2>/dev/null || true; exit 1"]
+CMD ["sh", "-c", "set -e; mkdir -p /data /app/public/uploads; npm run prisma:migrate:deploy; npx prisma db push; npm run start -- -p 3003 & FRONT_PID=$!; PORT=${PORT:-4000} npm run start:backend & BACK_PID=$!; while kill -0 \"$FRONT_PID\" 2>/dev/null && kill -0 \"$BACK_PID\" 2>/dev/null; do sleep 1; done; kill \"$FRONT_PID\" \"$BACK_PID\" 2>/dev/null || true; wait \"$FRONT_PID\" 2>/dev/null || true; wait \"$BACK_PID\" 2>/dev/null || true; exit 1"]

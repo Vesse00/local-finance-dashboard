@@ -100,10 +100,10 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories, expens
   };
 
   const modalContent = isOpen ? (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={onClose}>
+    <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md" onClick={onClose}>
       {/* Szerszy modal dla trybu ONETIME, normalny dla reszty */}
       <div
-        className={`relative w-full rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${type === "MULTI" ? "max-w-3xl" : type === "ONETIME" ? "max-w-2xl" : "max-w-md"}`}
+        className={`relative w-full max-h-[92dvh] sm:max-h-[85vh] overflow-hidden rounded-t-3xl sm:rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-4 sm:p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${type === "MULTI" ? "max-w-3xl" : type === "ONETIME" ? "max-w-2xl" : "max-w-md"}`}
         onClick={e => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute right-4 top-4 rounded-full p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300 transition-colors">
@@ -115,8 +115,9 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories, expens
           {selectedDate?.toLocaleDateString(language === "en" ? "en-US" : "pl-PL", { day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
 
+        <div className="max-h-[calc(92dvh-8rem)] sm:max-h-[calc(85vh-8rem)] overflow-y-auto pr-1">
         {/* ZAKŁADKI TRYBU */}
-        <div className="grid grid-cols-6 gap-1.5 mb-5 bg-black/5 dark:bg-white/5 p-1.5 rounded-2xl">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 mb-5 bg-black/5 dark:bg-white/5 p-1.5 rounded-2xl">
           <button type="button" onClick={() => setType("ONETIME")} className={`py-2 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all ${type === "ONETIME" ? "bg-white dark:bg-zinc-800 shadow-sm text-zinc-900 dark:text-white" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"}`}>
             <CalendarIcon className="w-3.5 h-3.5" /> {t("calendar.modals.expense.type_expense")}
           </button>
@@ -143,7 +144,7 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories, expens
             <input type="hidden" name="date" value={selectedDate?.toISOString() || new Date().toISOString()} />
             <input type="hidden" name="category" value={categorySelection === NEW_CATEGORY_CONST ? customCategory.trim() : categorySelection} />
 
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-5">
               {/* LEWA KOLUMNA – kwota + opis + submit */}
               <div className="space-y-4">
                 <div>
@@ -301,6 +302,7 @@ export function ExpenseModal({ isOpen, onClose, selectedDate, categories, expens
             </button>
           </form>
         )}
+        </div>
       </div>
     </div>
   ) : null;

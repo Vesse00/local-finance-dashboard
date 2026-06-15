@@ -24,7 +24,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <UpdateNotifier />
 
       <AppSidebar />
-      <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+      <div className="flex-1 flex flex-col overflow-hidden relative z-10 pt-16 md:pt-0">
         <Navbar />
         <OmniBar />
         

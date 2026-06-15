@@ -315,8 +315,8 @@ export default function WorkSchedulePage() {
           MODAL: KREATOR GRAFIKU BATCH (DODAWANIE / USUWANIE / URLOPY)
       =============================================== */}
       {isBulkModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 duration-200 flex flex-col max-h-[92dvh] sm:max-h-[90vh]">
             <div className="flex justify-between items-center p-6 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
               <h3 className="font-bold text-xl flex items-center gap-3">
                 <Wand2 className="w-6 h-6 text-primary" />
@@ -441,8 +441,8 @@ export default function WorkSchedulePage() {
           MODAL: EDYCJA POJEDYNCZEGO DNIA
       =============================================== */}
       {selectedDay && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl w-full max-w-md overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl shadow-xl w-full max-w-md overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in zoom-in-95 duration-200 max-h-[92dvh] sm:max-h-[90vh] flex flex-col">
             <div className="flex justify-between items-center p-6 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
               <h3 className="font-bold text-lg flex items-center gap-2">
                 {t("work_schedule.edit_modal_title")} <span className="text-primary">{format(selectedDay, "dd MMMM yyyy", { locale: pl })}</span>
@@ -450,7 +450,7 @@ export default function WorkSchedulePage() {
               <button onClick={() => setSelectedDay(null)} className="text-zinc-400 hover:text-red-500 transition-colors"><X className="w-5 h-5" /></button>
             </div>
             
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-6 overflow-y-auto">
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <button onClick={() => setFormData({...formData, shiftType: "REGULAR"})} className={`py-2 rounded-xl border-2 font-bold text-xs transition-all flex flex-col items-center gap-1 ${formData.shiftType === "REGULAR" ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" : "border-zinc-200 dark:border-zinc-800 text-zinc-500"}`}><Briefcase className="w-4 h-4" /> {t("work_schedule.work")}</button>

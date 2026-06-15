@@ -583,8 +583,8 @@ export function DailyPageClient({ initialDays, initialEntries }: { initialDays?:
           MODAL 1: SZCZEGÓŁY DNIA (LISTA WPISÓW I ĆWICZEŃ)
       =============================================== */}
       {isDayDetailsOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl rounded-3xl shadow-xl w-full max-w-md overflow-hidden border border-black/5 dark:border-white/10 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl rounded-t-3xl sm:rounded-3xl shadow-xl w-full max-w-md overflow-hidden border border-black/5 dark:border-white/10 animate-in zoom-in-95 duration-200 max-h-[92dvh] sm:max-h-[90vh] flex flex-col">
             <div className="flex justify-between items-center p-6 border-b border-black/5 dark:border-white/10 bg-emerald-500/5">
               <h3 className="font-bold text-lg text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
                 Zapisy z: {format(selectedDay, "dd MMMM yyyy", { locale: pl })}
@@ -666,8 +666,8 @@ export function DailyPageClient({ initialDays, initialEntries }: { initialDays?:
           MODAL 2: DODAWANIE (TRENING Z ĆWICZENIAMI / KALORIE)
       =============================================== */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 z-[60]">
-          <div className="bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl rounded-3xl shadow-xl w-full max-w-lg overflow-hidden border border-black/5 dark:border-white/10 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl rounded-t-3xl sm:rounded-3xl shadow-xl w-full max-w-lg overflow-hidden border border-black/5 dark:border-white/10 animate-in zoom-in-95 duration-200 flex flex-col max-h-[92dvh] sm:max-h-[90vh]">
             <div className="flex justify-between items-center p-6 border-b border-black/5 dark:border-white/10 bg-black/5 dark:bg-white/5">
               <h3 className="font-bold text-lg text-zinc-900 dark:text-white flex items-center gap-2">
                 Dodaj wpis: <span className="text-emerald-500">{format(selectedDay, "dd.MM", { locale: pl })}</span>
@@ -756,14 +756,14 @@ export function DailyPageClient({ initialDays, initialEntries }: { initialDays?:
           MODAL: CEL NAWODNIENIA (ZĘBATKA)
       =============================================== */}
       {isGoalModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 z-[60]">
-          <div className="bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl rounded-3xl shadow-xl w-full max-w-sm overflow-hidden border border-black/5 dark:border-white/10 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white/70 dark:bg-zinc-950/40 backdrop-blur-xl rounded-t-3xl sm:rounded-3xl shadow-xl w-full max-w-sm overflow-hidden border border-black/5 dark:border-white/10 animate-in zoom-in-95 duration-200 max-h-[92dvh] sm:max-h-[90vh] flex flex-col">
             <div className="flex justify-between items-center p-6 border-b border-black/5 dark:border-white/10 bg-blue-500/5">
               <h3 className="font-bold text-lg text-blue-700 dark:text-blue-400 flex items-center gap-2"><Settings className="w-5 h-5" /> {t("health_daily.water_target")}</h3>
               <button onClick={() => setIsGoalModalOpen(false)} className="text-zinc-400 hover:text-zinc-600"><X className="w-5 h-5" /></button>
             </div>
             
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 overflow-y-auto">
               <p className="text-sm text-zinc-500">{t("health_daily.water_desc")}</p>
               <div className="flex items-center gap-4">
                 <button onClick={() => setTempGoal(Math.max(1, tempGoal - 1))} className="w-12 h-12 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-xl hover:bg-zinc-200">-</button>

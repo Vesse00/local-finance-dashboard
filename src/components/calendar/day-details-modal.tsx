@@ -157,9 +157,9 @@ export function DayDetailsModal({ isOpen, onClose, date, allExpenses, allIncomes
   const selectCls = "w-full rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-zinc-900 px-2.5 py-1.5 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary text-zinc-900 dark:text-white";
 
   const modalContent = (
-    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={onClose}>
+    <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md" onClick={onClose}>
       <div
-        className="relative w-full max-w-md max-h-[85vh] flex flex-col rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
+        className="relative w-full max-w-md max-h-[92dvh] sm:max-h-[85vh] flex flex-col rounded-t-3xl sm:rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-6 border-b border-black/5 dark:border-white/10 bg-zinc-50/50 dark:bg-zinc-900/50">

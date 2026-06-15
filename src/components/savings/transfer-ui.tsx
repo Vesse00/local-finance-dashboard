@@ -28,8 +28,8 @@ export function TransferUI({ onTransferComplete }: TransferUIProps) {
 
   // Zawartość naszego modala
   const modalContent = isModalOpen ? (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setIsModalOpen(false)}>
-      <div className="relative w-full max-w-md rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md" onClick={() => setIsModalOpen(false)}>
+      <div className="relative w-full max-w-md max-h-[92dvh] sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-y-auto" onClick={e => e.stopPropagation()}>
         <button onClick={() => setIsModalOpen(false)} className="absolute right-4 top-4 rounded-full p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300 transition-colors">
           <X className="h-5 w-5" />
         </button>

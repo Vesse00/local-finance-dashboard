@@ -174,8 +174,8 @@ export function ImportModal() {
   };
 
   const modalContent = isOpen ? (
-    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => !isUploading && setIsOpen(false)}>
-      <div className="relative w-full max-w-lg rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md" onClick={() => !isUploading && setIsOpen(false)}>
+      <div className="relative w-full max-w-lg max-h-[92dvh] sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col" onClick={e => e.stopPropagation()}>
         <button onClick={() => setIsOpen(false)} disabled={isUploading} className="absolute right-4 top-4 rounded-full p-2 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50">
           <X className="h-5 w-5" />
         </button>
@@ -196,6 +196,7 @@ export function ImportModal() {
           ))}
         </div>
 
+        <div className="overflow-y-auto">
         {success ? (
           <div className="flex flex-col items-center justify-center py-8 text-emerald-600 dark:text-emerald-400 animate-in zoom-in">
             <CheckCircle2 className="w-16 h-16 mb-4" />
@@ -268,6 +269,7 @@ export function ImportModal() {
             </button>
           </form>
         )}
+        </div>
       </div>
     </div>
   ) : null;

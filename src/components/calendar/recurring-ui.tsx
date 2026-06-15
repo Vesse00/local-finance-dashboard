@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Repeat, Plus, X, Trash2, CalendarDays, ArrowUpCircle, Edit } from "lucide-react";
-import { addRecurringPayment, deleteRecurringPayment, overpayRecurring } from "@/lib/actions";
+import { deleteRecurringPayment, overpayRecurring } from "@/lib/actions";
 import { RecurringForm } from "./recurring-form";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -93,7 +93,7 @@ return (
                 {/* NOWE: Ołówek do edycji */}
                 <button 
                   onClick={() => openEditModal(rec)}
-                  className="absolute top-4 right-12 p-1.5 text-zinc-400 opacity-0 group-hover:opacity-100 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all"
+                  className="absolute top-4 right-12 p-1.5 text-zinc-400 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all"
                   title={t("calendar.modals.recurring_ui.edit_tooltip")}
                 >
                   <Edit className="w-4 h-4" />
@@ -102,7 +102,7 @@ return (
                 {/* Stary kosz do usuwania */}
                 <button 
                   onClick={() => handleDelete(rec.id)}
-                  className="absolute top-4 right-4 p-1.5 text-zinc-400 opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
+                  className="absolute top-4 right-4 p-1.5 text-zinc-400 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
                   title={t("calendar.modals.recurring_ui.delete_tooltip")}
                 >
                   <Trash2 className="w-4 h-4" />
@@ -161,8 +161,8 @@ return (
 
       {/* MODAL DODAWANIA/EDYCJI ZLECENIA */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setIsModalOpen(false)}>
-          <div className="relative w-full max-w-md rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md" onClick={() => setIsModalOpen(false)}>
+          <div className="relative w-full max-w-md max-h-[92dvh] sm:max-h-[85vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-4 sm:p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
             <button onClick={() => setIsModalOpen(false)} className="absolute right-4 top-4 rounded-full p-2 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
               <X className="h-5 w-5" />
             </button>
@@ -177,8 +177,8 @@ return (
 
       {/* MODAL NADPŁATY - bez zmian */}
       {overpayModalId && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setOverpayModalId(null)}>
-          <div className="relative w-full max-w-sm rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md" onClick={() => setOverpayModalId(null)}>
+          <div className="relative w-full max-w-sm max-h-[92dvh] sm:max-h-[85vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl border border-white/10 bg-white dark:bg-zinc-950 p-4 sm:p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
             <button onClick={() => setOverpayModalId(null)} className="absolute right-4 top-4 rounded-full p-2 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
               <X className="h-5 w-5" />
             </button>
