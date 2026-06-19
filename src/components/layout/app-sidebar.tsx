@@ -77,8 +77,13 @@ export function AppSidebar() {
   return (
     <aside className="w-64 border-r border-black/5 dark:border-white/10 bg-white/50 dark:bg-black/20 backdrop-blur-xl h-screen sticky top-0 flex flex-col hidden md:flex">
       <div className="p-6">
-        <h1 className="text-xl font-black bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
-          MeBase<span className="float ">.</span>
+        <h1 className="flex items-center gap-2 text-xl font-black bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
+          <span>
+            MeBase<span className="float ">.</span>
+          </span>
+          <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-indigo-600 dark:text-indigo-300">
+            v0.1-beta
+          </span>
         </h1>
       </div>
 
