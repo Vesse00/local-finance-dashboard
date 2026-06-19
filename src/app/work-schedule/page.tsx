@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { 
   format, addMonths, subMonths, startOfMonth, endOfMonth, 
   startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, 
-  isToday, setYear, isSameDay, differenceInCalendarWeeks 
+  isToday, setYear, isSameDay, differenceInCalendarWeeks, parse 
 } from "date-fns";
 import { pl, enUS } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Clock, Briefcase, Save, X, Wand2, Trash2, Umbrella, Stethoscope, Coffee } from "lucide-react";
@@ -28,6 +28,9 @@ const addHoursToTime = (time: string, hoursToAdd: number) => {
   if (newH < 0) newH += 24;
   return `${String(newH).padStart(2, '0')}:${String(newM).padStart(2, '0')}`;
 };
+
+const toDateKey = (date: Date) => format(date, "yyyy-MM-dd");
+const parseDateKey = (value: string) => parse(value, "yyyy-MM-dd", new Date());
 
 import { useLanguage } from "@/components/LanguageProvider";
 import { DiscoverPage } from "@/components/DiscoverPage";
@@ -116,7 +119,7 @@ export default function WorkSchedulePage() {
       const res = await fetch("/api/work-days", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          date: selectedDay.toISOString(),
+          date: toDateKey(selectedDay),
           shiftType: formData.shiftType,
           startTime: formData.shiftType === "REGULAR" ? formData.startTime : null,
           endTime: formData.shiftType === "REGULAR" ? formData.endTime : null,
@@ -140,8 +143,8 @@ export default function WorkSchedulePage() {
   };
 
   const handleBulkGenerate = async () => {
-    const startD = new Date(bulkData.startDate);
-    const endD = new Date(bulkData.endDate);
+    const startD = parseDateKey(bulkData.startDate);
+    const endD = parseDateKey(bulkData.endDate);
     if (endD < startD) return alert(t("work_schedule.alert_date_order"));
 
     const allDays = eachDayOfInterval({ start: startD, end: endD });
@@ -166,7 +169,7 @@ export default function WorkSchedulePage() {
         else if (currentShiftIndex === 1) { sTime = bulkData.shift2Start; eTime = bulkData.shift2End; } 
         else if (currentShiftIndex === 2) { sTime = bulkData.shift3Start; eTime = bulkData.shift3End; }
       }
-      return { date: day.toISOString(), startTime: sTime, endTime: eTime, shiftType: "REGULAR" };
+      return { date: toDateKey(day), startTime: sTime, endTime: eTime, shiftType: "REGULAR" };
     });
 
     try {
@@ -179,8 +182,8 @@ export default function WorkSchedulePage() {
   };
 
   const handleBulkDelete = async () => {
-    const startD = new Date(bulkData.startDate);
-    const endD = new Date(bulkData.endDate);
+    const startD = parseDateKey(bulkData.startDate);
+    const endD = parseDateKey(bulkData.endDate);
     if (endD < startD) return alert(t("work_schedule.alert_date_order"));
     if(!confirm(t("work_schedule.alert_delete_confirm"))) return;
 

@@ -33,13 +33,78 @@ export class WorkDaysService {
   }
 
   private normalizeMidday(dateString: string): Date {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
+    if (match) {
+      const year = Number(match[1]);
+      const month = Number(match[2]);
+      const day = Number(match[3]);
+      const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
+
+      if (
+        Number.isNaN(date.getTime()) ||
+        date.getUTCFullYear() !== year ||
+        date.getUTCMonth() !== month - 1 ||
+        date.getUTCDate() !== day
+      ) {
+        throw new BadRequestException('Nieprawidlowa data');
+      }
+
+      return date;
+    }
+
     const date = new Date(dateString);
     if (Number.isNaN(date.getTime())) {
       throw new BadRequestException('Nieprawidlowa data');
     }
 
-    date.setHours(12, 0, 0, 0);
-    return date;
+    return new Date(
+      Date.UTC(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        12,
+        0,
+        0,
+        0,
+      ),
+    );
+  }
+
+  private normalizeBoundary(dateString: string, boundary: 'start' | 'end'): Date {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
+    if (match) {
+      const year = Number(match[1]);
+      const month = Number(match[2]);
+      const day = Number(match[3]);
+      return new Date(
+        Date.UTC(
+          year,
+          month - 1,
+          day,
+          boundary === 'start' ? 0 : 23,
+          boundary === 'start' ? 0 : 59,
+          boundary === 'start' ? 0 : 59,
+          boundary === 'start' ? 0 : 999,
+        ),
+      );
+    }
+
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) {
+      throw new BadRequestException('Nieprawidlowy zakres dat');
+    }
+
+    return new Date(
+      Date.UTC(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        boundary === 'start' ? 0 : 23,
+        boundary === 'start' ? 0 : 59,
+        boundary === 'start' ? 0 : 59,
+        boundary === 'start' ? 0 : 999,
+      ),
+    );
   }
 
   async getWorkDays(userId: string, month?: string) {
@@ -53,8 +118,8 @@ export class WorkDaysService {
       const monthNumber = Number(monthRaw);
 
       if (Number.isFinite(year) && Number.isFinite(monthNumber)) {
-        const startDate = new Date(year, monthNumber - 1, 1);
-        const endDate = new Date(year, monthNumber, 0, 23, 59, 59);
+        const startDate = new Date(Date.UTC(year, monthNumber - 1, 1, 0, 0, 0, 0));
+        const endDate = new Date(Date.UTC(year, monthNumber, 0, 23, 59, 59, 999));
         dateFilter = { date: { gte: startDate, lte: endDate } };
       }
     }
@@ -145,21 +210,15 @@ export class WorkDaysService {
       throw new BadRequestException('Nieprawidlowe dane');
     }
 
-    const start = new Date(body.startDate);
-    const end = new Date(body.endDate);
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-      throw new BadRequestException('Nieprawidlowy zakres dat');
-    }
-
-    start.setHours(0, 0, 0, 0);
-    end.setHours(23, 59, 59, 999);
+    const start = this.normalizeBoundary(body.startDate, 'start');
+    const end = this.normalizeBoundary(body.endDate, 'end');
 
     const records = await this.prisma.workDay.findMany({
       where: { userId, date: { gte: start, lte: end } },
     });
 
     const idsToDelete = records
-      .filter((record) => body.selectedWeekDays?.includes(new Date(record.date).getDay()))
+      .filter((record) => body.selectedWeekDays?.includes(new Date(record.date).getUTCDay()))
       .map((record) => record.id);
 
     if (idsToDelete.length > 0) {
