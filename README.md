@@ -1,12 +1,21 @@
-# MeBase
+<div align="center">
+  <h1>MeBase</h1>
+  <p><strong>A private, local-first Life OS for finance, health, and daily planning.</strong></p>
+  <p>
+    <img alt="Frontend" src="https://img.shields.io/badge/frontend-Next.js%2016-000000?logo=next.js" />
+    <img alt="Backend" src="https://img.shields.io/badge/backend-NestJS%2011-E0234E?logo=nestjs" />
+    <img alt="Database" src="https://img.shields.io/badge/database-SQLite-003B57?logo=sqlite" />
+    <img alt="ORM" src="https://img.shields.io/badge/ORM-Prisma-2D3748?logo=prisma" />
+    <img alt="Status" src="https://img.shields.io/badge/status-active%20development-2ea44f" />
+  </p>
+</div>
 
-A private, local-first "Life OS" for managing finances, health, and daily routines.
-
-The project is built with data ownership in mind: your data stays under your control.
+> MeBase helps you run your personal operations system in one place, while keeping your data under your own control.
 
 ## Table of Contents
 
 - [Why This Project](#why-this-project)
+- [About the App](#about-the-app)
 - [Key Features](#key-features)
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
@@ -27,6 +36,19 @@ Many personal productivity and tracking tools are cloud-only and subscription-ba
 - your data remains local,
 - no telemetry as default behavior,
 - one integrated system for finance, health, and personal planning.
+
+## About the App
+
+MeBase is a modular dashboard designed to centralize personal management workflows that are usually scattered across multiple apps.
+
+At its core, it combines:
+
+- personal finance operations,
+- health and habit tracking,
+- garage and asset records,
+- practical analytics for everyday decision making.
+
+The primary goal is simple: provide clarity and control without forcing users into cloud lock-in.
 
 ## Key Features
 
