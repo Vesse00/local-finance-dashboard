@@ -283,9 +283,9 @@ Contributions are welcome in:
 
 ## License
 
-There is currently no license file in the repository.
+This project is licensed under the MIT License.
 
-Before officially releasing as open source, add a `LICENSE` file (for example MIT or Apache-2.0) to clearly define usage terms.
+See the [LICENSE](LICENSE) file for details.
 
 ---
 
