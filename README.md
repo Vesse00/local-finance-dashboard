@@ -1,175 +1,273 @@
-<div align="center">
-  <h1 align="center">MeBase.</h1>
-  <p align="center">
-    <strong>Your private life operating system. Offline by default.</strong>
-  </p>
-  <p align="center">
-    <a href="#vision">Vision</a> •
-    <a href="#features">Features</a> •
-    <a href="#roadmap">Roadmap</a> •
-    <a href="#tech-stack">Tech Stack</a> •
-    <a href="#getting-started">Getting Started</a>
-  </p>
-</div>
+# MeBase
 
----
+A private, local-first "Life OS" for managing finances, health, and daily routines.
 
-## 👁️ Vision
+The project is built with data ownership in mind: your data stays under your control.
 
-In an era of endless subscriptions and cloud services analyzing your every move, **MeBase** takes a fundamentally different path. It's a modular, personal "Life OS" where **You** retain 100% control over your data. No hidden servers, no telemetry, no tracking. Your finances, health metrics, and daily routines stay exactly where they belong — on your device.
+## Table of Contents
 
-Pay once. Use forever.
+- [Why This Project](#why-this-project)
+- [Key Features](#key-features)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Quick Start (Development)](#quick-start-development)
+- [Environment Variables](#environment-variables)
+- [Production Deployment (Docker)](#production-deployment-docker)
+- [NPM Scripts](#npm-scripts)
+- [Repository Structure](#repository-structure)
+- [Privacy and Security](#privacy-and-security)
+- [Contributing](#contributing)
+- [Roadmap](#roadmap)
+- [License](#license)
 
-## ✨ Core Modules & Features
+## Why This Project
 
-MeBase is designed as a collection of deeply integrated, highly specialized modules. Everything is interconnected yet neatly organized.
+Many personal productivity and tracking tools are cloud-only and subscription-based. MeBase follows a different approach:
 
-### 💳 Finance Node
-- **Expense & Income Tracking:** Log transactions manually or bulk-import. Use custom tags for granular categorization.
-- **Subscription Manager:** Never miss a renewal date. Track monthly/yearly recurring costs and identify unused services.
-- **Budgeting Engine:** Set strict limits for specific categories and visualize your monthly "burn rate" in real-time.
-- **Advanced Analytics:** Interactive charts displaying your cash flow, net worth progression, and historical spending habits.
+- your data remains local,
+- no telemetry as default behavior,
+- one integrated system for finance, health, and personal planning.
 
-### 🧬 Health & Productivity
-- **Biometrics Dashboard:** Track weight, daily energy levels, sleep duration, and overall mood.
-- **Habit Matrix:** Build routines with streak tracking and visual heatmaps (GitHub-style contribution graphs).
-- **Time Allocation:** Log deep work sessions, track overtime, and calculate your true hourly yield.
-- **Encrypted Journal:** A private, distraction-free space for daily reflections and notes, secured locally.
+## Key Features
 
-### 🚗 Garage & Assets
-- **Maintenance Timeline:** A complete service history with mileage logs and attached invoices/receipts.
-- **Cost-per-Distance Analysis:** Automatically calculate how much your vehicle actually costs to run per km/mile.
-- **Document Vault:** Keep your insurance policies, registration details, and upcoming inspection dates in one quick-access tab.
+### Finance
 
-### 🛡️ System & Privacy (The Core)
-- **100% Local-First:** Powered by a local SQLite database. Zero cloud latency, zero external API dependencies.
-- **Data Portability:** Your data is strictly yours. Prevent vendor lock-in with one-click full exports to CSV and JSON.
-- **Bento-style Dashboard:** A highly customizable, beautiful home screen showing vital statistics from all modules at a single glance.
+- expense and income tracking,
+- categories, limits, and monthly summaries,
+- recurring payments and subscriptions,
+- analytics and data import workflows.
 
-## 🗺️ Roadmap
+### Health and Productivity
 
-MeBase is in active development. Our roadmap to building a complete, local-first ecosystem:
+- daily health logs,
+- workout and nutrition entries,
+- energy and habit tracking,
+- work time planning.
 
-- [x] **Phase 1: Web App (Current)**
-  - Building the system core.
-  - Designing initial modules (Finance, Health, Garage).
-  - UI/UX refinement (Smooth animations, minimalist design, Neumorphism/Soft 3D effects).
-- [ ] **Phase 2: Standalone Desktop App (Coming Soon)**
-  - Migrating the web app to a native desktop application (Windows / macOS).
-  - Implementation of a local database (SQLite) for a true Local-First experience.
-- [ ] **Phase 3: Mobile Companion**
-  - Mobile application (iOS / Android) for quick data entry on the go.
-  - Secure, fully encrypted End-to-End synchronization between your PC and phone (e.g., via local Wi-Fi network).
+### Garage and Assets
 
-## 🛠️ Tech Stack
+- history of vehicle-related costs and events,
+- operating expense tracking,
+- centralized key records and documents.
 
-Built with cutting-edge technologies to ensure top performance and a stunning, premium look:
+## Architecture
 
-- **Framework:** [Next.js](https://nextjs.org/) (React)
-- **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
-- **Animations:** [Framer Motion](https://www.framer.com/motion/)
-- **UI Components:** [shadcn/ui](https://ui.shadcn.com/) (Style: Radix Nova / Lucide Icons)
-- **Database ORM:** [Prisma](https://www.prisma.io/) (Targeting SQLite for Local-First)
+The project has two application layers and one data layer:
 
-## 🚀 Getting Started (For Developers)
-
-If you want to run the current Web version locally on your machine:
-
-### Prerequisites
-- Node.js 18+
-- npm / pnpm / yarn
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/YOUR_USERNAME/mebase.git
+```mermaid
+flowchart LR
+  A[Next.js Frontend<br/>port 3003] --> B[NestJS Backend API<br/>/api, port 4000]
+  B --> C[(SQLite via Prisma)]
 ```
 
-2. Navigate to the project directory:
+- frontend: Next.js (App Router), UI and client-side logic,
+- backend: NestJS API with a modular structure,
+- database: SQLite + Prisma.
+
+## Tech Stack
+
+- Next.js 16 (React 19)
+- NestJS 11
+- TypeScript 5
+- Tailwind CSS 4
+- Prisma 7
+- SQLite (better-sqlite3)
+- NextAuth
+- Docker / Docker Compose
+
+## Quick Start (Development)
+
+### 1. Requirements
+
+- Node.js 20+
+- npm 10+
+
+### 2. Clone
+
 ```bash
-cd mebase
+git clone https://github.com/Vesse00/local-finance-dashboard.git
+cd local-finance-dashboard
 ```
 
-3. Install dependencies:
+### 3. Install dependencies
+
 ```bash
 npm install
+npm install --prefix backend
 ```
 
-4. Set up the database (copy `.env.example` to `.env` and generate the Prisma client):
+### 4. Configure .env
+
+Create a `.env` file in the project root and set at least:
+
+```env
+DATABASE_URL=file:./dev.db
+NEXTAUTH_URL=http://localhost:3003
+NEXTAUTH_SECRET=replace_with_a_long_random_secret
+BACKEND_URL=http://localhost:4000/api
+CORS_ORIGIN=http://localhost:3003
+INTERNAL_API_SECRET=replace_with_a_different_long_random_secret
+PORT=4000
+```
+
+### 5. Prisma
+
 ```bash
-npx prisma generate
+npm run prisma:generate
 npx prisma db push
 ```
 
-5. Start the development server:
+### 6. Start the app
+
+Frontend:
+
 ```bash
 npm run dev
 ```
 
-The application will be available at [http://localhost:3000](http://localhost:3000).
+Backend:
 
-## Production Deploy (Docker)
+```bash
+npm run dev:backend
+```
 
-Production-ready single-container setup (Next.js + backend API) with persistent SQLite and uploads.
+Frontend + backend together:
 
-### 1) Prerequisites
-- Docker Engine + Docker Compose plugin (`docker compose`)
-- Linux server with open ports for frontend/backend (default: `3003` and `4000`)
+```bash
+npm run dev:all
+```
 
-### 2) Environment file
+Default addresses:
 
-Copy the template and edit values:
+- frontend: http://localhost:3003
+- backend: http://localhost:4000/api
+- backend healthcheck: http://localhost:4000/api/health
+
+## Environment Variables
+
+Main variables:
+
+- `DATABASE_URL` - SQLite connection string,
+- `NEXTAUTH_URL` - public frontend URL,
+- `NEXTAUTH_SECRET` - NextAuth secret,
+- `BACKEND_URL` - backend API address (with `/api` prefix),
+- `CORS_ORIGIN` - allowed frontend origin,
+- `INTERNAL_API_SECRET` - frontend to backend internal auth secret,
+- `PORT` - backend port.
+
+For Docker deployment, use `.env.docker.example` as a template.
+
+## Production Deployment (Docker)
+
+### 1. Prepare
+
+- install Docker Engine,
+- copy configuration template:
 
 ```bash
 cp .env.docker.example .env.docker
 ```
 
-Recommended values:
-- `NEXTAUTH_URL` = public frontend URL (example: `http://YOUR_SERVER_IP:3003`)
-- `CORS_ORIGIN` = same public frontend URL as above
-- `BACKEND_URL` = internal API URL with `/api` prefix (example: `http://127.0.0.1:4000/api`)
-- `DATABASE_URL` = `file:/data/dev.db` (persistent volume path)
-- `NEXTAUTH_SECRET` and `INTERNAL_API_SECRET` = long random secrets
-
-### 3) Persistent folders
+### 2. Create persistent directories
 
 ```bash
 mkdir -p data public/uploads
 ```
 
-### 4) First run / deploy
+### 3. Build and start
 
 ```bash
 docker compose --env-file .env.docker up -d --build
 ```
 
-What happens on container startup:
-- Prisma migrations are applied,
-- schema is synced (`prisma db push`) for safe from-zero boot,
-- frontend and backend start in production mode.
-
-### 5) Verify deployment
+### 4. Verify
 
 ```bash
 docker compose ps
 docker compose logs -f app
 ```
 
-Expected:
-- frontend available on `http://SERVER_IP:3003`
-- backend health endpoint available on `http://SERVER_IP:4000/api/health`
+Container startup runs:
 
-### 6) Update after git pull
+- `prisma migrate deploy`,
+- `prisma db push`,
+- frontend and backend startup.
 
-```bash
-docker compose --env-file .env.docker up -d --build
+## NPM Scripts
+
+Root-level scripts:
+
+- `npm run dev` - frontend dev on port 3003,
+- `npm run dev:backend` - backend dev,
+- `npm run dev:all` - frontend and backend in parallel,
+- `npm run build` - frontend build,
+- `npm run build:backend` - backend build,
+- `npm run build:all` - build both layers,
+- `npm run lint` - frontend linting,
+- `npm run prisma:generate` - generate Prisma client,
+- `npm run prisma:migrate:deploy` - Prisma production migrations.
+
+Backend scripts (inside `backend`):
+
+- `npm run start:dev`
+- `npm run test`
+- `npm run test:e2e`
+
+## Repository Structure
+
+```text
+.
+|- src/                  # frontend (Next.js)
+|- backend/src/          # backend API (NestJS)
+|- prisma/               # schema and migrations
+|- public/uploads/       # uploaded files
+|- scripts/              # helper scripts
+|- docker-compose.yml    # production orchestration
+`- Dockerfile            # app image definition
 ```
 
-### 7) Data persistence
-- SQLite database: `./data/dev.db`
-- uploaded files: `./public/uploads`
-- container restart policy: `unless-stopped`
+## Privacy and Security
+
+- the project is designed as local-first,
+- do not commit secrets or private data,
+- remove sensitive local artifacts before publishing as OSS,
+- rotate secrets regularly (`NEXTAUTH_SECRET`, `INTERNAL_API_SECRET`).
+
+If you discover a security issue, avoid posting full exploit details publicly right away. Report it through a controlled issue or direct maintainer contact.
+
+## Contributing
+
+1. Fork the repository.
+2. Create a feature branch (`feature/your-feature-name`).
+3. Make changes and run lint/tests.
+4. Open a Pull Request with:
+   - what changed,
+   - why it changed,
+   - how to test it.
+
+Contributions are welcome in:
+
+- documentation improvements,
+- UX/UI enhancements,
+- automated tests,
+- performance and stability fixes.
+
+## Roadmap
+
+- [x] Web app core
+- [ ] Further stabilization and integration testing
+- [ ] Desktop release (Windows/macOS)
+- [ ] Mobile companion app with secure sync
+
+## License
+
+There is currently no license file in the repository.
+
+Before officially releasing as open source, add a `LICENSE` file (for example MIT or Apache-2.0) to clearly define usage terms.
+
+---
+
+MeBase is developed with a strong focus on privacy and full data ownership.
 
 ---
 
